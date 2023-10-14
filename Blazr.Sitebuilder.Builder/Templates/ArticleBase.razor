@@ -1,0 +1,26 @@
+﻿@using Blazr.Sitebuilder.Builder.Code
+@using Markdig
+<h3>ArticleBase</h3>
+
+@code {
+    protected MarkupString ArticleContent = new MarkupString("Loading");
+    public virtual PageData PageData { get; protected set; } = new();
+
+
+    protected async Task GetContent()
+    {
+        string mdpath = Environment.CurrentDirectory + PageData.MdFile;
+
+        string markdownText = await File.ReadAllTextAsync(mdpath);
+
+        var pipeline = new MarkdownPipelineBuilder().UseAdvancedExtensions().Build();
+
+        var htmltext = Markdown.ToHtml(markdownText, pipeline);
+
+        var toc = TOCUtils.GetTOC(htmltext);
+
+        this.ArticleContent = new MarkupString(htmltext);
+
+    }
+
+}

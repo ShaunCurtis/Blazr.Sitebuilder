@@ -14,11 +14,24 @@
     <HeaderTitle />
 </head>
 <body>
-    <Home Name="@Name" />
+    <DynamicComponent Type="this.RouteComponent" />
 </body>
 </html>
 
 @code {
     [Parameter]
-    public string? Name { get; set; }
+    public Type RouteComponent { get; set; } = typeof(Home);
+
+    public override Task SetParametersAsync(ParameterView parameters)
+    {
+        parameters.SetParameterProperties(this);
+        this.SetData();
+        return base.SetParametersAsync(parameters);
+    }
+
+    private void SetData()
+    {
+        var component = Activator.CreateInstance(this.RouteComponent);
+    }
+
 }
