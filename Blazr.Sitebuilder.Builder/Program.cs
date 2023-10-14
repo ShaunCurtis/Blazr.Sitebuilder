@@ -1,6 +1,7 @@
-﻿using Blazr.Sitebuilder.Builder.Code;
+﻿using Blazr.Sitebuilder.Builder;
 using Blazr.Sitebuilder.Builder.Source;
 using Blazr.Sitebuilder.Builder.Templates;
+using Blazr.SiteBuilder;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -13,7 +14,7 @@ var app = builder.Build();
 app.MapGet("/", async (ContentRenderer renderer, string name = "world") =>
 {
     // Pass the parameters and render the component
-    var html = await renderer.RenderComponent<App>(new() { { nameof(App.RouteComponent), typeof(Article) } });
+    var html = await renderer.RenderComponent<App>(new() { { nameof(App.RouteComponent), typeof(Blazor_Components) } });
 
     // Return the result as HTML
     return Results.Content(html, "text/html");

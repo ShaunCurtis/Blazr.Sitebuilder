@@ -1,13 +1,39 @@
 ﻿@using Blazr.SiteBuilder
-@using Blazr.Sitebuilder.Builder.Code
 @using Markdig
 @using System.Diagnostics
+
+
+<LayoutView Layout="@typeof(ArticleLayout)">
+    <PageTitle>Home</PageTitle>
+    <div>The main content goes here</div>
+
+</LayoutView>
+
+<SectionContent SectionName="side-bar">
+
+    @this.ArticleInfo
+
+    @this.TOC
+
+</SectionContent>
+
+<SectionContent SectionName="main-content">
+    
+    @this.ArticleHeader
+
+    @this.ArticleContent
+
+</SectionContent>
 
 
 @code {
     protected MarkupString ArticleContent = new MarkupString("Loading");
 
     protected MarkupString TOC = new MarkupString("Loading");
+
+    protected MarkupString ArticleInfo = new MarkupString("Loading");
+
+    protected MarkupString ArticleHeader = new MarkupString("Loading");
 
     public virtual PageData PageData { get; protected set; } = new();
 
@@ -36,5 +62,12 @@
         var toc = TOCUtils.GetTOC(articleHtml);
         var tocContent = TOCBuilder.BuildTOC(toc);
         this.TOC = new MarkupString(tocContent ?? string.Empty);
+
+        var headerHtml = ArticleHtmlProvider.BuildArticleTitleHtml(this.PageData);
+
+        this.ArticleHeader = new MarkupString(headerHtml ?? string.Empty);
+
+        var articleInfo = ArticleHtmlProvider.BuildArticleDatesHtml(this.PageData);
+        this.ArticleInfo = new MarkupString(articleInfo ?? string.Empty);
     }
 }

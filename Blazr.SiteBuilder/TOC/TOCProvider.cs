@@ -10,23 +10,23 @@ namespace Blazr.SiteBuilder;
 
 public static class TOCUtils
 {
-    public static PageTOC GetTOC(string content)
+    public static TOCItem GetTOC(string content)
     {
         var matchString = $"<h([12])\\sid=\"(.*)\"[^>]*>(.+)<\\/h[\\d]>";
         var regex = new Regex(matchString);
         var matches = regex.Matches(content);
 
-        var root = new PageTOC() { Level = 0, Title = "Top" };
+        var root = new TOCItem() { Level = 0, Title = "Top" };
         ProcessMatches(matches, root, 0);
         return root;
     }
 
-    private static int ProcessMatches(MatchCollection matches, PageTOC parentToc, int matchIndex)
+    private static int ProcessMatches(MatchCollection matches, TOCItem parentToc, int matchIndex)
     {
         var index = matchIndex;
         var newLevel = 0;
         var thisLevel = parentToc.Level + 1;
-        PageTOC? Toc = null;
+        TOCItem? Toc = null;
 
         while (matches.Count > index)
         {
@@ -42,13 +42,13 @@ public static class TOCUtils
                 }
                 else if (newLevel > thisLevel && Toc is null)
                 {
-                    Toc = new PageTOC() { Level = thisLevel, Link = String.Empty, Title = "No Initial H1 found", Hidden = true };
+                    Toc = new TOCItem() { Level = thisLevel, Link = String.Empty, Title = "No Initial H1 found", Hidden = true };
                     parentToc.Nodes.Add(Toc);
                     index = ProcessMatches(matches, Toc, index);
                 }
                 else
                 {
-                    Toc = new PageTOC() { Level = newLevel, Link = match.Groups[2].Value, Title = match.Groups[3].Value };
+                    Toc = new TOCItem() { Level = newLevel, Link = match.Groups[2].Value, Title = match.Groups[3].Value };
                     parentToc.Nodes.Add(Toc);
                     index++;
                 }
