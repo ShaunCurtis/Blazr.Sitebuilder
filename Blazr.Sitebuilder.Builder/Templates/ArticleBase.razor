@@ -1,26 +1,40 @@
-﻿@using Blazr.Sitebuilder.Builder.Code
+﻿@using Blazr.SiteBuilder
+@using Blazr.Sitebuilder.Builder.Code
 @using Markdig
-<h3>ArticleBase</h3>
+@using System.Diagnostics
+
 
 @code {
     protected MarkupString ArticleContent = new MarkupString("Loading");
+
+    protected MarkupString TOC = new MarkupString("Loading");
+
     public virtual PageData PageData { get; protected set; } = new();
+
+    public async override Task SetParametersAsync(ParameterView parameters)
+    {
+        parameters.SetParameterProperties(this);
+
+        await this.GetContent();
+
+        await base.SetParametersAsync(ParameterView.Empty);
+    }
 
 
     protected async Task GetContent()
     {
-        string mdpath = Environment.CurrentDirectory + PageData.MdFile;
+        string mdFlePath = Environment.CurrentDirectory + PageData.MdFile;
+        Debug.Assert(File.Exists(mdFlePath));
 
-        string markdownText = await File.ReadAllTextAsync(mdpath);
+        string markdownText = await File.ReadAllTextAsync(mdFlePath);
 
         var pipeline = new MarkdownPipelineBuilder().UseAdvancedExtensions().Build();
 
-        var htmltext = Markdown.ToHtml(markdownText, pipeline);
+        var articleHtml = Markdown.ToHtml(markdownText, pipeline);
+        this.ArticleContent = new MarkupString(articleHtml);
 
-        var toc = TOCUtils.GetTOC(htmltext);
-
-        this.ArticleContent = new MarkupString(htmltext);
-
+        var toc = TOCUtils.GetTOC(articleHtml);
+        var tocContent = TOCBuilder.BuildTOC(toc);
+        this.TOC = new MarkupString(tocContent ?? string.Empty);
     }
-
 }

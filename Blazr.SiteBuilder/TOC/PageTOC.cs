@@ -4,7 +4,7 @@
 /// If you use it, donate something to a charity somewhere
 /// ============================================================
 
-namespace Blazr.Sitebuilder.Builder.Code;
+namespace Blazr.SiteBuilder;
 
 public class PageTOC
 {

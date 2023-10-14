@@ -1,23 +1,5 @@
 /*Base styling*/
 
-h1 {
-    font-size: 3em;
-}
-
-h3 {
-    font-size: 2rem;
-    line-height: 1em;
-    margin-bottom: 0;
-}
-
-h1, h3 {
-    font-weight: 700;
-}
-
-h4 {
-    margin-bottom: 0;
-}
-
 .text-container {
     color: rgb(64,64,64);
 }
@@ -39,22 +21,37 @@ h4 {
 }
 
 
+
+
 /* sort indent with icons */
 .dropdown-item {
     text-indent: -25px;
     padding-left: 45px;
 }
 
+a.TOC-link {
+    display:block;
+    padding-left: 5px;
+    text-indent: -15px;
+    padding-bottom: 2px;
+}
 
 ul.TOC {
-    font-size: .8rem;
-    list-style: none ;
+    margin: 0;
+    padding: 0;
+    font-size: .75rem;
+    list-style: none;
     margin-left: 0px;
     padding-left: 5px;
 }
 
+ul.TOC li {
+    margin: 0;
+    padding: 0;
+}
+
 li.TOC-item {
-    padding: .2rem 0px;
+    padding: 0px 0px;
 }
 
 ul.TOC-0 {
@@ -63,7 +60,7 @@ ul.TOC-0 {
 }
 
 ul.TOC-1 {
-    margin-left: 10px;
+    margin-left: 3px;
     padding-left: 0px;
 }
 

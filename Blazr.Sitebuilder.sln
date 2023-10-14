@@ -9,6 +9,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Blazr.Sitebuilder.Builder",
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Test", "Test\Test.csproj", "{0F07348F-6A8B-4BA6-A6FF-954D1AABDFCA}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Blazr.SiteBuilder", "Blazr.SiteBuilder\Blazr.SiteBuilder.csproj", "{ED24010D-9A2A-4934-BFD0-429CF50F52EB}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,6 +29,10 @@ Global
 		{0F07348F-6A8B-4BA6-A6FF-954D1AABDFCA}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0F07348F-6A8B-4BA6-A6FF-954D1AABDFCA}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0F07348F-6A8B-4BA6-A6FF-954D1AABDFCA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{ED24010D-9A2A-4934-BFD0-429CF50F52EB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{ED24010D-9A2A-4934-BFD0-429CF50F52EB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{ED24010D-9A2A-4934-BFD0-429CF50F52EB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{ED24010D-9A2A-4934-BFD0-429CF50F52EB}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

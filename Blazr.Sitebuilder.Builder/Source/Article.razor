@@ -1,19 +1,22 @@
-﻿@using Markdig
+﻿@using Blazr.Sitebuilder.Builder.Code
 @inherits ArticleBase
 @implements IPageData
-<LayoutView Layout="@typeof(HomeLayout)">
+<LayoutView Layout="@typeof(ArticleLayout)">
     <PageTitle>Home</PageTitle>
     <div>The main content goes here</div>
 
 </LayoutView>
 
 <SectionContent SectionName="side-bar">
-    Hello
-    The content specific stuff goes here
+
+    @this.TOC
+
 </SectionContent>
+
 <SectionContent SectionName="main-content">
 
     @this.ArticleContent;
+
 </SectionContent>
 
 @code {
@@ -28,19 +31,5 @@
             MdFile = $@".\Source\article.md"
 
         };
-
-    protected async override Task OnInitializedAsync()
-    {
-        string mdpath = Environment.CurrentDirectory + @".\Source\article.md";
-
-        string markdownText = await File.ReadAllTextAsync(mdpath);
-
-        var pipeline = new MarkdownPipelineBuilder().UseAdvancedExtensions().Build();
-
-        var htmltext = Markdown.ToHtml(markdownText, pipeline);
-
-        _content = new MarkupString(htmltext);
-
-    }
 }
 

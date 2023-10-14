@@ -6,13 +6,13 @@
 
 using System.Text.RegularExpressions;
 
-namespace Blazr.Sitebuilder.Builder.Code;
+namespace Blazr.SiteBuilder;
 
 public static class TOCUtils
 {
     public static PageTOC GetTOC(string content)
     {
-        var matchString = $"<h([123])\\sid=\"(.*)\"[^>]*>(.+)<\\/h[\\d]>";
+        var matchString = $"<h([12])\\sid=\"(.*)\"[^>]*>(.+)<\\/h[\\d]>";
         var regex = new Regex(matchString);
         var matches = regex.Matches(content);
 
