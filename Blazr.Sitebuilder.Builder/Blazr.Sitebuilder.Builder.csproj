@@ -8,6 +8,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Blazr.BaseComponents" Version="1.0.1" />
     <PackageReference Include="Markdig" Version="0.33.0" />
   </ItemGroup>
 

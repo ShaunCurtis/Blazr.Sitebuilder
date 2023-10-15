@@ -3,13 +3,11 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.8.34205.153
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Blazr.Sitebuilder.Web", "Blazr.Sitebuilder.Web\Blazr.Sitebuilder.Web.csproj", "{437405F6-7091-4B7B-BDF4-B42DCD66E2B8}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Blazr.Sitebuilder.Builder", "Blazr.Sitebuilder.Builder\Blazr.Sitebuilder.Builder.csproj", "{B30E49CB-DD5B-41E3-8E6A-291116E820CC}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Test", "Test\Test.csproj", "{0F07348F-6A8B-4BA6-A6FF-954D1AABDFCA}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Test", "Test\Test.csproj", "{0F07348F-6A8B-4BA6-A6FF-954D1AABDFCA}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Blazr.SiteBuilder", "Blazr.SiteBuilder\Blazr.SiteBuilder.csproj", "{ED24010D-9A2A-4934-BFD0-429CF50F52EB}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Blazr.SiteBuilder", "Blazr.SiteBuilder\Blazr.SiteBuilder.csproj", "{ED24010D-9A2A-4934-BFD0-429CF50F52EB}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -17,10 +15,6 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{437405F6-7091-4B7B-BDF4-B42DCD66E2B8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{437405F6-7091-4B7B-BDF4-B42DCD66E2B8}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{437405F6-7091-4B7B-BDF4-B42DCD66E2B8}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{437405F6-7091-4B7B-BDF4-B42DCD66E2B8}.Release|Any CPU.Build.0 = Release|Any CPU
 		{B30E49CB-DD5B-41E3-8E6A-291116E820CC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{B30E49CB-DD5B-41E3-8E6A-291116E820CC}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B30E49CB-DD5B-41E3-8E6A-291116E820CC}.Release|Any CPU.ActiveCfg = Release|Any CPU

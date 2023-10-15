@@ -6,7 +6,7 @@
 
 namespace Blazr.SiteBuilder;
 
-public record PageData
+public record PageData: IPageData
 {
     public string Title { get; init; } = "Not Set";
     public string Description { get; init; } = "Not Set";
