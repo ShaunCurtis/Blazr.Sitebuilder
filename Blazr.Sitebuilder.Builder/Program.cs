@@ -14,7 +14,8 @@ var app = builder.Build();
 app.MapGet("/", async (ContentRenderer renderer, string name = "world") =>
 {
     // Pass the parameters and render the component
-    var html = await renderer.RenderComponent<App>(new() { { nameof(App.RouteComponent), typeof(Blazor_Components) } });
+    //var html = await renderer.RenderComponent<App>(new() { { nameof(App.RouteComponent), typeof(Blazor_Components) } });
+    var html = await renderer.RenderComponent<Blazor_Components>();
 
     // Return the result as HTML
     return Results.Content(html, "text/html");

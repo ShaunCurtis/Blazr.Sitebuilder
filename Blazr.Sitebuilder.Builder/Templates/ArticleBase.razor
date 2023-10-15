@@ -3,11 +3,15 @@
 @using System.Diagnostics
 
 
-<LayoutView Layout="@typeof(ArticleLayout)">
+<LayoutView Layout="@typeof(ArticlePageLayout)">
     <PageTitle>Home</PageTitle>
     <div>The main content goes here</div>
 
 </LayoutView>
+
+<SectionContent SectionName="page-header-data">
+    @this.ArticleHeader
+</SectionContent>
 
 <SectionContent SectionName="side-bar">
 
@@ -19,7 +23,7 @@
 
 <SectionContent SectionName="main-content">
     
-    @this.ArticleHeader
+    @this.ArticleTopBar
 
     @this.ArticleContent
 
@@ -27,13 +31,15 @@
 
 
 @code {
+    protected MarkupString ArticleHeader = new MarkupString("<title>Title Goes Here!</title>");
+
     protected MarkupString ArticleContent = new MarkupString("Loading");
 
     protected MarkupString TOC = new MarkupString("Loading");
 
     protected MarkupString ArticleInfo = new MarkupString("Loading");
 
-    protected MarkupString ArticleHeader = new MarkupString("Loading");
+    protected MarkupString ArticleTopBar = new MarkupString("Loading");
 
     public virtual PageData PageData { get; protected set; } = new();
 
@@ -65,7 +71,7 @@
 
         var headerHtml = ArticleHtmlProvider.BuildArticleTitleHtml(this.PageData);
 
-        this.ArticleHeader = new MarkupString(headerHtml ?? string.Empty);
+        this.ArticleTopBar = new MarkupString(headerHtml ?? string.Empty);
 
         var articleInfo = ArticleHtmlProvider.BuildArticleDatesHtml(this.PageData);
         this.ArticleInfo = new MarkupString(articleInfo ?? string.Empty);

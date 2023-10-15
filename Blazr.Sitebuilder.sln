@@ -7,9 +7,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Blazr.Sitebuilder.Web", "Bl
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Blazr.Sitebuilder.Builder", "Blazr.Sitebuilder.Builder\Blazr.Sitebuilder.Builder.csproj", "{B30E49CB-DD5B-41E3-8E6A-291116E820CC}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Test", "Test\Test.csproj", "{0F07348F-6A8B-4BA6-A6FF-954D1AABDFCA}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Test", "Test\Test.csproj", "{0F07348F-6A8B-4BA6-A6FF-954D1AABDFCA}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Blazr.SiteBuilder", "Blazr.SiteBuilder\Blazr.SiteBuilder.csproj", "{ED24010D-9A2A-4934-BFD0-429CF50F52EB}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Blazr.SiteBuilder", "Blazr.SiteBuilder\Blazr.SiteBuilder.csproj", "{ED24010D-9A2A-4934-BFD0-429CF50F52EB}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
