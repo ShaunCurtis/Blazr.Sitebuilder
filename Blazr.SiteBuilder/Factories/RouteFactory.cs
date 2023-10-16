@@ -4,6 +4,7 @@
 /// If you use it, donate something to a charity somewhere
 /// ============================================================
 
+using System.Collections.ObjectModel;
 using System.Reflection;
 
 namespace Blazr.SiteBuilder;
@@ -13,11 +14,11 @@ public record SiteRouteData(Type Component, string Route, PageData PageData);
 public class RouteFactory
 {
     public IEnumerable<SiteRouteData> RouteList => _routeList.AsEnumerable();
-    public IEnumerable<string> Categories => _categories.AsEnumerable();
+    public ReadOnlyDictionary<string, int> Categories => _categories.AsReadOnly();
     public IEnumerable<string> Tags => _tags.AsEnumerable();
 
     private List<SiteRouteData> _routeList = new();
-    private List<string> _categories = new();
+    private Dictionary<string, int> _categories = new();
     private List<string> _tags = new();
 
     public RouteFactory()
@@ -46,7 +47,12 @@ public class RouteFactory
             }
         }
 
-        _categories = _routeList.Select(item => item.PageData.Category).Distinct().ToList();
+        //Get the categories 
+        var categories = _routeList.Select(item => item.PageData.Category).Distinct().ToList();
+        foreach(var category in categories)
+        {
+            _categories.Add(category, _routeList.Where(item => item.PageData.Category == category).Count());
+        }
     }
 
     private void AddTags(string tags)

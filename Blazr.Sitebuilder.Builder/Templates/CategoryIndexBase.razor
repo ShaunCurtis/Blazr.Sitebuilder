@@ -14,14 +14,17 @@
 
 <SectionContent SectionName="side-bar">
 
-    <div class="list-group">
+    <ul class="list-group">
 
         @foreach (var category in _rootFactory.Categories)
         {
-            <a href="@($"/{category}/")" class="list-group-item list-group-item-action">@category</a>
+            <li class="list-group-item d-flex justify-content-between align-items-start">
+                <a href="@($"/{category.Key}/")">@(category.Key)</a>
+                <span class="badge bg-primary text-white text-end rounded-pill">@(category.Value)</span>
+            </li>
         }
 
-    </div>
+    </ul>
 
 </SectionContent>
 
