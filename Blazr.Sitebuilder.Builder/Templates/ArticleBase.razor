@@ -51,18 +51,9 @@
         await base.SetParametersAsync(ParameterView.Empty);
     }
 
-
     protected async Task GetContent()
     {
-        string mdFlePath = Environment.CurrentDirectory + PageData.MdFile;
-        Debug.Assert(File.Exists(mdFlePath));
-
-        string markdownText = await File.ReadAllTextAsync(mdFlePath);
-
-        var pipeline = new MarkdownPipelineBuilder().UseAdvancedExtensions().Build();
-
-        var articleHtml = Markdown.ToHtml(markdownText, pipeline);
-        this.ArticleContent = new MarkupString(articleHtml);
+        this.ArticleContent = new MarkupString(this.GetMarkdownHtml());
 
         var toc = TOCUtils.GetTOC(articleHtml);
         var tocContent = TOCBuilder.BuildTOC(toc);
@@ -74,5 +65,18 @@
 
         var articleInfo = ArticleHtmlProvider.BuildArticleDatesHtml(this.PageData);
         this.ArticleInfo = new MarkupString(articleInfo ?? string.Empty);
+    }
+
+    protected string GetMarkdownHtml()
+    {
+        // Get the Markdown File and process it to html
+        string markdownFlePath = Environment.CurrentDirectory + PageData.MdFile;
+        Debug.Assert(File.Exists(markdownFlePath));
+
+        string markdownText = await File.ReadAllTextAsync(markdownFlePath);
+
+        var pipeline = new MarkdownPipelineBuilder().UseAdvancedExtensions().Build();
+
+        return Markdown.ToHtml(markdownText, pipeline);
     }
 }

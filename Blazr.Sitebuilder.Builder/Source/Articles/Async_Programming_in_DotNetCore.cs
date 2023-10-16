@@ -3,6 +3,8 @@ using Blazr.SiteBuilder;
 
 namespace Blazr.Sitebuilder.Builder;
 
+[Route("/Articles/Async-Programming-in-DotNetCore")]
+
 public class Async_Programming_in_DotNetCore : ArticleBase
 {
     public override PageData PageData { get; protected set; } = new()

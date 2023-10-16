@@ -8,14 +8,16 @@ using System.Reflection;
 
 namespace Blazr.SiteBuilder;
 
+public record SiteRouteData(Type Component, string Route, PageData PageData);
+
 public class RouteFactory
 {
-    public readonly IEnumerable<RouteData> RouteList
+    public IEnumerable<SiteRouteData> RouteList => _routeList.AsEnumerable();
 
-    private List<RouteData> _routeList = new List<RouteData>();
+    private List<SiteRouteData> _routeList = new();
 
 
-    private void GetRoutes()
+    public void GetRoutes()
     {
         foreach (Assembly assembly in AppDomain.CurrentDomain.GetAssemblies())
         {
@@ -35,8 +37,6 @@ public class RouteFactory
             }
         }
     }
-
-    public record RouteData(Type Component, string Route, PageData PageData);
 }
 
 public static class AttributeExtensions
