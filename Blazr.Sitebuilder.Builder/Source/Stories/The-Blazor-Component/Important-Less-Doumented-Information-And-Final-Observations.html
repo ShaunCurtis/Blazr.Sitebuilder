@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+    <html>
+    <head>
+        <meta charset="UTF-8">
+        <title></title>
+        <style>
+/* From extension vscode.github */
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+
+.vscode-dark img[src$=\#gh-light-mode-only],
+.vscode-light img[src$=\#gh-dark-mode-only] {
+	display: none;
+}
+
+</style>
+        
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/Microsoft/vscode/extensions/markdown-language-features/media/markdown.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/Microsoft/vscode/extensions/markdown-language-features/media/highlight.css">
+<style>
+            body {
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe WPC', 'Segoe UI', system-ui, 'Ubuntu', 'Droid Sans', sans-serif;
+                font-size: 14px;
+                line-height: 1.6;
+            }
+        </style>
+        <style>
+.task-list-item {
+    list-style-type: none;
+}
+
+.task-list-item-checkbox {
+    margin-left: -20px;
+    vertical-align: middle;
+    pointer-events: none;
+}
+</style>
+        
+    </head>
+    <body class="vscode-body vscode-light">
+        <p><a href="index.html">Back to the Index</a></p>
+<ol>
+<li>
+<p>There's a tendency to pile too much code into <code>OnInitialized</code> and <code>OnInitializedAsync</code> and then use events to drive <code>StateHasChanged</code> updates in the component tree.  Get the relevant code into the right places in the lifecycle and you won't need the events.</p>
+</li>
+<li>
+<p>There's a temptation to start with the non-async versions (because they're easier to implement) and only use the async versions when you have to, when the opposite should be true.  Most web based activities are inherently async in nature.  I never use the non-async versions - I work on the principle that at some point I'm going to need to add async behaviour.</p>
+</li>
+<li>
+<p><code>StateHasChanged</code> is called far to often, normally because code is in the wrong place in the component lifecycle, or the events have been coded incorrectly.  Ask yourself a challenging &quot;Why?&quot; when you type <code>StateHasChanged</code>.</p>
+</li>
+<li>
+<p>Components are underused in the UI.  The same code/markup blocks are used repeatedly.  The same rules apply to code/markup blocks as to C# code.</p>
+</li>
+<li>
+<p>Once you really, REALLY understand components, you stop fighting thw UI to achieve what you want.  You code will be cleaner and work as designed.</p>
+</li>
+</ol>
+
+        
+        
+    </body>
+    </html>

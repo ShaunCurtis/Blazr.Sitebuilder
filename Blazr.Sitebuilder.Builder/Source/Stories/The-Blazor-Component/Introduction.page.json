@@ -1,0 +1,9 @@
+{
+  "Name": "Introduction",
+  "Title": "Introduction",
+  "Description": "An Introduction to the Blazor Component",
+  "PublishDate": "17-11-2022",
+  "LastUpdated": "17-11-2022",
+  "Layout":  "article.html",
+  "Author": "Shaun Curtis"
+}

@@ -1,0 +1,71 @@
+﻿@using Blazr.SiteBuilder
+@using System.Diagnostics
+
+@implements IContentComponent
+@inject RouteFactory _rootFactory
+@inject StoryFactory _storyFactory
+
+
+<LayoutView Layout="@typeof(ArticleLayout)" />
+
+<SectionContent SectionName="page-header-data">
+
+    @this.SeoHeader
+    @this.OgHeader
+
+</SectionContent>
+
+<SectionContent SectionName="side-bar">
+
+    <ul class="list-group">
+
+        @foreach (var category in _rootFactory.Categories)
+        {
+            <li class="list-group-item d-flex justify-content-between align-items-start">
+                <a href="@($"/{category.Key}/")">@(category.Key)</a>
+                <span class="badge bg-primary text-white text-end rounded-pill">@(category.Value)</span>
+            </li>
+        }
+
+    </ul>
+
+</SectionContent>
+
+<SectionContent SectionName="main-content">
+
+    <div class="list-group">
+
+    @foreach(var route in _storyFactory.Stories)
+    {
+        <a href="@($"{route.Route}.html")" class="list-group-item list-group-item-action">@route.PageData.Title</a>
+    }
+
+    </div>
+
+</SectionContent>
+
+@code {
+    public abstract PageData PageData { get; }
+
+    protected MarkupString SeoHeader = new MarkupString("<title>Title Goes Here!</title>");
+    protected MarkupString OgHeader = new MarkupString(string.Empty);
+    protected MarkupString TOC = new MarkupString("Loading");
+
+    public async override Task SetParametersAsync(ParameterView parameters)
+    {
+        parameters.SetParameterProperties(this);
+
+        this.GetContent();
+
+        await base.SetParametersAsync(ParameterView.Empty);
+    }
+
+    protected void GetContent()
+    {
+         var seoHeader = BaseHtmlProvider.SeoHeaderHtml(this.PageData);
+         this.SeoHeader = new MarkupString(seoHeader ?? string.Empty);
+
+         var ogHeader = BaseHtmlProvider.OgHeaderHtml(this.PageData, SiteData.GetInstance());
+        this.OgHeader = new MarkupString(ogHeader ?? string.Empty);
+    }
+}

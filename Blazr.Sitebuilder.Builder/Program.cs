@@ -8,6 +8,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddSingleton<HtmlRenderer>();
 builder.Services.AddScoped<ContentRenderer>();
 builder.Services.AddSingleton<RouteFactory>();
+builder.Services.AddSingleton<StoryFactory>();
 builder.Services.AddSingleton<SiteBuilderFactory>();
 
 
@@ -33,6 +34,3 @@ app.UseDefaultFiles();
 app.UseStaticFiles();
 
 app.Run();
-
-// See https://aka.ms/new-console-template for more information
-//Console.WriteLine("Hello, World!");

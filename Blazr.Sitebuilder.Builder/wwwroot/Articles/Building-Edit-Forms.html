@@ -1,0 +1,684 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<base href="/">
+
+	
+
+	
+
+	
+	<link href="/assets/vendor/fontawesome-free/css/all.min.css" rel="stylesheet" type="text/css">
+	<link href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i" rel="stylesheet">
+
+	
+	<link href="/assets/css/sb-admin-2.css" rel="stylesheet" type="text/css">
+	<link href="/assets/css/site.css" rel="stylesheet" type="text/css">
+
+	
+	<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/Microsoft/vscode/extensions/markdown-language-features/media/highlight.css">
+	<link rel="stylesheet" href="/assets/css/article.css" type="text/css">
+
+	
+	<link rel="icon" href="/assets/images/favicon.png">
+
+	<title>Managing Form Edit State in Blazor</title>
+<meta name="author" content="Shaun Curtis" >
+<meta name="description" content="Shaun Curtis" >
+
+    <meta name="og:site_name" content="Cold Elm Coders" >
+<meta name="og:site" content="https://shauncurtis.github.io/" >
+<meta name="og:title" content="Managing Form Edit State in Blazor" >
+<meta name="og:description" content="How to build Blazor Edit Forms that manage state." >
+</head>
+<body><header class="navbar bg-dark p-2 text-large text-light"><section class="navbar-section  text-light"><a href="/" class="navbar-brand mr-2 text-large text-light p-2">Cold Elm Coders</a>
+			<a href="/Posts" class="btn btn-link text-light">Posts</a>
+			<a href="/Rants" class="btn btn-link text-light">Rants</a>
+			<a href="/Articles" class="btn btn-link text-light">Articles</a>
+			<a href="/Stories" class="btn btn-link text-light">Stories</a>
+			<a href="/Tags" class="btn btn-link text-light">Tags</a></section></header>
+
+	<div class="container-fluid"><div class="row"><div class="col-12 col-sm-3 col-lg-2 bg-light pt-2"><div class="article-info p-2" Published: 08/02/2021 >
+<div>Published: 08/02/2021</div>
+<div>Last Updated: 08/02/2021</div>
+<div>Author: Shaun Curtis</div>
+</div>
+
+    <h4 class="p-2">Table of Contents</h4>
+<ul class="TOC" >
+<li class="TOC-item TOC-item-0" >
+<a class="TOC-link" href="#">Top</a>
+<ul class="TOC TOC-0" >
+<li class="TOC-item TOC-item-1" >
+<ul class="TOC TOC-1" >
+<li class="TOC-item TOC-item-2" >
+<a class="TOC-link" href="#tldr">TL;DR</a>
+</li>
+<li class="TOC-item TOC-item-2" >
+<a class="TOC-link" href="#discussion">Discussion</a>
+</li>
+<li class="TOC-item TOC-item-2" >
+<a class="TOC-link" href="#code-repository-and-demo-site">Code Repository and Demo Site</a>
+</li>
+<li class="TOC-item TOC-item-2" >
+<a class="TOC-link" href="#form-exits">Form Exits</a>
+</li>
+<li class="TOC-item TOC-item-2" >
+<a class="TOC-link" href="#blazor-and-navigation">Blazor and Navigation</a>
+</li>
+<li class="TOC-item TOC-item-2" >
+<a class="TOC-link" href="#the-options">The Options</a>
+</li>
+<li class="TOC-item TOC-item-2" >
+<a class="TOC-link" href="#form-edit-state">Form Edit State</a>
+</li>
+<li class="TOC-item TOC-item-2" >
+<a class="TOC-link" href="#the-navigation-lock-code">The Navigation Lock Code</a>
+</li>
+<li class="TOC-item TOC-item-2" >
+<a class="TOC-link" href="#the-infratructure-code">The Infratructure Code</a>
+</li>
+<li class="TOC-item TOC-item-2" >
+<a class="TOC-link" href="#mainlayout.razor">MainLayout.razor</a>
+</li>
+<li class="TOC-item TOC-item-2" >
+<a class="TOC-link" href="#using-blazrrouter">Using BlazrRouter</a>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+			
+			<div class="col-12 col-sm-9 col-lg-10 p-2"><div class="pt-2 pb-2 border-bottom" >
+<h1>Managing Form Edit State in Blazor</h1>
+<div>How to build Blazor Edit Forms that manage state.</div>
+</div>
+
+    <h2 id="tldr">TL;DR</h2>
+<p>This article is the culmination of 18 months effort to find a simple straighforward solution to the Dirty Form problem in Blazor.  There have been many dead end roads and half baked solutions along the way.</p>
+<p>To cut to the chase, there is no silver bullet single solution.  This article shows how to combine a custom Navigation Manager with a rebuilt Blazor Router to handle in application navigation, and the browser <code>window.beforeunload</code> to handle external application navigation.</p>
+<h2 id="discussion">Discussion</h2>
+<p>The context of this article: there have been many discussions, articles and proposals since Blazor was first released on how to handle edit forms. Specifically how to stop, or at least warn, the user when leaving a dirty form. The problem is not specific to Blazor: all Single Page Applications and Web Sites face the same challenges.</p>
+<p>In a classic web form, every navigation is a <code>get</code> or a <code>post</code> back to the server. We can use the Browser <code>window.beforeunload</code> event to warn a user that they have unsaved data on the page. Not great, but at least something - we'll be using it later. This technique falls flat in SPAs. What looks like a navigation event isn't. The NavigationManager intercepts any navigation attempt from the page, triggers its own LocationChanged event and sinks the request. The Router, wired into this event, does its wizardry, and loads the new component set into the page. No real browser navigation takes place, so there's nothing for the browser's beforeunload event to catch.</p>
+<p>It's up to the programmer to write code that stops a user moving away from a dirty form. That's easier said than done when your application depends on the URL navigation pretext. Toolbars, navigation side bars and many buttons submit URLs to navigate around the application. Think of the out-of-the-box Blazor template. There's all the links in the left navigation, about in the top bar.</p>
+<p>Personally, I have a serious issue with the whole routing charade: an SPA is an application, not a website, but I appear to be a minority of one! This article is for the majority.</p>
+<p>All Blazor edit state solutions I've come across were cludges in one way or another, I've created more that one myself. What the community hoped for were changes in NetCore 5, specifically some extra functionality in NavigationManager to cancel or block navigation requests. That didn't happen: I don't think there was team concensus on the right solution, so we're back to square one.</p>
+<p>What I cover in this article is my latest approach to the problem. It's not perfect, but I don't think we will ever get a near perfect solution until we get some new browser standards allowing a switch to SPA mode and control over toolbar navigation.</p>
+<p>Our goal is to prevent navigation where possible i.e. lock the page, and where that fails hit the user with an exit option message.  No side doors!</p>
+<p><img src="https://shauncurtis.github.io/articles/assets/Edit-Forms/Dirty-App-Exit.png" alt="Dirty Editor" /></p>
+<h2 id="code-repository-and-demo-site">Code Repository and Demo Site</h2>
+<p>The repository for the article is <a href="https://github.com/ShaunCurtis/Blazr.Demo.EditForm">here</a>.</p>
+<p>You can see the code in this article in action on my Blazr Database demo site is here - <a href="https://blazr-demo.azurewebsites.net/">Blazr.Demo Azure Site</a></p>
+<h2 id="form-exits">Form Exits</h2>
+<p>There are three (controlled) ways a user can exit a form:</p>
+<ol>
+<li><strong>Intra Form Navigation</strong> - Click on an Exit or other button in the form.</li>
+<li><strong>Intra Application Navigation</strong> - Click on a link in a navigation bar outside the form, click on the forward or back buttons on the browser.</li>
+<li><strong>Extra Application Navigation</strong> - entering a new Url in the address bar, clicking on a favourite, closing the browser Tab or application.</li>
+</ol>
+<p>We have no control over killing the browser - a reboot or system crash - so don't consider those here.</p>
+<h2 id="blazor-and-navigation">Blazor and Navigation</h2>
+<p>Blazor's Client side Javascript code registers event handlers for the various navigation events within the page and from the back/forward buttons.</p>
+<p>In Blazor Web Assembly, these events surface in DotNetCore code in JsInterop code:</p>
+<pre><code class="language-csharp">[JSInvokable(nameof(NotifyLocationChanged))]
+public static void NotifyLocationChanged(string uri, bool isInterceptedLink)
+{
+    WebAssemblyNavigationManager.Instance.SetLocation(uri, isInterceptedLink);
+}
+</code></pre>
+<p>In Server the events get passed through the SignalR connection and surface:</p>
+<pre><code class="language-csharp">public async ValueTask OnLocationChanged(string uri, bool intercepted)
+{
+    var circuitHost = await GetActiveCircuitAsync();
+    if (circuitHost == null)
+        return;
+
+    _ = circuitHost.OnLocationChangedAsync(uri, intercepted);
+}
+</code></pre>
+<p>This calls the <code>CircuitHost</code> method:</p>
+<pre><code class="language-csharp">public async Task OnLocationChangedAsync(string uri, bool intercepted)
+{
+    await Renderer.Dispatcher.InvokeAsync(() =&gt;
+    {
+        var navigationManager = (RemoteNavigationManager)Services.GetRequiredService&lt;NavigationManager&gt;();
+        navigationManager.NotifyLocationChanged(uri, intercepted);
+    });
+ }
+//lots of code missing to only show the relevant lines
+</code></pre>
+<h2 id="the-options">The Options</h2>
+<h3 id="the-javascript-option">The Javascript Option</h3>
+<p>One possible approach to intercept and cancel the events that drive the Blazor code.</p>
+<p>The code block below shows one possibility.</p>
+<pre><code class="language-js">let blazr_PreventNavigation = false;  // main control bool to stop/allow navigation
+let idCounter = 0;
+let lastHistoryItemId = 0; //needed to detect back/forward, in popstate event handler
+
+window.blazr_setPageLock = function (lock) {
+    blazr_PreventNavigation = lock;
+}
+
+window.history.pushState = (function (basePushState) {
+    return function (...args) {
+        if (blazr_PreventNavigation) {
+            return;
+        }
+        basePushState.apply(this, args);
+    }
+})(window.history.pushState);
+
+window.addEventListener('beforeunload', e =&gt; {
+    if (blazr_PreventNavigation) {
+        e.returnValue = 'There are unsaved changes'
+    }
+});
+
+window.addEventListener('load', () =&gt; {
+    let resetUrlRun = false;
+    function popStateListener(e) {
+        if (blazr_PreventNavigation) {
+            let lockNavigation = false;
+
+            //popstate can be triggered twice, but we want to show confirm dialog only once
+            lockNavigation = blazr_PreventNavigation &amp;&amp; !resetUrlRun;
+
+            if (lockNavigation) {
+                //this will nearly always cancel Blazor navigation, but the url is already changed
+                e.stopImmediatePropagation();
+                e.preventDefault();
+                e.returnValue = false;
+            }
+
+            if (resetUrlRun) {
+                //Resets resetUrlRun on second run
+                resetUrlRun = false;
+            }
+
+            // Only runs on the first pass through    
+            if (lockNavigation) {
+                //detect back vs forward 
+                const currentId = e.state &amp;&amp; e.state.__incrementalId;
+                const navigatingForward = currentId &gt; lastHistoryItemId;
+
+                //revert url
+                if (navigatingForward) {
+                    history.back();
+                }
+                else {
+                    history.forward();
+                }
+                resetUrlRun = true;
+            }
+        }
+    }
+
+    window.addEventListener('popstate', popStateListener, { capture: true });
+
+    window.history.pushState = (function (basePushState) {
+        return function (...args) {
+            if (blazr_PreventNavigation) {
+                return;
+            }
+            if (!args[0]) {
+                args[0] = {};
+            }
+            lastHistoryItemId = history.state &amp;&amp; history.state.__incrementalId;
+            args[0].__incrementalId = ++idCounter; //track order of history items            
+            basePushState.apply(this, args);
+        }
+    })(window.history.pushState);
+});
+</code></pre>
+<p>This code works most of the time in Blazor Server, but not in Web Assembly mode.  Unfortunately, unless someone knows how to make it 100%, I've discounted it for now.  The code is available in Repo for you to test and work with.</p>
+<h3 id="the-navigation-manager-option">The Navigation Manager Option</h3>
+<p>In Blazor Web Assembly, <code>NotifyLocationChanged</code> uses the static <code>WebAssemblyNavigationManager.Instance</code> to get the currently registered singleton instance and calls the <code>SetLocation</code> method on that instance.  Specifically, it doesn't access the instance through the DI container.  This is Web Assembly, so Scoped and Singleton are the same thing, it uses the &quot;Singleton&quot; pattern to access the only instance of <code>WebAssemblyNavigationManager</code> running in the browser container.</p>
+<p>We can exploit this in the WASM solution by &quot;unregistering&quot; <code>WebAssemblyNavigationManager</code> as the registered <code>NavigationManager</code> in the WASM DI container, and registering our own <code>BlazrNavigationManager</code> instead.  We re-register <code>WebAssemblyNavigationManager</code> as itself.</p>
+<p>Now all DI container services that use <code>NavigationManager</code>, register for <code>LocationChanged</code> on our <code>BlazrNavigationManager</code>.  The JSInterop events still surface though <code>WebAssemblyNavigationManager</code>, but now only <code>BlazrNavigationManager</code> is registered for the <code>LocationChanged</code> event on the <code>WebAssemblyNavigationManager</code> instance.  We now have control over whether or not we pass the event on.  Specifically, we now control <code>Router</code>.</p>
+<p>Unfortunately, Blazor server does things differently. <code>OnLocationChangedAsync</code> gets the registered service and expects it to be <code>RemoteNavigationManager</code> which is a sealed internal class.  No exploitable options here.  We have no way to get <code>Router</code> to register with our NavigationManager!</p>
+<h3 id="the-router-option">The Router Option</h3>
+<p>The third, and only bulletproof method, is a router that uses <code>BlazrNavigationManager</code>.  The code within the <em>Routing</em> directory and namespace does that.</p>
+<p><code>BlazrRouter</code> is a very lightly modified standard Router implementation.  The modifications are:</p>
+<ol>
+<li>Inject <code>BlazrNavigationManager</code> instead of <code>NavigationManager</code>.  The router then registers with the <code>BlazrNavigationManager</code> <code>LocationChanged</code> event and thus only receives location changed events it passes through.</li>
+<li>HotReload is disabled as the <code>HotReloadManager</code> is an internal class that can'r be access from outside it's parent assembly.</li>
+</ol>
+<p>You can review the code in the Repo.</p>
+<h2 id="form-edit-state">Form Edit State</h2>
+<p>The first step to controlling form exits is to manage the state of the form - is the data in the form different from the record?  There's nothing in out-of-the-box Blazor to do this: there's a very simplistic attempt in <code>EditContext</code>, but it's not fit-for-purpose.   We need an edit state manager.</p>
+<p><code>EditStateContext</code> implements the functionality to track the state of the current edit form.</p>
+<h3 id="editstatecontext">EditStateContext</h3>
+<p><code>EditStateContext</code> loads content from the <code>EditContext</code> Model into a <code>EditFieldCollection</code> of <code>EditField</code> objects.  This collection is populated when the form loads.  Individual edits are passed in by calling <code>NotifyFieldChanged</code>, and the <code>EditedValue</code> property of the correct <code>EditField</code> is updated.  <code>EditFieldCollection</code> exposes a <code>IsDirty</code> property which is true if any <code>EditField</code> is dirty i.e. <code>Value</code> does not equal <code>EditedValue</code>.</p>
+<p><code>EditStateContext</code> registers with <code>EditContext</code> for FieldChanges and calls <code>NotifyFieldChanged</code> whenever a field is updated.</p>
+<pre><code class="language-csharp">public class EditStateContext : IDisposable
+{
+    public bool IsDirty =&gt; EditFields.IsDirty;
+
+    public event EventHandler&lt;EditStateEventArgs&gt;? EditStateChanged;
+
+    private EditFieldCollection EditFields = new EditFieldCollection();
+
+    protected EditContext? EditContext { get; private set; }
+
+    public EditStateContext(EditContext editContext)
+        =&gt; this.Load(editContext);
+
+    public void Load(EditContext editContext)
+    {
+        this.EditContext = editContext;
+        this.LoadEditState();
+        this.EditContext.OnFieldChanged += this.FieldChanged;
+    }
+
+    private void LoadEditState()
+        =&gt; this.GetEditFields();
+
+    private void GetEditFields()
+    {
+        var model = this.EditContext!.Model;
+        this.EditFields.Clear();
+        if (model is not null)
+        {
+            var props = model.GetType().GetProperties();
+            foreach (var prop in props)
+            {
+                if (prop.CanWrite)
+                {
+                    var value = prop.GetValue(model);
+                    EditFields.AddField(model, prop.Name, value);
+                }
+            }
+        }
+    }
+    private void FieldChanged(object? sender, FieldChangedEventArgs e)
+        =&gt; this.NotifyFieldChanged(e);
+
+    public void NotifyFieldChanged(FieldChangedEventArgs e)
+    {
+        var wasDirty = EditFields.IsDirty;
+
+        // Get the PropertyInfo object for the model property
+        // Uses reflection to get property and value
+        var prop = e.FieldIdentifier.Model.GetType().GetProperty(e.FieldIdentifier.FieldName);
+        if (prop != null)
+        {
+            // Get the value for the property
+            var value = prop.GetValue(e.FieldIdentifier.Model);
+
+            // Sets the edit value in the EditField
+            EditFields.SetField(e.FieldIdentifier.FieldName, value);
+
+            // Invokes EditStateChanged if changed
+            var isStateChange = (EditFields.IsDirty) != wasDirty;
+            if (isStateChange)
+                this.NotifyEditStateChanged();
+        }
+    }
+
+    public void NotifySaved()
+    {
+        var currentState = this.EditFields.IsDirty;
+        this.LoadEditState();
+        if (currentState)
+            NotifyEditStateChanged();
+    }
+
+    private void NotifyEditStateChanged()
+        =&gt; EditStateChanged?.Invoke(this, EditStateEventArgs.NewArgs(EditFields?.IsDirty ?? false));
+
+    public void Dispose()
+    {
+        if (this.EditContext is not null)
+            this.EditContext.OnFieldChanged += this.FieldChanged;
+    }
+}
+</code></pre>
+<h4 id="editstateeventargs">EditStateEventArgs</h4>
+<pre><code class="language-csharp">using System;
+
+namespace Blazr.EditForms
+{
+    public class EditStateEventArgs : EventArgs
+    {
+        public bool IsDirty { get; set; }
+
+        public static EditStateEventArgs NewArgs(bool dirtyState)
+            =&gt; new EditStateEventArgs { IsDirty = dirtyState };
+    }
+}
+</code></pre>
+<h4 id="editfield">EditField</h4>
+<p><code>EditField</code> looks like this.  All but <code>EditedValue</code> are <code>init</code> record type properties.</p>
+<pre><code class="language-csharp">    public class EditField
+    {
+        public string FieldName { get; init; }
+        public Guid GUID { get; init; }
+        public object Value { get; init; }
+        public object EditedValue { get; set; }
+        public object Model { get; init; }
+
+        public bool IsDirty
+        {
+            get
+            {
+                if (Value != null &amp;&amp; EditedValue != null) return !Value.Equals(EditedValue);
+                if (Value is null &amp;&amp; EditedValue is null) return false;
+                return true;
+            }
+        }
+
+        public EditField(object model, string fieldName, object value)
+        {
+            this.Model = model;
+            this.FieldName = fieldName;
+            this.Value = value;
+            this.EditedValue = value;
+            this.GUID = Guid.NewGuid();
+        }
+
+        public void Reset()
+            =&gt; this.EditedValue = this.Value;
+    }
+</code></pre>
+<h4 id="editfieldcollection">EditFieldCollection</h4>
+<p><code>EditFieldCollection</code> implements <code>IEnumerable</code>.  It provides:</p>
+<ol>
+<li>An <code>IsDirty</code> property which checks the state of all the <code>EditFields</code> in the collection.</li>
+<li>A set of getters and setters for adding and setting the edit state.</li>
+</ol>
+<pre><code class="language-csharp">    public class EditFieldCollection : IEnumerable
+    {
+        private List&lt;EditField&gt; _items = new List&lt;EditField&gt;();
+        public int Count =&gt; _items.Count;
+        public Action&lt;bool&gt; FieldValueChanged;
+        public bool IsDirty =&gt; _items.Any(item =&gt; item.IsDirty);
+
+        public void Clear()
+            =&gt; _items.Clear();
+
+        public void ResetValues()
+            =&gt; _items.ForEach(item =&gt; item.Reset());
+..... lots of getters and setters and IEnumerator implementation code
+</code></pre>
+<h2 id="the-navigation-lock-code">The Navigation Lock Code</h2>
+<h3 id="the-navigationlock-component">The NavigationLock Component</h3>
+<p>Page locking is implemented in the UI through  the <code>NavigationLock</code> component.  It looks like this:</p>
+<pre><code class="language-csharp">public class NavigationLock : ComponentBase, IDisposable
+{
+    [Inject] private IJSRuntime? _js { get; set; }
+
+    [Inject] private BlazrNavigationManager? blazrNavigationManager { get; set; }    
+    
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    private bool locked;
+
+    protected override void OnInitialized()
+        =&gt; blazrNavigationManager!.BeforeLocationChange += OnBeforeLocationChange;
+
+    protected override Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+            SetPageLock();
+        return Task.CompletedTask;
+    }
+
+    public void SetLock(bool locked)
+    {
+        this.locked = locked;
+        this.SetPageLock();
+    }
+
+    private void OnBeforeLocationChange(object? sender, NavigationData e)
+        =&gt; e.IsCanceled = this.locked;
+
+    private void SetPageLock()
+        =&gt; _js!.InvokeAsync&lt;bool&gt;(&quot;blazr_setPageLock&quot;, locked);
+
+    protected override void BuildRenderTree(RenderTreeBuilder builder)
+    {
+        builder.OpenComponent&lt;CascadingValue&lt;NavigationLock&gt;&gt;(0);
+        builder.AddAttribute(1, &quot;Value&quot;, this);
+        builder.AddAttribute(2, &quot;ChildContent&quot;, this.ChildContent);
+        builder.CloseComponent();
+    }
+
+    public void Dispose()
+        =&gt; blazrNavigationManager!.BeforeLocationChange -= OnBeforeLocationChange;
+}
+</code></pre>
+<p>It's default first load condition is unlocked.  It has a single public method <code>SetLock</code>.  This sets an internal state global variable and calls the Javascript <code>blazr_setPageLock</code> passing true/false to set or unset page locking.</p>
+<p>It injects the new <code>BlazrNavigationManager</code> and registers for the <code>OnBeforeLocationChange</code> event.  It sets <code>IsCancelled</code> on the <code>NavigationData</code> object it is passed to the lock state.  We'll see <code>BlazrNavigationManager</code> in a minute.</p>
+<p>The Component UI wraps the child content in a cascade of the component.</p>
+<h3 id="site.js">site.js</h3>
+<p>The client side guts of the solution.  In essence we add listeners into the various browser navigation events and either allow or prevent event propogation.  The code is shown in full below.</p>
+<pre><code class="language-js">let blazr_PreventNavigation = false;  // main control bool to stop/allow navigation
+
+window.blazr_setPageLock = function (lock) {
+    blazr_PreventNavigation = lock;
+}
+
+window.addEventListener('beforeunload', e =&gt; {
+    if (blazr_PreventNavigation) {
+        e.returnValue = 'There are unsaved changes in your form!'
+    }
+});
+</code></pre>
+<h3 id="blazrnavigationmanager">BlazrNavigationManager</h3>
+<p><code>BlazrNavigationManager</code> replaces the normal Navigation Manager.</p>
+<p>It injects the standard Navigation Manager through Dependancy Injection as it's UnderlyingNavigationManager.  It registers on the <code>OnUnderlyingNavigationManager.LocationChanged</code> event.  The event handler invokes all registered delegates on it's <code>BeforeLocationChange</code> event.  If <code>NavigationData.IsCanceled</code> is true it sinks the event.  If not, it invokes it's own base class <code>LocationChanged</code> event though <code>NotifyLocationChanged</code>.</p>
+<p>If navigation is cancelled, it instigates a second Navigation event on the standard Navigation Manager to reset the Uri.</p>
+<pre><code class="language-csharp">public class BlazrNavigationManager : NavigationManager
+{
+    private NavigationManager _UnderlyingNavigationManager;
+    private bool _isBlindNavigation = false;
+
+    public event EventHandler&lt;NavigationData&gt;? BeforeLocationChange;
+
+    public BlazrNavigationManager(NavigationManager? underlyingNavigationManager)
+    {
+        _UnderlyingNavigationManager = underlyingNavigationManager!;
+        base.Initialize(underlyingNavigationManager!.BaseUri, underlyingNavigationManager.Uri);
+        _UnderlyingNavigationManager.LocationChanged += OnUnderlyingNavigationManagerLocationChanged;
+    }
+
+    protected override void EnsureInitialized()
+    {
+        base.Initialize(_UnderlyingNavigationManager.BaseUri, _UnderlyingNavigationManager.Uri);
+    }
+
+    protected override void NavigateToCore(string uri, bool forceLoad)
+    {
+        // Call the underlying navigation manager.
+        _UnderlyingNavigationManager.NavigateTo(uri, forceLoad);
+    }
+
+    private NavigationData NotifyBeforeLocationChange(LocationChangedEventArgs e)
+    {
+        var navigation = new NavigationData()
+        {
+            CurrentLocation = this.Uri,
+            NewLocation = e.Location,
+            IsNavigationIntercepted = e.IsNavigationIntercepted,
+            IsCanceled = false
+        };
+        BeforeLocationChange?.Invoke(this, navigation);
+        return navigation;
+    }
+
+    private void OnUnderlyingNavigationManagerLocationChanged(object? sender, LocationChangedEventArgs e)
+    {
+        var navigation = NotifyBeforeLocationChange(e);
+        // Check our blind navigation flag.  If we are blind navigating
+        // we just set the flag back to false and exit
+        if (_isBlindNavigation)
+        {
+            _isBlindNavigation = false;
+            return;
+        }
+
+        // Navigation is cancelled
+        // we set the flag so we don't create a loop with the dummy run
+        if (navigation.IsCanceled)
+        {
+            // prevents a NavigateTo loop
+            _isBlindNavigation = true;
+            // Puts the link back - else it will change, but the page will not navigate.
+            _UnderlyingNavigationManager.NavigateTo(this.Uri, false);
+            return;
+        }
+
+        // Normal Navigation path
+        // NOTE: We set the Uri before calling notify location changed, as it will use this uri property in its args.
+        this.Uri = e.Location;
+        // Trigger the Location Changed event for all listeners including the Router
+        this.NotifyLocationChanged(e.IsNavigationIntercepted);
+        // Belt and braces to ensure false 
+        _isBlindNavigation = false;
+    }
+}
+</code></pre>
+<h3 id="weatherforecasteditorform">WeatherForecastEditorForm</h3>
+<p>Our base editor form looks like this.  It's all UI controls which you can investigate in the Repo code.</p>
+<pre><code class="language-html">&lt;UILoader State=&quot;this.LoadState&quot;&gt;
+    &lt;FormViewTitle&gt;
+        &lt;h2&gt;Weather Forecast Editor&lt;/h2&gt;
+    &lt;/FormViewTitle&gt;
+    &lt;EditForm EditContext=&quot;this.editContent&quot;&gt;
+        &lt;UIContainer Size=BootstrapSize.Fluid&gt;
+            &lt;UIFormRow&gt;
+                &lt;UIColumn Columns=12 MediumColumns=6&gt;
+                    &lt;FormEditControl Label=&quot;Date&quot; ShowLabel=&quot;true&quot; @bind-Value=&quot;this.viewService.EditModel.Date&quot; ControlType=&quot;typeof(InputDate&lt;DateTime&gt;)&quot; IsRequired=&quot;true&quot; ShowValidation=&quot;true&quot; HelperText=&quot;Enter the Forecast Date&quot;&gt;&lt;/FormEditControl&gt;
+                &lt;/UIColumn&gt;
+                &lt;UIColumn Columns=12 MediumColumns=6&gt;
+                    &lt;FormEditControl Label=&quot;Temperature &amp;deg;C&quot; ShowLabel=&quot;true&quot; @bind-Value=&quot;this.viewService.EditModel.TemperatureC&quot; ControlType=&quot;typeof(InputNumber&lt;int&gt;)&quot; IsRequired=&quot;true&quot; ShowValidation=&quot;true&quot; HelperText=&quot;Enter the Temperature&quot;&gt;&lt;/FormEditControl&gt;
+                &lt;/UIColumn&gt;
+            &lt;/UIFormRow&gt;
+            &lt;UIFormRow&gt;
+                &lt;UIColumn Columns=12&gt;
+                    &lt;FormEditControl Label=&quot;Summary&quot; ShowLabel=&quot;true&quot; @bind-Value=&quot;this.viewService.EditModel.Summary&quot; IsRequired=&quot;true&quot; ShowValidation=&quot;true&quot; HelperText=&quot;Summarise the Weather&quot;&gt;&lt;/FormEditControl&gt;
+                &lt;/UIColumn&gt;
+            &lt;/UIFormRow&gt;
+        &lt;/UIContainer&gt;
+        &lt;UIContainer Size=BootstrapSize.Fluid&gt;
+            &lt;UIFormRow&gt;
+                &lt;UIColumn Columns=12 class=&quot;text-end&quot;&gt;
+                    &lt;UIButton class=&quot;btn-success&quot; Disabled=&quot;!this.isDirty&quot; ClickEvent=&quot;this.SaveRecord&quot;&gt;Save&lt;/UIButton&gt;
+                    &lt;UIButton class=&quot;btn-dark&quot; Show=&quot;!this.isDirty&quot; ClickEvent=&quot;this.Exit&quot;&gt;Exit&lt;/UIButton&gt;
+                    &lt;UIButton class=&quot;btn-danger&quot; Show=&quot;this.isDirty&quot; ClickEvent=&quot;this.ExitWithoutSaving&quot;&gt;Exit Without Saving&lt;/UIButton&gt;
+                &lt;/UIColumn&gt;
+            &lt;/UIFormRow&gt;
+        &lt;/UIContainer&gt;
+    &lt;/EditForm&gt;
+&lt;/UILoader&gt;
+</code></pre>
+<p>And the code behind.</p>
+<p>Most of the code is in a <code>BaseEditForm</code>.</p>
+<p>The relevant section is in <code>OnInitializedAsync</code> where the <code>EditStateContext</code> is set up.  <code>OnEditStateChanged</code> importantly sets the lock on the Cascaded <code>NavigationLock</code>.</p>
+<pre><code class="language-csharp">public partial class WeatherForecastEditForm : BaseEditForm, IDisposable
+{
+    [Inject] private WeatherForecastViewService? ViewService { get; set; }
+
+    private WeatherForecastViewService viewService =&gt; this.ViewService!;
+
+    protected async override Task OnInitializedAsync()
+    {
+        base.LoadState = ComponentState.Loading;
+        await this.viewService.GetForecastAsync(Id);
+        base.editContent = new EditContext(this.viewService.EditModel);
+        base.editStateContext = new EditStateContext(base.editContent);
+        base.editStateContext.EditStateChanged += base.OnEditStateChanged;
+        base.LoadState = ComponentState.Loaded;
+    }
+
+    private async Task SaveRecord()
+    {
+        await this.viewService.UpdateRecordAsync();
+        base.editStateContext?.NotifySaved();
+    }
+
+    private async Task AddRecord()
+    =&gt; await this.viewService.AddRecordAsync(
+        new DcoWeatherForecast
+        {
+            Date = DateTime.Now,
+            Id = Guid.NewGuid(),
+            Summary = &quot;Balmy&quot;,
+            TemperatureC = 14
+        });
+
+    protected override void BaseExit()
+    =&gt; this.NavManager?.NavigateTo(&quot;/weatherforecast&quot;);
+
+    public void Dispose()
+    {
+        if (base.editStateContext is not null)
+            base.editStateContext.EditStateChanged -= base.OnEditStateChanged;
+    }
+}
+</code></pre>
+<h2 id="the-infratructure-code">The Infratructure Code</h2>
+<h2 id="mainlayout.razor">MainLayout.razor</h2>
+<p>The most common approach is to use the component in Layouts.  Here's the modified <code>MainLayout</code>.</p>
+<pre><code class="language-csharp">&lt;div class=&quot;page&quot;&gt;
+    &lt;div class=&quot;sidebar&quot;&gt;
+        &lt;NavMenu /&gt;
+    &lt;/div&gt;
+
+    &lt;main&gt;
+        &lt;div class=&quot;top-row px-4&quot;&gt;
+            &lt;a href=&quot;https://docs.microsoft.com/aspnet/&quot; target=&quot;_blank&quot;&gt;About&lt;/a&gt;
+        &lt;/div&gt;
+
+        &lt;article class=&quot;content px-4&quot;&gt;
+            &lt;NavigationLock&gt;
+                @Body
+            &lt;/NavigationLock&gt;
+        &lt;/article&gt;
+    &lt;/main&gt;
+&lt;/div&gt;
+</code></pre>
+<p>The <code>Body</code> content is wrapped in the component, and the component cascaded, so is available to all pages/components that use the layout.</p>
+<h3 id="layout.cshtmlindex.html">_Layout.cshtml/index.html</h3>
+<p>Add the js script as the last script to load in either Layout.cshtml or index.html.</p>
+<p>Server</p>
+<pre><code class="language-html">&lt;script src=&quot;_framework/blazor.server.js&quot;&gt;&lt;/script&gt;
+&lt;script src=&quot;_content/Blazr.NavigationLocker/site.js&quot;&gt;&lt;/script&gt;
+</code></pre>
+<p>WASM</p>
+<pre><code class="language-html">&lt;script src=&quot;_framework/blazor.webassembly.js&quot;&gt;&lt;/script&gt;
+&lt;script src=&quot;_content/Blazr.NavigationLocker/site.js&quot;&gt;&lt;/script&gt;
+</code></pre>
+<h3 id="services">Services</h3>
+<p>Add the required services.</p>
+<p>Server</p>
+<pre><code class="language-csharp">    services.AddBlazrNavigationLockerServerServices();
+</code></pre>
+<p>WASM</p>
+<pre><code class="language-csharp">    services.AddBlazrNavigationLockerWASMServices();
+</code></pre>
+<h2 id="using-blazrrouter">Using BlazrRouter</h2>
+<p>To use <code>BlazrRouter</code> simply replace the standard router in <code>App.razor</code>.</p>
+<pre><code class="language-xml">&lt;BlazrRouter AppAssembly=&quot;@typeof(App).Assembly&quot;&gt;
+    &lt;Found Context=&quot;routeData&quot;&gt;
+        &lt;RouteView RouteData=&quot;@routeData&quot; DefaultLayout=&quot;@typeof(MainLayout)&quot; /&gt;
+        &lt;FocusOnNavigate RouteData=&quot;@routeData&quot; Selector=&quot;h1&quot; /&gt;
+    &lt;/Found&gt;
+    &lt;NotFound&gt;
+        &lt;PageTitle&gt;Not found&lt;/PageTitle&gt;
+        &lt;LayoutView Layout=&quot;@typeof(MainLayout)&quot;&gt;
+            &lt;p role=&quot;alert&quot;&gt;Sorry, there's nothing at this address.&lt;/p&gt;
+        &lt;/LayoutView&gt;
+    &lt;/NotFound&gt;
+&lt;/BlazrRouter&gt;
+</code></pre>
+<p>You will need to register the services as above.</p>
+</div></div></div></body></html>
+
+
+
+
+

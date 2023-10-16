@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<base href="/">
+
+	
+
+	
+
+	
+	<link href="/assets/vendor/fontawesome-free/css/all.min.css" rel="stylesheet" type="text/css">
+	<link href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i" rel="stylesheet">
+
+	
+	<link href="/assets/css/sb-admin-2.css" rel="stylesheet" type="text/css">
+	<link href="/assets/css/site.css" rel="stylesheet" type="text/css">
+
+	
+	<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/Microsoft/vscode/extensions/markdown-language-features/media/highlight.css">
+	<link rel="stylesheet" href="/assets/css/article.css" type="text/css">
+
+	
+	<link rel="icon" href="/assets/images/favicon.png">
+
+	<title>Blazor Form Validation</title>
+<meta name="author" content="Shaun Curtis" >
+<meta name="description" content="Shaun Curtis" >
+
+    <meta name="og:site_name" content="Cold Elm Coders" >
+<meta name="og:site" content="https://shauncurtis.github.io/" >
+<meta name="og:title" content="Blazor Form Validation" >
+<meta name="og:description" content="A Blazor validation control to manage and monitor validation state in a form." >
+</head>
+<body><header class="navbar bg-dark p-2 text-large text-light"><section class="navbar-section  text-light"><a href="/" class="navbar-brand mr-2 text-large text-light p-2">Cold Elm Coders</a>
+			<a href="/Posts" class="btn btn-link text-light">Posts</a>
+			<a href="/Rants" class="btn btn-link text-light">Rants</a>
+			<a href="/Articles" class="btn btn-link text-light">Articles</a>
+			<a href="/Stories" class="btn btn-link text-light">Stories</a>
+			<a href="/Tags" class="btn btn-link text-light">Tags</a></section></header>
+
+	<div class="container-fluid"><div class="row"><div class="col-12 col-sm-3 col-lg-2 bg-light pt-2"><div class="article-info p-2" Published: 11/03/2021 >
+<div>Published: 11/03/2021</div>
+<div>Last Updated: 16/03/2020</div>
+<div>Author: Shaun Curtis</div>
+</div>
+
+    <h4 class="p-2">Table of Contents</h4>
+<ul class="TOC" >
+<li class="TOC-item TOC-item-0" >
+<a class="TOC-link" href="#">Top</a>
+<ul class="TOC TOC-0" >
+<li class="TOC-item TOC-item-1" >
+<ul class="TOC TOC-1" >
+<li class="TOC-item TOC-item-2" >
+<a class="TOC-link" href="#overview">Overview</a>
+</li>
+<li class="TOC-item TOC-item-2" >
+<a class="TOC-link" href="#code-and-examples">Code and Examples</a>
+</li>
+<li class="TOC-item TOC-item-2" >
+<a class="TOC-link" href="#related-articles">Related Articles</a>
+</li>
+<li class="TOC-item TOC-item-2" >
+<a class="TOC-link" href="#the-blazor-edit-setting">The Blazor Edit Setting</a>
+</li>
+<li class="TOC-item TOC-item-2" >
+<a class="TOC-link" href="#validator">Validator</a>
+</li>
+<li class="TOC-item TOC-item-2" >
+<a class="TOC-link" href="#validationformstate-control">ValidationFormState Control</a>
+</li>
+<li class="TOC-item TOC-item-2" >
+<a class="TOC-link" href="#a-simple-implementation">A Simple Implementation</a>
+</li>
+<li class="TOC-item TOC-item-2" >
+<a class="TOC-link" href="#wrap-up">Wrap Up</a>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+			
+			<div class="col-12 col-sm-9 col-lg-10 p-2"><div class="pt-2 pb-2 border-bottom" >
+<h1>Blazor Form Validation</h1>
+<div>A Blazor validation control to manage and monitor validation state in a form.</div>
+</div>
+
+    <h2 id="overview">Overview</h2>
+<p>This is the second in a series of articles describing a set of useful Blazor Edit controls that solve some of the current shortcomings in the out-of-the-box edit experience without the need to buy expensive toolkits.</p>
+<p>This article covers how form validation works and shows how to build a relatively simple but fully featured validation system from scratch. Once the basic structure and classes are defined, it's easy to write additional validation chain methods for any new validation requirement or validator for a custom class.</p>
+<p><img src="https://shauncurtis.github.io/articles/assets/Editor-Controls/ValidationFormState.png" alt="EditForm" /></p>
+<h2 id="code-and-examples">Code and Examples</h2>
+<p>The repository contains a project that implements the controls for all the articles in this series.  You can find it <a href="https://github.com/ShaunCurtis/Blazor.Database">here</a>.</p>
+<p>The example site is here <a href="https://cec-blazor-database.azurewebsites.net/">https://cec-blazor-database.azurewebsites.net/</a>.</p>
+<p>The example form described at this end of this article can be seen at <a href="https://cec-blazor-database.azurewebsites.net//validationeditor">https://cec-blazor-database.azurewebsites.net//validationeditor</a>.</p>
+<blockquote>
+<p>The Repo is a Work In Progress for future articles so will change and develop.</p>
+</blockquote>
+<h2 id="related-articles">Related Articles</h2>
+<p>The three articles are:</p>
+<ul>
+<li><a href="https://shauncurtis.github.io/articles/EditFormState.html">Managing Edit form State</a></li>
+<li><a href="https://shauncurtis.github.io/articles/ValidationFormState.html">Managing Validation State</a></li>
+<li><a href="https://shauncurtis.github.io/articles/Inline-Dialog.html">The Inline Dialog Control</a></li>
+</ul>
+<p>There's also an article on building a Modal Dialog Editor <a href="https://shauncurtis.github.io/articles/Modal-Editor.html">here</a>.</p>
+<h2 id="the-blazor-edit-setting">The Blazor Edit Setting</h2>
+<p>To begin lets look at the out-of-the-box form controls and how validation works.  A classic form looks something like this:</p>
+<pre><code class="language-html">&lt;EditForm Model=&quot;@exampleModel&quot; OnValidSubmit=&quot;@HandleValidSubmit&quot;&gt;
+    &lt;DataAnnotationsValidator /&gt;
+    &lt;ValidationSummary /&gt;
+
+    &lt;InputText id=&quot;name&quot; @bind-Value=&quot;exampleModel.Name&quot; /&gt;
+    &lt;ValidationMessage For=&quot;@(() =&gt; exampleModel.Name)&quot; /&gt;
+
+    &lt;button type=&quot;submit&quot;&gt;Submit&lt;/button&gt;
+&lt;/EditForm&gt;
+</code></pre>
+<p>The first article describes the basic interacts of <code>EditForm</code> and <code>EditContext</code> so we'll skip that and concentrate on the validation process.</p>
+<p>When the user clicks on the <em>Submit</em> button, <code>EditForm</code> either:</p>
+<ol>
+<li>If a delegate is registered with <code>OnSubmit</code>, it triggers it and ignores validation.</li>
+<li>If there's no <code>OnSubmit</code> delegate, it calls <code>EditContext.Validate</code>.  Depending on the result either triggers <code>OnValidSubmit</code> or <code>OnInvalidSubmit</code>.</li>
+</ol>
+<p><code>EditContext.Validate</code> checks if there's a delagate registered for <code>OnValidationRequested</code> and if so runs it synchronously.  Once complete it checks if there are any messages in the <code>ValidationMessageStore</code>.  If it's empty, the form passes validation and <code>OnValidSubmit</code> is invoked, otherwise <code>OnInvalidSubmit</code> is invoked.</p>
+<p>A Validator is a form component with no emitted markup.  It's placed within <code>EditForm</code> and captures the cascaded <code>EditContext</code>.  On initialization it registers an event handler with <code>EditContext.OnValidationRequested</code> to trigger validation.  On validation, the validator does whatever it's coded to do, logs validation failure messages to the <code>EditContext</code> <code>ValidationMessageStore</code> and finally calls <code>EditContext.NotifyValidationStateChanged</code> which triggers <code>EditContext.OnValidationStateChanged</code>.</p>
+<h4 id="validation-controls">Validation Controls</h4>
+<p>Controls such as <code>ValidationMessage</code> and <code>ValidationSummary</code> capture the cascaded <code>EditContext</code> and register event handlers on <code>EditContext.OnValidationStateChanged</code>.  When triggered they check for any relevant messages and display them.</p>
+<p>In the form shown above <code>&lt;DataAnnotationsValidator /&gt;</code> adds the <code>DataAnnotationsValidator</code> control to the form.  This hooks in as described above, and uses the custom attribute annotations on the model class to validate values.</p>
+<h2 id="validator">Validator</h2>
+<p><code>Validator</code> is the base validator class.  It's declared abstract and uses generics.  Validators work on a chaining principle.  The base class contains all the common boilerplate code.</p>
+<ol>
+<li>The first call is on an extension method defined for the object type to be validated.  Each object type needs it's own extension method to call it's specific validator.  This extension method returns the appropriate validator for the object type.</li>
+<li>Once you have the validator instance you can chain as many validation methods as you wish together.  Each is coded to run it's validation test, log any specific messages to the validator, trigger the trip if necessary, and return the validator instance.</li>
+<li>Validation finishes by calling <code>Validate</code>, which trips the passed tripwire if necessary, and log all the validation messages to the <code>ValidationMessageStore</code>.</li>
+</ol>
+<p>The <code>Validator</code> Properties/Fields are:</p>
+<pre><code>public bool IsValid =&gt; !Trip;
+public List&lt;string&gt; Messages { get; } = new List&lt;string&gt;();
+protected bool Trip { get; set; } = false;
+protected string FieldName { get; set; }
+protected T Value { get; set; }
+protected string DefaultMessage { get; set; } = &quot;The value failed validation&quot;;
+protected ValidationMessageStore ValidationMessageStore { get; set; }
+protected object Model { get; set; }
+</code></pre>
+<p>The constructor populates the validator</p>
+<pre><code class="language-csharp">public Validator(T value, string fieldName, object model, ValidationMessageStore validationMessageStore, string message)
+{
+    this.FieldName = fieldName;
+    this.Value = value;
+    this.Model = model;
+    this.ValidationMessageStore = validationMessageStore;
+    this.DefaultMessage = string.IsNullOrWhiteSpace(message) ? this.DefaultMessage : message;
+}
+</code></pre>
+<p>There are two <code>Validate</code> methods: a public method for external usage and a protected one for specific validators to override.</p>
+<pre><code class="language-csharp">
+public virtual bool Validate(ref bool tripwire, string fieldname, string message = null)
+{
+    if (string.IsNullOrEmpty(fieldname) || this.FieldName.Equals(fieldname))
+    {
+        this.Validate(message);
+        if (!this.IsValid)
+            tripwire = true;
+    }
+    else this.Trip = false;
+    return this.IsValid;
+}
+</code></pre>
+<pre><code class="language-csharp">protected virtual bool Validate(string message = null)
+{
+    if (!this.IsValid)
+    {
+        message ??= this.DefaultMessage;
+        // Check if we've logged specific messages.  If not add the default message
+        if (this.Messages.Count == 0) Messages.Add(message);
+        //set up a FieldIdentifier and add the message to the Edit Context ValidationMessageStore
+        var fi = new FieldIdentifier(this.Model, this.FieldName);
+        this.ValidationMessageStore.Add(fi, this.Messages);
+    }
+    return this.IsValid;
+}
+
+protected void LogMessage(string message)
+{
+    if (!string.IsNullOrWhiteSpace(message)) Messages.Add(message);
+}
+</code></pre>
+<h4 id="stringvalidator">StringValidator</h4>
+<p>Let's look at <code>StringValidator</code> as an example implementation of a validator.  The full set of validators is in the Repo.  There are two classes:</p>
+<ol>
+<li><code>StringValidatorExtensions</code> is a static class declaring as an extension method to <code>string</code>.</li>
+<li><code>StringValidator</code> is a implementation of <code>Validator</code> specifically for strings.</li>
+</ol>
+<p><code>StringValidatorExtensions</code> declares a single static extension method <code>Validation</code> for <code>string</code>.  It returns a <code>StringValidator</code> instance.  Call <code>StringValidator</code> on any string to initialise a validation chain.</p>
+<pre><code class="language-csharp">public static class StringValidatorExtensions
+{
+    public static StringValidator Validation(this string value, string fieldName, object model, ValidationMessageStore validationMessageStore, string message = null)
+    {
+        var validation = new StringValidator(value, fieldName, model, validationMessageStore, message);
+        return validation;
+    }
+}
+</code></pre>
+<p><code>StringValidator</code> inherits from <code>Validator</code> and declares the specific validation chain methods for strings.  Each runs it's test.  If validation fails it logs any provided message to the message store and trips the tripwire.  Finally it returns <code>this</code>.  For strings, we have two length methods and a RegEx method to cover most circumstances.</p>
+<pre><code class="language-csharp">public class StringValidator : Validator&lt;string&gt;
+{
+    public StringValidator(string value, string fieldName, object model, ValidationMessageStore validationMessageStore, string message) : base(value, fieldName, model, validationMessageStore, message) { }
+
+    /// Check of the string is longer than test
+    public StringValidator LongerThan(int test, string message = null)
+    {
+        if (string.IsNullOrEmpty(this.Value) || !(this.Value.Length &gt; test))
+        {
+            Trip = true;
+            LogMessage(message);
+        }
+        return this;
+    }
+
+    /// Check if the string is shorter than
+    public StringValidator ShorterThan(int test, string message = null)
+    {
+            
+        if (string.IsNullOrEmpty(this.Value) || !(this.Value.Length &lt; test))
+        {
+            Trip = true;
+            LogMessage(message);
+        }
+        return this;
+    }
+
+    /// Check if the string is matches a RegEx pattern
+    public StringValidator Matches(string pattern, string message = null)
+    {
+        if (!string.IsNullOrWhiteSpace(this.Value))
+        {
+            var match = Regex.Match(this.Value, pattern);
+            if (match.Success &amp;&amp; match.Value.Equals(this.Value)) return this;
+        }
+        this.Trip = true;
+        LogMessage(message);
+        return this;
+    }
+}
+</code></pre>
+<h4 id="ivalidation">IValidation</h4>
+<p>The  <code>IValidation</code> interface looks like this.  It simply defines a <code>Validate</code> method.</p>
+<pre><code class="language-csharp">public interface IValidation
+{
+    public bool Validate(ValidationMessageStore validationMessageStore, string fieldname, object model = null);
+}
+</code></pre>
+<h3 id="weatherforecast">WeatherForecast</h3>
+<p><code>WeatherForecast</code> is a typical data class.</p>
+<ol>
+<li>It implements <code>IValidation</code> so the control can run validation.</li>
+<li>Each field is declared as a property with default values.</li>
+<li>It implements <code>IValidation.Validate</code> which calls three validations.</li>
+</ol>
+<p>Each validation:</p>
+<ol>
+<li>Calls the <code>Validation</code> extension method on the type.</li>
+<li>Calls one or more validation chain methods.</li>
+<li>Calls <code>Validate</code> to log any validation messages to the <code>ValidationMessageStore</code> on <code>EditContext</code> and if necessary trip the tripwire.</li>
+</ol>
+<pre><code class="language-csharp">public class WeatherForecast : IValidation
+{
+    public int ID { get; set; } = -1;
+    public DateTime Date { get; set; } = DateTime.Now;
+    public int TemperatureC { get; set; } = 0;
+    [NotMapped] public int TemperatureF =&gt; 32 + (int)(TemperatureC / 0.5556);
+    public string Summary { get; set; } = string.Empty;
+
+    public bool Validate(ValidationMessageStore validationMessageStore, string fieldname, object model = null)
+    {
+        model = model ?? this;
+        bool trip = false;
+
+        this.Summary.Validation(&quot;Summary&quot;, model, validationMessageStore)
+            .LongerThan(2, &quot;Your description needs to be a little longer! 3 letters minimum&quot;)
+            .Validate(ref trip, fieldname);
+
+        this.Date.Validation(&quot;Date&quot;, model, validationMessageStore)
+            .NotDefault(&quot;You must select a date&quot;)
+            .LessThan(DateTime.Now.AddMonths(1), true, &quot;Date can only be up to 1 month ahead&quot;)
+            .Validate(ref trip, fieldname);
+
+        this.TemperatureC.Validation(&quot;TemperatureC&quot;, model, validationMessageStore)
+            .LessThan(70, &quot;The temperature must be less than 70C&quot;)
+            .GreaterThan(-60, &quot;The temperature must be greater than -60C&quot;)
+            .Validate(ref trip, fieldname);
+
+        return !trip;
+    }
+
+}
+</code></pre>
+<h2 id="validationformstate-control">ValidationFormState Control</h2>
+<p>The <code>ValidationFormState</code> control replaces the basic Validator provided with Blazor.</p>
+<ol>
+<li>It captures the cascaded <code>EditContext</code>.</li>
+<li><code>DoValidationOnFieldChange</code> controls field level validation. if true it validates a field when a user exits the field.  if false it only responds to form level validation requests through <code>EditContext</code>.</li>
+<li><code>ValidStateChanged</code> is a callback for the parent to attach an event handler if required.</li>
+<li><code>IsValid</code> is a public readonly property exposing the current validation state.  It checks if <code>EditContext</code> has any validation messages.</li>
+<li><code>ValidationMessageStore</code> is the <code>EditContext</code>'s <code>ValidationMessageStore</code>.</li>
+<li><code>validating</code> is a boolean field to ensure we don't stack validations.</li>
+<li><code>disposedValue</code> is part of the <code>IDisposable</code> implementation.</li>
+</ol>
+<pre><code class="language-csharp">    [CascadingParameter] public EditContext EditContext { get; set; }
+    [Parameter] public bool DoValidationOnFieldChange { get; set; } = true;
+    [Parameter] public EventCallback&lt;bool&gt; ValidStateChanged { get; set; }
+    public bool IsValid =&gt; !EditContext?.GetValidationMessages().Any() ?? true;
+
+    private ValidationMessageStore validationMessageStore;
+    private bool validating = false;
+    private bool disposedValue;
+</code></pre>
+<p>When the component initializes it gets the <code>ValidationMessageStore</code> from <code>EditContext</code>.  It checks if it's running field level validation, and if so registers <code>FieldChanged</code> with <code>EditContext.OnFieldChanged</code> event. Finally it registers <code>ValidationRequested</code> with <code>EditContext.OnValidationRequested</code>.</p>
+<pre><code class="language-csharp">    protected override Task OnInitializedAsync()
+    {
+        Debug.Assert(this.EditContext != null);
+
+        if (this.EditContext != null)
+        {
+            // Get the Validation Message Store from the EditContext
+            this.validationMessageStore = new ValidationMessageStore(this.EditContext);
+            // Wires up to the EditContext OnFieldChanged event
+            if (this.DoValidationOnFieldChange)
+                this.EditContext.OnFieldChanged += FieldChanged;
+            // Wires up to the Editcontext OnValidationRequested event
+            this.EditContext.OnValidationRequested += ValidationRequested;
+        }
+        return Task.CompletedTask;
+    }
+</code></pre>
+<p>The two event handlers call <code>Validate</code>, one with and one without the field name.</p>
+<pre><code class="language-csharp">private void FieldChanged(object sender, FieldChangedEventArgs e)
+    =&gt; this.Validate(e.FieldIdentifier.FieldName);
+
+private void ValidationRequested(object sender, ValidationRequestedEventArgs e)
+    =&gt; this.Validate();
+</code></pre>
+<p>The comments within <code>Validate</code> explain what it's doing.  It casts the <code>Model</code> as an IValidator and check if it's valid.  if so it calls the <code>Validate</code> method on the interface. We've seen <em>model</em>.<code>Validate</code> in the <code>WesatherForecast</code> data class.  When it passes a <code>fieldname</code> to <code>Validate</code> it only clears any validation messages for that specific <code>fieldname</code>.</p>
+<pre><code class="language-csharp">private void Validate(string fieldname = null)
+{
+    // Checks to see if the Model implements IValidation
+    var validator = this.EditContext.Model as IValidation;
+    if (validator != null || !this.validating)
+    {
+        this.validating = true;
+        // Check if we are doing a field level or form level validation
+        // Form level - clear all validation messages
+        // Field level - clear any field specific validation messages
+        if (string.IsNullOrEmpty(fieldname))
+            this.validationMessageStore.Clear();
+        else
+            validationMessageStore.Clear(new FieldIdentifier(this.EditContext.Model, fieldname));
+        // Run the IValidation interface Validate method
+        validator.Validate(validationMessageStore, fieldname, this.EditContext.Model);
+        // Notify the EditContext that the Validation State has changed - 
+        // This precipitates a OnValidationStateChanged event which the validation message controls are all plugged into
+        this.EditContext.NotifyValidationStateChanged();
+        // Invoke ValidationStateChanged
+        this.ValidStateChanged.InvokeAsync(this.IsValid);
+        this.validating = false;
+    }
+}
+</code></pre>
+<p>The rest of the code consists of utility methods and <code>IDisposable</code> implementation.</p>
+<pre><code class="language-csharp">
+        /// &lt;summary&gt;
+        /// Method to clear the Validation and Edit State 
+        /// &lt;/summary&gt;
+        public void Clear()
+            =&gt; this.validationMessageStore.Clear();
+
+        // IDisposable Implementation
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!disposedValue)
+            {
+                if (disposing)
+                {
+                    if (this.EditContext != null)
+                    {
+                        this.EditContext.OnFieldChanged -= this.FieldChanged;
+                        this.EditContext.OnValidationRequested -= this.ValidationRequested;
+                    }
+                }
+                disposedValue = true;
+            }
+        }
+
+        public void Dispose()
+        {
+            // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
+            Dispose(disposing: true);
+            GC.SuppressFinalize(this);
+        }
+</code></pre>
+<h2 id="a-simple-implementation">A Simple Implementation</h2>
+<p><img src="https://shauncurtis.github.io/articles/assets/Editor-Controls/ValidationFormState.png" alt="EditForm" /></p>
+<p>To test the component, here's a simple test page.</p>
+<p>Change the temperature up and down and you should see the buttons change colour and Text, and enabled/disabled state.  Change the Temperature to 200 to get a validation message.</p>
+<p>You can see this at <a href="https://cec-blazor-database.azurewebsites.net//validationeditor">https://cec-blazor-database.azurewebsites.net//validationeditor</a>.</p>
+<pre><code class="language-html">@using Blazor.Database.Data
+@page &quot;/validationeditor&quot;
+
+&lt;EditForm Model=&quot;@Model&quot; OnValidSubmit=&quot;@HandleValidSubmit&quot;&gt;
+    &lt;EditFormState @ref=&quot;editFormState&quot; EditStateChanged=&quot;this.EditStateChanged&quot;&gt;&lt;/EditFormState&gt;
+    &lt;ValidationFormState @ref=&quot;validationFormState&quot;&gt;&lt;/ValidationFormState&gt;
+
+    &lt;label class=&quot;form-label&quot;&gt;ID:&lt;/label&gt; &lt;InputNumber class=&quot;form-control&quot; @bind-Value=&quot;Model.ID&quot; /&gt;
+    &lt;label class=&quot;form-label&quot;&gt;Date:&lt;/label&gt; &lt;InputDate class=&quot;form-control&quot; @bind-Value=&quot;Model.Date&quot; /&gt;&lt;ValidationMessage For=&quot;@(() =&gt; Model.Date)&quot; /&gt;
+    &lt;label class=&quot;form-label&quot;&gt;Temp C:&lt;/label&gt; &lt;InputNumber class=&quot;form-control&quot; @bind-Value=&quot;Model.TemperatureC&quot; /&gt;&lt;ValidationMessage For=&quot;@(() =&gt; Model.TemperatureC)&quot; /&gt;
+    &lt;label class=&quot;form-label&quot;&gt;Summary:&lt;/label&gt; &lt;InputText class=&quot;form-control&quot; @bind-Value=&quot;Model.Summary&quot; /&gt;&lt;ValidationMessage For=&quot;@(() =&gt; Model.Summary)&quot; /&gt;
+
+    &lt;div class=&quot;mt-2&quot;&gt;
+        &lt;div&gt;Validation Messages:&lt;/div&gt;
+        &lt;ValidationSummary /&gt;
+    &lt;/div&gt;
+
+    &lt;div class=&quot;text-right mt-2&quot;&gt;
+        &lt;button class=&quot;btn @btnStateColour&quot; disabled&gt;@btnStateText&lt;/button&gt;
+        &lt;button class=&quot;btn @btnValidColour&quot; disabled&gt;@btnValidText&lt;/button&gt;
+        &lt;button class=&quot;btn btn-primary&quot; type=&quot;submit&quot; disabled=&quot;@_btnSubmitDisabled&quot;&gt;Submit&lt;/button&gt;
+    &lt;/div&gt;
+
+&lt;/EditForm&gt;
+</code></pre>
+<pre><code class="language-csharp">@code {
+    protected bool _isDirty = false;
+    protected bool _isValid =&gt; validationFormState?.IsValid ?? true;
+    protected string btnStateColour =&gt; _isDirty ? &quot;btn-danger&quot; : &quot;btn-success&quot;;
+    protected string btnStateText =&gt; _isDirty ? &quot;Dirty&quot; : &quot;Clean&quot;;
+    protected string btnValidColour =&gt; !_isValid ? &quot;btn-danger&quot; : &quot;btn-success&quot;;
+    protected string btnValidText =&gt; !_isValid ? &quot;Invalid&quot; : &quot;Valid&quot;;
+    protected bool _btnSubmitDisabled =&gt; !(_isValid &amp;&amp; _isDirty);
+
+    protected EditFormState editFormState { get; set; }
+    protected ValidationFormState validationFormState { get; set; }
+
+    private WeatherForecast Model = new WeatherForecast()
+    {
+        ID = 1,
+        Date = DateTime.Now,
+        TemperatureC = 22,
+        Summary = &quot;Balmy&quot;
+    };
+
+    private void HandleValidSubmit()
+        =&gt; this.editFormState.UpdateState();
+
+    private void EditStateChanged(bool editstate)
+        =&gt; this._isDirty = editstate;
+}
+</code></pre>
+<h2 id="wrap-up">Wrap Up</h2>
+<p>Hopefully I've explained how validation works and how to build a simple, but comprehensive and extensible validation system.</p>
+<p>The most common problem with validation is <code>ValidationMessage</code> controls not showing messages.  There are normally two reasons for this:</p>
+<ol>
+<li>The UI hasn't updated.  Step through the code to check what's happening when.</li>
+<li>The <code>FieldIdentifier</code> generated from the <code>For</code> property of <code>ValidationMessage</code> doesn't match the <code>FieldIdentifier</code> in the validation store.  Check the <code>FieldIdentifier</code> you're generating and logging to the validation store.</li>
+</ol>
+<p>The next article shows how to lock out the form and prevent navigation when the form is dirty.</p>
+<p>If you've found this article well into the future, the latest version will be available <a href="https://shauncurtis.github.io/articles/ValidationFormState.html">here</a></p>
+</div></div></div></body></html>
+
+
+
+
+

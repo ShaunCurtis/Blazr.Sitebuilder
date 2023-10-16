@@ -1,0 +1,9 @@
+{
+  "Name": "The Blazor Inline Dialog Control",
+  "Title": "The Blazor Inline Dialog Control",
+  "Description": "A Blazor inline dialog control to lock all page controls except those within the form.",
+  "PublishDate": "17-03-2021",
+  "LastUpdated": "11-03-2021",
+  "Layout":  "article.html",
+  "Author": "Shaun Curtis"
+}

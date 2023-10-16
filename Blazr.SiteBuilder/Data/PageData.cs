@@ -12,9 +12,12 @@ public record PageData: IPageData
     public string Description { get; init; } = "Not Set";
     public string Author { get; init; } = "Not Set";
     public string Category { get; init; } = "Articles";
+    public string Story { get; init; } = string.Empty;
     public string Tags { get; init; } = "";
+    public int Order { get; init; } = 0;
     public string MdFile { get; init; } = "article.md";
     public DateOnly PublishDate { get; init; } = DateOnly.FromDateTime(DateTime.Now);
     public DateOnly LastUpdated { get; init; } = DateOnly.FromDateTime(DateTime.Now);
+    public bool HideInNavigationLists { get; init; } = false;
 }
 

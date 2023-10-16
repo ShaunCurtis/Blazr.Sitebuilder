@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+    <html>
+    <head>
+        <meta charset="UTF-8">
+        <title>Optmizing MinimalBase</title>
+        <style>
+/* From extension vscode.github */
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+
+.vscode-dark img[src$=\#gh-light-mode-only],
+.vscode-light img[src$=\#gh-dark-mode-only] {
+	display: none;
+}
+
+</style>
+        
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/Microsoft/vscode/extensions/markdown-language-features/media/markdown.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/Microsoft/vscode/extensions/markdown-language-features/media/highlight.css">
+<style>
+            body {
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe WPC', 'Segoe UI', system-ui, 'Ubuntu', 'Droid Sans', sans-serif;
+                font-size: 14px;
+                line-height: 1.6;
+            }
+        </style>
+        <style>
+.task-list-item {
+    list-style-type: none;
+}
+
+.task-list-item-checkbox {
+    margin-left: -20px;
+    vertical-align: middle;
+    pointer-events: none;
+}
+</style>
+        
+    </head>
+    <body class="vscode-body vscode-light">
+        <p><a href="index.html">Back to the Index</a></p>
+<p>In the introduction we saw a very minimal component.  In this chapter we transform that base into a fully functional base component.</p>
+<p>Our first pass is to:</p>
+<ol>
+<li>Capture and save the <code>RenderHandle</code>.</li>
+<li>Render the component whenever <code>SetParametersAsync</code> is called.</li>
+<li>Provide the virtual method for the Razor compiler to override.</li>
+<li>Make it <code>abstract</code> as this is a base class.</li>
+</ol>
+<pre><code class="language-csharp"><span class="hljs-keyword">public</span> <span class="hljs-keyword">abstract</span> <span class="hljs-keyword">class</span> <span class="hljs-title">Minimal1Base</span> : <span class="hljs-title">IComponent</span>
+{
+    <span class="hljs-keyword">protected</span> RenderHandle? renderHandle;
+
+    <span class="hljs-function"><span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title">Attach</span>(<span class="hljs-params">RenderHandle handle</span>)</span>
+        =&gt; renderHandle = handle;
+
+    <span class="hljs-function"><span class="hljs-keyword">public</span> Task <span class="hljs-title">SetParametersAsync</span>(<span class="hljs-params">ParameterView parameters</span>)</span>
+    {
+        <span class="hljs-comment">// Sets the component parameters to the latest values</span>
+        parameters.SetParameterProperties(<span class="hljs-keyword">this</span>);
+        <span class="hljs-comment">// Creates a render fragment as an anonymous function that calls BuildRenderTree</span>
+        RenderFragment fragment = (builder) =&gt; BuildRenderTree(builder);
+        <span class="hljs-comment">// passes the fragment to the RenderTree to render</span>
+        <span class="hljs-keyword">this</span>.renderHandle?.Render(fragment);
+        <span class="hljs-keyword">return</span> Task.CompletedTask;
+    }
+
+    <span class="hljs-comment">// This is the method the Razor compiler will override with the render fragment built from the Razor markup</span>
+    <span class="hljs-function"><span class="hljs-keyword">protected</span> <span class="hljs-keyword">abstract</span> <span class="hljs-keyword">void</span> <span class="hljs-title">BuildRenderTree</span>(<span class="hljs-params">RenderTreeBuilder builder</span>)</span>;
+}
+</code></pre>
+<p>The Hello World Razor component looks like this:</p>
+<pre><code class="language-html">@inherits RazorClass
+<span class="hljs-tag">&lt;<span class="hljs-name">h3</span>&gt;</span>Hello Blazor<span class="hljs-tag">&lt;/<span class="hljs-name">h3</span>&gt;</span>
+</code></pre>
+<h2 id="optmizing-minimalbase">Optmizing MinimalBase</h2>
+<p>The current code isn't a very efficient.</p>
+<p>Consider:</p>
+<pre><code class="language-csharp">RenderFragment fragment = (builder) =&gt; BuildRenderTree(builder);
+</code></pre>
+<p>The runtime has to build the same anonymous function every time the component renders.  That's a relatively expensive operation.  We can solve that by caching it in the ctor.</p>
+<p>First some state fields:</p>
+<pre><code class="language-csharp">    <span class="hljs-keyword">protected</span> RenderHandle renderHandle;
+    <span class="hljs-keyword">private</span> <span class="hljs-built_in">bool</span> _renderPending;
+    <span class="hljs-keyword">private</span> RenderFragment _componentFragment;
+    <span class="hljs-keyword">protected</span> <span class="hljs-keyword">virtual</span> <span class="hljs-built_in">bool</span> hide { <span class="hljs-keyword">get</span>; <span class="hljs-keyword">set</span>; }
+</code></pre>
+<p>The render fragment is the code the Render runs.  <code>hide</code> provides an efficient way to show/hide the component output.</p>
+<pre><code class="language-csharp">    <span class="hljs-function"><span class="hljs-keyword">public</span> <span class="hljs-title">MinimalBase</span>()</span>
+    {
+        _componentFragment = (builder) =&gt;
+        {
+            _renderPending = <span class="hljs-literal">false</span>;
+            <span class="hljs-keyword">if</span> (!<span class="hljs-keyword">this</span>.hide)
+                BuildRenderTree(builder);
+        };
+    }
+</code></pre>
+<p>The render code can also be improved.  The existing code queues <code>_componentFragment</code> regardless of whether it's already queued.</p>
+<pre><code class="language-csharp"><span class="hljs-keyword">this</span>.renderHandle.Render(fragment);
+</code></pre>
+<p>The new method uses a private <code>bool</code> <code>_renderPending</code> to track render state.  If <code>_componentFragment</code> is already queued, it doesn't queue it again. The last changes will be applied when the already queued fragment runs.</p>
+<pre><code class="language-csharp"><span class="hljs-function"><span class="hljs-keyword">protected</span> <span class="hljs-keyword">void</span> <span class="hljs-title">RequestRender</span>()</span>
+{
+    <span class="hljs-keyword">if</span> (!_renderPending)
+    {
+        _renderPending = <span class="hljs-literal">true</span>;
+        <span class="hljs-keyword">this</span>.renderHandle.Render(_componentFragment);
+    }
+}
+</code></pre>
+<p>The final base component:</p>
+<pre><code class="language-csharp"><span class="hljs-keyword">public</span> <span class="hljs-keyword">abstract</span> <span class="hljs-keyword">class</span> <span class="hljs-title">MinimalBase</span> : <span class="hljs-title">IComponent</span>
+{
+    <span class="hljs-keyword">protected</span> RenderHandle renderHandle;
+    <span class="hljs-keyword">private</span> <span class="hljs-built_in">bool</span> _renderPending;
+    <span class="hljs-keyword">private</span> RenderFragment _componentFragment;
+    <span class="hljs-keyword">protected</span> <span class="hljs-keyword">virtual</span> <span class="hljs-built_in">bool</span> hide { <span class="hljs-keyword">get</span>; <span class="hljs-keyword">set</span>; }
+   
+    <span class="hljs-function"><span class="hljs-keyword">public</span> <span class="hljs-title">MinimalBase</span>()</span>
+    {
+        _componentFragment = (builder) =&gt;
+        {
+            _renderPending = <span class="hljs-literal">false</span>;
+            <span class="hljs-keyword">if</span> (!<span class="hljs-keyword">this</span>.hide)
+                BuildRenderTree(builder);
+        };
+    }
+
+    <span class="hljs-function"><span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title">Attach</span>(<span class="hljs-params">RenderHandle handle</span>)</span>
+        =&gt; renderHandle = handle;
+
+    <span class="hljs-function"><span class="hljs-keyword">public</span> Task <span class="hljs-title">SetParametersAsync</span>(<span class="hljs-params">ParameterView parameters</span>)</span>
+    {
+        parameters.SetParameterProperties(<span class="hljs-keyword">this</span>);
+        <span class="hljs-keyword">this</span>.RequestRender();
+        <span class="hljs-keyword">return</span> Task.CompletedTask;
+    }
+
+    <span class="hljs-function"><span class="hljs-keyword">protected</span> <span class="hljs-keyword">abstract</span> <span class="hljs-keyword">void</span> <span class="hljs-title">BuildRenderTree</span>(<span class="hljs-params">RenderTreeBuilder builder</span>)</span>;
+
+    <span class="hljs-function"><span class="hljs-keyword">protected</span> <span class="hljs-keyword">void</span> <span class="hljs-title">RequestRender</span>()</span>
+    {
+        <span class="hljs-keyword">if</span> (!_renderPending)
+        {
+            _renderPending = <span class="hljs-literal">true</span>;
+            <span class="hljs-keyword">this</span>.renderHandle.Render(_componentFragment);
+        }
+    }
+}
+</code></pre>
+<h2 id="some-examples">Some Examples</h2>
+<p>To demonstrate the new base component in action we need to build some real components that inherit from it</p>
+<p>Here are two simple but fully functional Bootstrap UI Components:</p>
+<p><strong>BootstrapAlert</strong></p>
+<pre><code class="language-csharp">@inherits MinimalBase
+
+&lt;div <span class="hljs-keyword">class</span>=<span class="hljs-string">&quot;alert @this.Colour&quot;</span>&gt;@this.Message&lt;/div&gt;
+
+@code {
+    <span class="hljs-keyword">protected</span> <span class="hljs-keyword">override</span> <span class="hljs-built_in">bool</span> shouldHide =&gt; <span class="hljs-keyword">this</span>.Hidden;
+
+    [<span class="hljs-meta">Parameter</span>] <span class="hljs-keyword">public</span> <span class="hljs-built_in">bool</span> Hidden { <span class="hljs-keyword">get</span>; <span class="hljs-keyword">set</span>; }
+    [<span class="hljs-meta">Parameter</span>] <span class="hljs-keyword">public</span> <span class="hljs-built_in">string</span> Colour { <span class="hljs-keyword">get</span>; <span class="hljs-keyword">set</span>; } = <span class="hljs-string">&quot;alert-primary&quot;</span>;
+    [<span class="hljs-meta">Parameter</span>] <span class="hljs-keyword">public</span> <span class="hljs-built_in">string</span> Message { <span class="hljs-keyword">get</span>; <span class="hljs-keyword">set</span>; } = <span class="hljs-string">&quot;Bootstrap Alert&quot;</span>;
+}
+</code></pre>
+<p><strong>BootstrapButton</strong></p>
+<pre><code class="language-csharp">@inherits MinimalBase
+
+&lt;button <span class="hljs-keyword">class</span>=<span class="hljs-string">&quot;btn @this.Colour&quot;</span> @onclick=<span class="hljs-keyword">this</span>.Clicked &gt;@this.Text&lt;/button&gt;
+
+@code {
+    <span class="hljs-keyword">protected</span> <span class="hljs-keyword">override</span> <span class="hljs-built_in">bool</span> shouldHide =&gt; <span class="hljs-keyword">this</span>.Hidden;
+
+    [<span class="hljs-meta">Parameter</span>] <span class="hljs-keyword">public</span> <span class="hljs-built_in">bool</span> Hidden { <span class="hljs-keyword">get</span>; <span class="hljs-keyword">set</span>; }
+    [<span class="hljs-meta">Parameter</span>] <span class="hljs-keyword">public</span> <span class="hljs-built_in">string</span> Colour { <span class="hljs-keyword">get</span>; <span class="hljs-keyword">set</span>; } = <span class="hljs-string">&quot;btn-primary&quot;</span>;
+    [<span class="hljs-meta">Parameter</span>] <span class="hljs-keyword">public</span> <span class="hljs-built_in">string</span> Text { <span class="hljs-keyword">get</span>; <span class="hljs-keyword">set</span>; } = <span class="hljs-string">&quot;Button&quot;</span>;
+    [<span class="hljs-meta">Parameter</span>] <span class="hljs-keyword">public</span> EventCallback&lt;MouseEventArgs&gt; Clicked { <span class="hljs-keyword">get</span>; <span class="hljs-keyword">set</span>; }
+}
+</code></pre>
+<p>Here are the two components in action in a test page:</p>
+<pre><code class="language-csharp">@page <span class="hljs-string">&quot;/&quot;</span>
+@inherits MinimalBase
+
+&lt;BootstrapAlert Hidden=<span class="hljs-keyword">this</span>.hidden Message=<span class="hljs-string">&quot;Hello Blazor&quot;</span> /&gt;
+
+&lt;BootstrapButton Colour=<span class="hljs-string">&quot;btn-primary&quot;</span> Text=<span class="hljs-string">&quot;Update&quot;</span> Clicked=<span class="hljs-keyword">this</span>.Clicked /&gt;
+
+@code {
+    <span class="hljs-keyword">private</span> <span class="hljs-built_in">bool</span> hidden;
+
+    <span class="hljs-function"><span class="hljs-keyword">private</span> <span class="hljs-keyword">void</span> <span class="hljs-title">Clicked</span>()</span>
+    {
+        <span class="hljs-keyword">this</span>.hidden = !<span class="hljs-keyword">this</span>.hidden;
+        <span class="hljs-keyword">this</span>.RequestRender();
+    }
+}
+</code></pre>
+
+        
+        
+    </body>
+    </html>

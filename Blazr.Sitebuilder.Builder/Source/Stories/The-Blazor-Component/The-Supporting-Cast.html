@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+    <html>
+    <head>
+        <meta charset="UTF-8">
+        <title>Interfaces</title>
+        <style>
+/* From extension vscode.github */
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+
+.vscode-dark img[src$=\#gh-light-mode-only],
+.vscode-light img[src$=\#gh-dark-mode-only] {
+	display: none;
+}
+
+</style>
+        
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/Microsoft/vscode/extensions/markdown-language-features/media/markdown.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/Microsoft/vscode/extensions/markdown-language-features/media/highlight.css">
+<style>
+            body {
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe WPC', 'Segoe UI', system-ui, 'Ubuntu', 'Droid Sans', sans-serif;
+                font-size: 14px;
+                line-height: 1.6;
+            }
+        </style>
+        <style>
+.task-list-item {
+    list-style-type: none;
+}
+
+.task-list-item-checkbox {
+    margin-left: -20px;
+    vertical-align: middle;
+    pointer-events: none;
+}
+</style>
+        
+    </head>
+    <body class="vscode-body vscode-light">
+        <p><a href="index.html">Back to the Index</a></p>
+<p>This section looks at the objects used in the render process.</p>
+<h2 id="interfaces">Interfaces</h2>
+<p>We've already seen <code>IComponent</code> which is defined as:</p>
+<pre><code class="language-csharp"><span class="hljs-keyword">public</span> <span class="hljs-keyword">interface</span> <span class="hljs-title">IComponent</span>
+{
+    <span class="hljs-function"><span class="hljs-keyword">void</span> <span class="hljs-title">Attach</span>(<span class="hljs-params">RenderHandle renderHandle</span>)</span>;
+    <span class="hljs-function">Task <span class="hljs-title">SetParametersAsync</span>(<span class="hljs-params">ParameterView parameters</span>)</span>;
+}
+</code></pre>
+<p>Components can also implement two other Renderer related events.</p>
+<p><code>IHandleEvent</code> defines a custom event handler for all UI events.</p>
+<pre><code class="language-csharp"><span class="hljs-keyword">public</span> <span class="hljs-keyword">interface</span> <span class="hljs-title">IHandleEvent</span>
+{
+    <span class="hljs-function">Task <span class="hljs-title">HandleEventAsync</span>(<span class="hljs-params">EventCallbackWorkItem item, <span class="hljs-built_in">object</span>? arg</span>)</span>;
+}
+</code></pre>
+<p><code>IHandleAfterRender</code> defines the after render handler.</p>
+<pre><code class="language-csharp"><span class="hljs-keyword">public</span> <span class="hljs-keyword">interface</span> <span class="hljs-title">IHandleAfterRender</span>
+{
+    <span class="hljs-function">Task <span class="hljs-title">OnAfterRenderAsync</span>()</span>;
+}
+</code></pre>
+<h2 id="the-renderhandle">The RenderHandle</h2>
+<p>The component receives a <code>RendleHandle</code> instance when the Renderer calls <code>Attach</code>.  It's designed to be stored locally by the component and used to communicate with the Renderer.</p>
+<p>To quote Microsoft:</p>
+<blockquote>
+<p>A RenderHandle structure allows a component to interact with its renderer.</p>
+</blockquote>
+<p>It's primary functionality is:</p>
+<ol>
+<li>A <code>Render</code> method.</li>
+<li>A property referencing the Dispatcher for the <code>SynchronisationContext</code> - i.e. the Dispatcher for the thread on which all UI based code must be run.</li>
+</ol>
+<h2 id="the-renderfragment">The RenderFragment</h2>
+<p>It's not a block of UI code.  You can't do this:</p>
+<pre><code class="language-csharp">RenderFragment someUi = <span class="hljs-string">&quot;&lt;div&gt;Hello Blazor&lt;/div&gt;&quot;</span>;
+</code></pre>
+<p>To quote the official Microsoft documentation.</p>
+<p><em>A RenderFragement represents a segment of UI content, implemented as a delegate that writes the content to a RenderTreeBuilder.</em></p>
+<p>The <code>RenderTreeBuilder</code> is even more succinct:</p>
+<p><em>Provides methods for building a collection of RenderTreeFrame entries.</em></p>
+<p>A <code>RenderFragment</code> is a delegate defined as follows:</p>
+<pre><code class="language-csharp"><span class="hljs-function"><span class="hljs-keyword">public</span> <span class="hljs-built_in">delegate</span> <span class="hljs-keyword">void</span> <span class="hljs-title">RenderFragment</span>(<span class="hljs-params">RenderTreeBuilder builder</span>)</span>;
+</code></pre>
+<p>If you're new to delegates think of them as a pattern definition.  Any function that conforms to the pattern defined by the <code>RenderFragment</code> delegate can passed as a <code>RenderFragment</code>.</p>
+<p>The pattern dictates your method must:</p>
+<ol>
+<li>Have one, and only one, parameter of type <code>RenderTreeBuilder</code>.</li>
+<li>Return a <code>void</code>.</li>
+</ol>
+<p>This method conforms to the pattern:</p>
+<pre><code class="language-csharp"><span class="hljs-function"><span class="hljs-keyword">private</span> <span class="hljs-keyword">void</span> <span class="hljs-title">DoNothing</span>(<span class="hljs-params">RenderTreeBuilder builder</span>)</span>
+{}
+</code></pre>
+<p>This is something a little more normal.  Note this defines an anonymous function that is assigned to the class field.</p>
+<pre><code class="language-csharp">    <span class="hljs-keyword">private</span> RenderFragment _childContent =&gt; (builder) =&gt;
+    {
+        builder.OpenElement(<span class="hljs-number">0</span>, <span class="hljs-string">&quot;button&quot;</span>);
+        builder.AddAttribute(<span class="hljs-number">1</span>, <span class="hljs-string">&quot;class&quot;</span>, <span class="hljs-string">&quot;btn btn-primary&quot;</span>);
+        builder.AddAttribute(<span class="hljs-number">2</span>, <span class="hljs-string">&quot;onclick&quot;</span>, EventCallback.Factory.Create&lt;MouseEventArgs&gt;(<span class="hljs-keyword">this</span>, ButtonClick));
+        builder.AddContent(<span class="hljs-number">3</span>, <span class="hljs-string">&quot;Click Me&quot;</span>);
+        builder.CloseElement();
+    };
+</code></pre>
+
+        
+        
+    </body>
+    </html>

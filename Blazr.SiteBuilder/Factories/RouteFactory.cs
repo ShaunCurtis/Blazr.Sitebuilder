@@ -26,6 +26,12 @@ public class RouteFactory
         GetRoutes();
     }
 
+    public IEnumerable<SiteRouteData> RouteListForCategory(string category) 
+        => _routeList
+        .Where(item => !item.PageData.HideInNavigationLists && item.PageData.Category.Equals(category, StringComparison.CurrentCultureIgnoreCase))
+        .OrderByDescending(item => item.PageData.LastUpdated)
+        .AsEnumerable();
+
     private void GetRoutes()
     {
         foreach (Assembly assembly in AppDomain.CurrentDomain.GetAssemblies())
@@ -51,7 +57,10 @@ public class RouteFactory
         var categories = _routeList.Select(item => item.PageData.Category).Distinct().ToList();
         foreach(var category in categories)
         {
-            _categories.Add(category, _routeList.Where(item => item.PageData.Category == category).Count());
+            if (!string.IsNullOrWhiteSpace(category))
+            {
+                _categories.Add(category, _routeList.Where(item => item.PageData.Category == category && !item.PageData.HideInNavigationLists).Count());
+            }
         }
     }
 

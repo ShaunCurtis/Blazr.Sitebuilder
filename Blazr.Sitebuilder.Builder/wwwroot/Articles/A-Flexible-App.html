@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<base href="/">
+
+	
+
+	
+
+	
+	<link href="/assets/vendor/fontawesome-free/css/all.min.css" rel="stylesheet" type="text/css">
+	<link href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i" rel="stylesheet">
+
+	
+	<link href="/assets/css/sb-admin-2.css" rel="stylesheet" type="text/css">
+	<link href="/assets/css/site.css" rel="stylesheet" type="text/css">
+
+	
+	<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/Microsoft/vscode/extensions/markdown-language-features/media/highlight.css">
+	<link rel="stylesheet" href="/assets/css/article.css" type="text/css">
+
+	
+	<link rel="icon" href="/assets/images/favicon.png">
+
+	<title>Creating a Dynamic Blazor App Component</title>
+<meta name="author" content="Shaun Curtis" >
+<meta name="description" content="Shaun Curtis" >
+
+    <meta name="og:site_name" content="Cold Elm Coders" >
+<meta name="og:site" content="https://shauncurtis.github.io/" >
+<meta name="og:title" content="Creating a Dynamic Blazor App Component" >
+<meta name="og:description" content="This article shows how to add Dynamic Routing, Layouts and RouteViews to the Blazor App Component." >
+</head>
+<body><header class="navbar bg-dark p-2 text-large text-light"><section class="navbar-section  text-light"><a href="/" class="navbar-brand mr-2 text-large text-light p-2">Cold Elm Coders</a>
+			<a href="/Posts" class="btn btn-link text-light">Posts</a>
+			<a href="/Rants" class="btn btn-link text-light">Rants</a>
+			<a href="/Articles" class="btn btn-link text-light">Articles</a>
+			<a href="/Stories" class="btn btn-link text-light">Stories</a>
+			<a href="/Tags" class="btn btn-link text-light">Tags</a></section></header>
+
+	<div class="container-fluid"><div class="row"><div class="col-12 col-sm-3 col-lg-2 bg-light pt-2"><div class="article-info p-2" Published: 09/04/2021 >
+<div>Published: 09/04/2021</div>
+<div>Last Updated: 13/04/2021</div>
+<div>Author: Shaun Curtis</div>
+</div>
+
+    <h4 class="p-2">Table of Contents</h4>
+<ul class="TOC" >
+<li class="TOC-item TOC-item-0" >
+<a class="TOC-link" href="#">Top</a>
+<ul class="TOC TOC-0" >
+<li class="TOC-item TOC-item-1" >
+<ul class="TOC TOC-1" >
+<li class="TOC-item TOC-item-2" >
+<a class="TOC-link" href="#overview">Overview</a>
+</li>
+<li class="TOC-item TOC-item-2" >
+<a class="TOC-link" href="#code-and-examples">Code and Examples</a>
+</li>
+<li class="TOC-item TOC-item-2" >
+<a class="TOC-link" href="#the-blazor-application">The Blazor Application</a>
+</li>
+<li class="TOC-item TOC-item-2" >
+<a class="TOC-link" href="#the-app-component">The App Component</a>
+</li>
+<li class="TOC-item TOC-item-2" >
+<a class="TOC-link" href="#routeviewservice">RouteViewService</a>
+</li>
+<li class="TOC-item TOC-item-2" >
+<a class="TOC-link" href="#dynamic-layouts">Dynamic Layouts</a>
+</li>
+<li class="TOC-item TOC-item-2" >
+<a class="TOC-link" href="#dynamic-routing">Dynamic Routing</a>
+</li>
+<li class="TOC-item TOC-item-2" >
+<a class="TOC-link" href="#updates-to-the-routeviewservice">Updates to the RouteViewService</a>
+</li>
+<li class="TOC-item TOC-item-2" >
+<a class="TOC-link" href="#the-routenotfoundmanager-component">The RouteNotFoundManager Component</a>
+</li>
+<li class="TOC-item TOC-item-2" >
+<a class="TOC-link" href="#switching-the-routeview-without-routing">Switching the RouteView Without Routing</a>
+</li>
+<li class="TOC-item TOC-item-2" >
+<a class="TOC-link" href="#example-pages">Example Pages</a>
+</li>
+<li class="TOC-item TOC-item-2" >
+<a class="TOC-link" href="#wrap-up">Wrap Up</a>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+			
+			<div class="col-12 col-sm-9 col-lg-10 p-2"><div class="pt-2 pb-2 border-bottom" >
+<h1>Creating a Dynamic Blazor App Component</h1>
+<div>This article shows how to add Dynamic Routing, Layouts and RouteViews to the Blazor App Component.</div>
+</div>
+
+    <h2 id="overview">Overview</h2>
+<p><code>App</code> is the Blazor UI root component.  This article looks at how it works and demonstrates how to:</p>
+<ol>
+<li>Add Dynamic Layouts - change the default layout at runtime.</li>
+<li>Add Dynamic Routes - add and remove extra routes at runtime.</li>
+<li>Add Dynamic RouteViews - change the RouteView component directly without Routing.</li>
+</ol>
+<p><img src="https://shauncurtis.github.io/articles/assets/A-Flexible-App/Screenshot.png" alt="EditForm" /></p>
+<h2 id="code-and-examples">Code and Examples</h2>
+<p><a href="https://github.com/ShaunCurtis/CEC.Blazor.RouteView">The repository for this project is here</a>, and is based on my <a href="https://github.com/ShaunCurtis/AllinOne">Blazor AllInOne Template</a>.</p>
+<p>You can view a demo of the components running on my Blazor.Database site here <a href="https://cec-blazor-database.azurewebsites.net/">https://cec-blazor-database.azurewebsites.net/</a> from the highlighted links.</p>
+<h2 id="the-blazor-application">The Blazor Application</h2>
+<p><code>App</code> is normally defined in <em>App.razor</em>.  The same component is used in both Web Assembly and Server contexts.</p>
+<p>In the Web Assembly context the SPA startup page contains an element placeholder which is replaced when <code>Program</code> starts in the Web Assembly context.</p>
+<pre><code class="language-html">....
+&lt;body&gt;
+    &lt;div id=&quot;app&quot;&gt;Loading...&lt;/div&gt;
+    ...
+&lt;/body&gt;
+</code></pre>
+<p>The code line that defines the replacement in <code>Program</code> is:</p>
+<pre><code class="language-csharp">    // Replace the app id element with the component App
+    builder.RootComponents.Add&lt;App&gt;(&quot;#app&quot;);
+</code></pre>
+<p>In the Server context <code>App</code> is declared directly as a Razor component in the Razor markup.  It gets pre-rendered by the server and then updated by the Blazor Server client in the browser.</p>
+<pre><code class="language-html">...
+&lt;body&gt;
+    &lt;component type=&quot;typeof(Blazor.App)&quot; render-mode=&quot;ServerPrerendered&quot; /&gt;
+...
+&lt;/body&gt;
+</code></pre>
+<h2 id="the-app-component">The App Component</h2>
+<p>The <code>App</code> code is shown below.  It's a standard Razor component, inheriting from <code>ComponentBase</code>.</p>
+<p><code>Router</code> is the local root component and sets <code>AppAssembly</code> to the assembly containing <code>Program</code>.  On initialization it trawls <code>Assembly</code> for all classes with a Route attribute and registers with the <code>NavigationChanged</code> event on the NavigationManager Service.  On a navigation event it tries to match the navigation Url to a route.  If it finds one, it renders the <code>Found</code> render fragment, otherwise it renders <code>NotFound</code>.</p>
+<pre><code class="language-html">&lt;Router AppAssembly=&quot;@typeof(Program).Assembly&quot; PreferExactMatches=&quot;@true&quot;&gt;
+    &lt;Found Context=&quot;routeData&quot;&gt;
+        &lt;RouteView RouteData=&quot;@routeData&quot; DefaultLayout=&quot;@typeof(MainLayout)&quot; /&gt;
+    &lt;/Found&gt;
+    &lt;NotFound&gt;
+        &lt;LayoutView Layout=&quot;@typeof(MainLayout)&quot;&gt;
+            &lt;p&gt;Sorry, there's nothing at this address.&lt;/p&gt;
+        &lt;/LayoutView&gt;
+    &lt;/NotFound&gt;
+&lt;/Router&gt;
+</code></pre>
+<p><code>RouteView</code> is declared within <code>Found</code>.  <code>RouteData</code> is set to the router's current <code>routeData</code> object and <code>DefaultLayout</code> set to an application Layout <code>Type</code>.  <code>RouteView</code> renders an instance of <code>RouteData.Type</code> as a component within either the a page specific layout or the default layout, and applies any parameters in <code>RouteData.RouteValues</code>.</p>
+<p><code>NotFound</code> contains a <code>LayoutView</code> component, specifying a layout to render any child content in.</p>
+<h2 id="routeviewservice">RouteViewService</h2>
+<p><code>RouteViewService</code> is the state management service for the new components.  It's registered in the WASM and Server Services.  The Server version can be either a Singleton or Scoped, depending on the application needs.  You could have two separate services to manage application and user contexts separately.</p>
+<pre><code class="language-csharp">public class RouteViewService 
+{
+  ....
+}
+</code></pre>
+<p>In the Server it's added to <code>Startup</code> in <code>ConfigServices</code>.</p>
+<pre><code class="language-csharp">services.AddSingleton&lt;RouteViewService&gt;();
+</code></pre>
+<p>In the Web Assembly context it's added to <code>Program</code>.</p>
+<pre><code class="language-csharp">builder.Services.AddScoped&lt;RouteViewService&gt;();
+</code></pre>
+<h3 id="routeviewmanager">RouteViewManager</h3>
+<p><code>RouteViewManager</code> replaces <code>RouteView</code>.</p>
+<p>It's implements <code>RouteView</code>'s functionality.  It's too large to show in it's entirety so We'll look at the key functionality in sections.</p>
+<p>When a routing event occurs, <code>RouteViewManager.RouteData</code> is updated and <code>Router</code> re-rendered.  The <code>Renderer</code> calls <code>SetParametersAsync</code> on  <code>RouteViewManager</code>, passing the updated <em>Parameters</em>.  <code>SetParametersAsync</code> checks it has a valid <code>RouteData</code>, sets <code>_ViewData</code> to null and renders the component.  <code>_ViewData</code> is set to null to ensure the component loads the route. A valid <code>ViewData</code> object has precedence over a valid <code>RouteData</code> object in the render process.</p>
+<pre><code class="language-csharp">public await Task SetParametersAsync(ParameterView parameters)
+{
+    // Sets the component parameters
+    parameters.SetParameterProperties(this);
+    // Check if we have either RouteData or ViewData
+    if (RouteData == null)
+    {
+        throw new InvalidOperationException($&quot;The {nameof(RouteView)} component requires a non-null value for the parameter {nameof(RouteData)}.&quot;);
+    }
+    // we've routed and need to clear the ViewData
+    this._ViewData = null;
+    // Render the component
+    await this.RenderAsync();
+}
+</code></pre>
+<p><code>Render</code> uses InvokeAsync to ensure the render event is run on the correct thread context. <code>_RenderEventQueued</code> ensures there's only only one render event in the Renderer's queue.</p>
+<pre><code class="language-csharp">public async Task RenderAsync() =&gt; await InvokeAsync(() =&gt;
+    {
+        if (!this._RenderEventQueued)
+        {
+            this._RenderEventQueued = true;
+            _renderHandle.Render(_renderDelegate);
+        }
+    }
+);
+</code></pre>
+<p>For those curious, <code>InvokeAsync</code> looks like this.</p>
+<pre><code class="language-csharp">protected Task InvokeAsync(Action workItem) =&gt; _renderHandle.Dispatcher.InvokeAsync(workItem);
+</code></pre>
+<p><code>RouteViewManager</code>s content is built as a set of components, each defined within a <code>RenderFragment</code>.</p>
+<p><code>_renderDelegate</code> defines the local root component, cascading itself and adding the <code>_layoutViewFragment</code> fragment as it's <code>ChildContent</code>.</p>
+<pre><code class="language-csharp">private RenderFragment _renderDelegate =&gt; builder =&gt;
+{
+    // We're being executed so no longer queued
+    _RenderEventQueued = false;
+    // Adds cascadingvalue for the ViewManager
+    builder.OpenComponent&lt;CascadingValue&lt;RouteViewManager&gt;&gt;(0);
+    builder.AddAttribute(1, &quot;Value&quot;, this);
+    // Get the layout render fragment
+    builder.AddAttribute(2, &quot;ChildContent&quot;, this._layoutViewFragment);
+    builder.CloseComponent();
+};
+</code></pre>
+<p><code>_layoutViewFragment</code> selects the layout, adds it and sets <code>_renderComponentWithParameters</code> as it's <code>ChildContent</code>.</p>
+<pre><code class="language-csharp">private RenderFragment _layoutViewFragment =&gt; builder =&gt;
+{
+    Type _pageLayoutType = RouteData?.PageType.GetCustomAttribute&lt;LayoutAttribute&gt;()?.LayoutType
+        ?? RouteViewService.Layout
+        ?? DefaultLayout;
+
+    builder.OpenComponent&lt;LayoutView&gt;(0);
+    builder.AddAttribute(1, nameof(LayoutView.Layout), _pageLayoutType);
+    builder.AddAttribute(2, nameof(LayoutView.ChildContent), _renderComponentWithParameters);
+    builder.CloseComponent();
+};
+</code></pre>
+<p><code>_renderComponentWithParameters</code> selects the view/route component to render and adds it with the supplied parameters.  A valid view take precedence over a valid route.</p>
+<pre><code class="language-csharp">private RenderFragment _renderComponentWithParameters =&gt; builder =&gt;
+{
+    Type componentType = null;
+    IReadOnlyDictionary&lt;string, object&gt; parameters = new Dictionary&lt;string, object&gt;();
+
+    if (_ViewData != null)
+    {
+        componentType = _ViewData.ViewType;
+        parameters = _ViewData.ViewParameters;
+    }
+    else if (RouteData != null)
+    {
+        componentType = RouteData.PageType;
+        parameters = RouteData.RouteValues;
+    }
+
+    if (componentType != null)
+    {
+        builder.OpenComponent(0, componentType);
+        foreach (var kvp in parameters)
+        {
+            builder.AddAttribute(1, kvp.Key, kvp.Value);
+        }
+        builder.CloseComponent();
+    }
+    else
+    {
+        builder.OpenElement(0, &quot;div&quot;);
+        builder.AddContent(1, &quot;No Route or View Configured to Display&quot;);
+        builder.CloseElement();
+    }
+};
+</code></pre>
+<h2 id="dynamic-layouts">Dynamic Layouts</h2>
+<p>Out-of-the-box, Blazor layouts are defined and fixed at compile time.  <code>@Layout</code> is Razor talk that gets transposed when the Razor is pre-compiled to:</p>
+<pre><code class="language-csharp">[Microsoft.AspNetCore.Components.LayoutAttribute(typeof(MainLayout))]
+[Microsoft.AspNetCore.Components.RouteAttribute(&quot;/&quot;)]
+[Microsoft.AspNetCore.Components.RouteAttribute(&quot;/index&quot;)]
+public partial class Index : Microsoft.AspNetCore.Components.ComponentBase
+....
+</code></pre>
+<p>To change Layouts dynamically we use <code>RouteViewService</code> to store the layout. It can be set from any component that injects the service.</p>
+<pre><code class="language-csharp">public class RouteViewService
+{
+    public Type Layout { get; set; }
+    ....
+}
+</code></pre>
+<p><code>_layoutViewFragment</code> in <code>RouteViewManager</code> chooses the layout - <code>RouteViewService.Layout</code> is set above the default layout in precedence.</p>
+<pre><code class="language-csharp">private RenderFragment _layoutViewFragment =&gt; builder =&gt;
+{
+    Type _pageLayoutType = RouteData?.PageType.GetCustomAttribute&lt;LayoutAttribute&gt;()?.LayoutType
+        ?? RouteViewService.Layout
+        ?? DefaultLayout;
+
+    builder.OpenComponent&lt;LayoutView&gt;(0);
+    builder.AddAttribute(1, nameof(LayoutView.Layout), _pageLayoutType);
+    builder.AddAttribute(2, nameof(LayoutView.ChildContent), _renderComponentWithParameters);
+    builder.CloseComponent();
+};
+</code></pre>
+<p>Changing in the layout is demonstrated in the demo pages.</p>
+<h2 id="dynamic-routing">Dynamic Routing</h2>
+<p>Dynamic Routing is a little more complicated.  <code>Router</code> is a sealed box, so it's take it or re-write it.  Unless you must, don't re-write it.  We're not looking to change existing routes, just add and remove new dynamic routes.</p>
+<p>Routes are defined at compile time and are used internally within the <code>Router</code> Component.</p>
+<p>RouteView Razor Pages are labelled like this:</p>
+<pre><code class="language-html">@page &quot;/&quot;
+@page &quot;/index&quot;
+</code></pre>
+<p>This is Razor talk, and gets transposed into the following in the C# class when pre-compiled.</p>
+<pre><code class="language-csharp">[Microsoft.AspNetCore.Components.RouteAttribute(&quot;/&quot;)]
+[Microsoft.AspNetCore.Components.RouteAttribute(&quot;/index&quot;)]
+public partial class Index : Microsoft.AspNetCore.Components.ComponentBase
+.....
+</code></pre>
+<p>When <code>Router</code> initializes it trawls any assemblies provided and builds a route dictionary of component/route pairs.</p>
+<p>You can get a list of route attribute components like this:</p>
+<pre><code class="language-csharp">static public IEnumerable&lt;Type&gt; GetTypeListWithCustomAttribute(Assembly assembly, Type attribute)
+    =&gt; assembly.GetTypes().Where(item =&gt; (item.GetCustomAttributes(attribute, true).Length &gt; 0));
+</code></pre>
+<p>On initial render the Router register a delegate with the <code>NavigationManager.LocationChanged</code> event.  This delegate looks up routes and triggers render events on the <code>Router</code>. If it finds a route it renders <code>Found</code> which renders our new <code>RouteViewManager</code>.  <code>RouteViewManager</code> builds out the Layout and adds a new instance of the component defined in <code>RouteData</code>.</p>
+<p>When it doesn't find a route, what happens depends on the <code>IsNavigationIntercepted</code> property of the <code>LocationChangedEventArgs</code> provided by the event:</p>
+<ol>
+<li>True if it intercepts navigation in the DOM - anchors, etc.</li>
+<li>True if a UI component calls it's <code>NavigateTo</code> method and sets <code>ForceLoad</code>.</li>
+<li>False if a UI component calls it's <code>NavigateTo</code> method and sets <code>ForceLoad</code>.</li>
+</ol>
+<p>If we can avoid causing a hard navigation events in <code>Router</code>, we can add a component in <code>NotFound</code> to handle additional dynamic routing.  Not too difficult, it is our code!  There's an enhanced <code>NavLink</code> control to help control navigation - covered later.  In the event of a hard navigation event, routing will still work, but the application reloads.  Any rogue navigation events should be detected and fixed during testing.</p>
+<h3 id="customroutedata">CustomRouteData</h3>
+<p><code>CustomRouteData</code> holds the information needed to make routing decisions.  The class looks like this with inline detailed explanations.</p>
+<pre><code class="language-csharp">    public class CustomRouteData
+    {
+        /// The standard RouteData.
+        public RouteData RouteData { get; private set; }
+        /// The PageType to load on a match 
+        public Type PageType { get; set; }
+        /// The Regex String to define the route
+        public string RouteMatch { get; set; }
+        /// Parameter values to add to the Route when created name/defaultvalue
+        public SortedDictionary&lt;string, object&gt; ComponentParameters { get; set; } = new SortedDictionary&lt;string, object&gt;();
+
+        /// Method to check if we have a route match
+        public bool IsMatch(string url)
+        {
+            // get the match
+            var match = Regex.Match(url, this.RouteMatch,RegexOptions.IgnoreCase);
+            if (match.Success)
+            {
+                // create new dictionary object to add to the RouteData
+                var dict = new Dictionary&lt;string, object&gt;();
+                //  check we have the same or fewer groups as parameters to map the to
+                if (match.Groups.Count &gt;= ComponentParameters.Count)
+                {
+                    var i = 1;
+                    // iterate through the parameters and add the next match
+                    foreach (var pars in ComponentParameters)
+                    {
+                        string matchValue = string.Empty;
+                        if (i &lt; match.Groups.Count)
+                            matchValue = match.Groups[i].Value;
+                        //  Use a StypeSwitch object to do the Type Matching and create the dictionary pair 
+                        var ts = new TypeSwitch()
+                            .Case((int x) =&gt;
+                            {
+                                if (int.TryParse(matchValue, out int value))
+                                    dict.Add(pars.Key, value);
+                                else
+                                    dict.Add(pars.Key, pars.Value);
+                            })
+                            .Case((float x) =&gt;
+                            {
+                                if (float.TryParse(matchValue, out float value))
+                                    dict.Add(pars.Key, value);
+                                else
+                                    dict.Add(pars.Key, pars.Value);
+                            })
+                            .Case((decimal x) =&gt;
+                            {
+                                if (decimal.TryParse(matchValue, out decimal value))
+                                    dict.Add(pars.Key, value);
+                                else
+                                    dict.Add(pars.Key, pars.Value);
+                            })
+                            .Case((string x) =&gt;
+                            {
+                                dict.Add(pars.Key, matchValue);
+                            });
+
+                        ts.Switch(pars.Value);
+                        i++;
+                    }
+                }
+                // create a new RouteData object and assign it to the RouteData property. 
+                this.RouteData = new RouteData(this.PageType, dict);
+            }
+            return match.Success;
+        }
+
+        /// Method to check if we have a route match and return the RouteData
+        public bool IsMatch(string url, out RouteData routeData)
+        {
+            routeData = this.RouteData;
+            return IsMatch(url);
+        }
+    }
+</code></pre>
+<p>For those interested, <code>TypeSwitch</code> looks like this (thanks to <em>cdiggins</em> on StackOverflow for the code):</p>
+<pre><code class="language-csharp">/// =================================
+/// Author: stackoverflow: cdiggins
+/// ==================================
+    public class TypeSwitch
+    {
+        public TypeSwitch Case&lt;T&gt;(Action&lt;T&gt; action) { matches.Add(typeof(T), (x) =&gt; action((T)x)); return this; }
+        private Dictionary&lt;Type, Action&lt;object&gt;&gt; matches = new Dictionary&lt;Type, Action&lt;object&gt;&gt;();
+        public void Switch(object x) { matches[x.GetType()](x); }
+    }
+</code></pre>
+<h2 id="updates-to-the-routeviewservice">Updates to the RouteViewService</h2>
+<p>The updated sections in <code>RouteViewService</code> are shown below. <code>Routes</code> holds the list of custom routes - it's deliberately left open for customization.</p>
+<pre><code class="language-csharp">public List&lt;CustomRouteData&gt; Routes { get; private set; } = new List&lt;CustomRouteData&gt;();
+
+public bool GetRouteMatch(string url, out RouteData routeData)
+{
+    var route = Routes?.FirstOrDefault(item =&gt; item.IsMatch(url)) ?? null;
+    routeData = route?.RouteData ?? null;
+    return route != null;
+}
+</code></pre>
+<h2 id="the-routenotfoundmanager-component">The RouteNotFoundManager Component</h2>
+<p><code>RouteNotFoundManager</code> is a simple version of <code>RouteViewManager</code>.</p>
+<p><code>SetParametersAsync</code> is called when the component loads.  It gets the local Url, calls <code>GetRouteMatch</code> on <code>RouteViewService</code>, and renders the component.  If there's no layout, it just renders the <code>ChildContent</code>.</p>
+<pre><code class="language-csharp">public Task SetParametersAsync(ParameterView parameters)
+{
+    parameters.SetParameterProperties(this);
+    // Get the route url
+    var url = $&quot;/{NavManager.Uri.Replace(NavManager.BaseUri, &quot;&quot;)}&quot;;
+    // check if we have a custom route and if so use it
+    if (RouteViewService.GetRouteMatch(url, out var routedata))
+        _routeData = routedata;
+    // if The layout is blank show the ChildContent without a layout 
+    if (_pageLayoutType == null)
+        _renderHandle.Render(ChildContent);
+    // otherwise show the route or ChildContent inside the layout
+    else
+        _renderHandle.Render(_ViewFragment);
+    return Task.CompletedTask;
+}
+</code></pre>
+<p><code>_ViewFragment</code> either renders a <code>RouteViewManager</code>, setting <code>RouteData</code> if it finds a custom route, or the contents of <code>RouteNotFoundManager</code>.</p>
+<pre><code class="language-csharp">/// Layouted Render Fragment
+private RenderFragment _ViewFragment =&gt; builder =&gt;
+{
+    // check if we have a RouteData object and if so load the RouteViewManager, otherwise the ChildContent
+    if (_routeData != null)
+    {
+        builder.OpenComponent&lt;RouteViewManager&gt;(0);
+        builder.AddAttribute(1, nameof(RouteViewManager.DefaultLayout), _pageLayoutType);
+        builder.AddAttribute(1, nameof(RouteViewManager.RouteData), _routeData);
+        builder.CloseComponent();
+    }
+    else
+    {
+        builder.OpenComponent&lt;LayoutView&gt;(0);
+        builder.AddAttribute(1, nameof(LayoutView.Layout), _pageLayoutType);
+        builder.AddAttribute(2, nameof(LayoutView.ChildContent), this.ChildContent);
+        builder.CloseComponent();
+    }
+};
+</code></pre>
+<h2 id="switching-the-routeview-without-routing">Switching the RouteView Without Routing</h2>
+<p>Switching the RouteView without routing has several applications.  These are some I've used:</p>
+<ol>
+<li>Hide direct access to a page.  It can only be accessed within the application.</li>
+<li>Multipart forms/processes with a single entry point.  The state of the saved form/process dictates which form gets loaded.</li>
+<li>Context dependant forms or information.  Login/logout/signup is a good example.  The same Url but with a different routeviews loaded depending on the context.</li>
+</ol>
+<h3 id="viewdata">ViewData</h3>
+<p>The equivalent to <code>RouteData</code>.</p>
+<pre><code class="language-csharp">public class ViewData
+{
+    /// Gets the type of the View.
+    public Type ViewType { get; set; }
+
+    /// Gets the type of the page matching the route.
+    public Type LayoutType { get; set; }
+
+    /// Parameter values to add to the Route when created
+    public Dictionary&lt;string, object&gt; ViewParameters { get; private set; } = new Dictionary&lt;string, object&gt;();
+
+    /// Constructs an instance of &lt;see cref=&quot;ViewData&quot;/&gt;.
+    public ViewData(Type viewType, Dictionary&lt;string, object&gt; viewValues = null)
+    {
+        if (viewType == null) throw new ArgumentNullException(nameof(viewType));
+        this.ViewType = viewType;
+        if (viewValues != null) this.ViewParameters = viewValues;
+    }
+}
+</code></pre>
+<p>All functionality is implemented in <code>RouteViewManager</code>.</p>
+<h3 id="routeviewmanager-1">RouteViewManager</h3>
+<p>First some properties and fields.</p>
+<pre><code class="language-csharp">/// The size of the History list used for Views.
+[Parameter] public int ViewHistorySize { get; set; } = 10;
+
+/// Gets and sets the view data.
+public ViewData ViewData
+{
+    get =&gt; this._ViewData;
+    protected set
+    {
+        this.AddViewToHistory(this._ViewData);
+        this._ViewData = value;
+    }
+}
+
+/// Property that stores the View History.  It's size is controlled by ViewHistorySize
+public SortedList&lt;DateTime, ViewData&gt; ViewHistory { get; private set; } = new SortedList&lt;DateTime, ViewData&gt;();
+
+/// Gets the last view data.
+public ViewData LastViewData
+{
+    get
+    {
+        var newest = ViewHistory.Max(item =&gt; item.Key);
+        if (newest != default) return ViewHistory[newest];
+        else return null;
+    }
+}
+
+/// Method to check if &lt;param name=&quot;view&quot;&gt; is the current View
+public bool IsCurrentView(Type view) =&gt; this.ViewData?.ViewType == view;
+
+/// Boolean to check if we have a View set
+public bool HasView =&gt; this._ViewData?.ViewType != null;
+
+/// Internal ViewData used by the component
+private ViewData _ViewData { get; set; }
+</code></pre>
+<p>Next a set of <code>LoadViewAsync</code> methods to provide a variety of ways to load a new view.  The main method sets the internal <code>viewData</code> field and calls <code>Render</code> to re-render the component.</p>
+<pre><code class="language-csharp">// The main method
+public await Task LoadViewAsync(ViewData viewData = null)
+{
+    if (viewData != null) this.ViewData = viewData;
+    if (ViewData == null)
+    {
+        throw new InvalidOperationException($&quot;The {nameof(RouteViewManager)} component requires a non-null value for the parameter {nameof(ViewData)}.&quot;);
+    }
+    await this.RenderAsync();
+}
+
+public async Task LoadViewAsync(Type viewtype)
+    =&gt; await this.LoadViewAsync(new ViewData(viewtype, new Dictionary&lt;string, object&gt;()));
+
+public async Task LoadViewAsync&lt;TView&gt;(Dictionary&lt;string, object&gt; data = null)
+    =&gt; await this.LoadViewAsync(new ViewData(typeof(TView), data));
+</code></pre>
+<p>We have already seen <code>_renderComponentWithParameters</code>.  With a valid <code>_ViewData</code> object, it renders the component using <code>_ViewData</code>.</p>
+<pre><code class="language-csharp">private RenderFragment _renderComponentWithParameters =&gt; builder =&gt;
+{
+    Type componentType = null;
+    IReadOnlyDictionary&lt;string, object&gt; parameters = new Dictionary&lt;string, object&gt;();
+
+    if (_ViewData != null)
+    {
+        componentType = _ViewData.ViewType;
+        parameters = _ViewData.ViewParameters;
+    }
+    else if (RouteData != null)
+    {
+        componentType = RouteData.PageType;
+        parameters = RouteData.RouteValues;
+    }
+
+    if (componentType != null)
+    {
+        builder.OpenComponent(0, componentType);
+        foreach (var kvp in parameters)
+        {
+            builder.AddAttribute(1, kvp.Key, kvp.Value);
+        }
+        builder.CloseComponent();
+    }
+    else
+    {
+        builder.OpenElement(0, &quot;div&quot;);
+        builder.AddContent(1, &quot;No Route or View Configured to Display&quot;);
+        builder.CloseElement();
+    }
+};
+</code></pre>
+<h3 id="routenavlink">RouteNavLink</h3>
+<p><code>RouteNavLink</code> is an enhanced <code>NavLink</code> control.  The code is a direct copy with a small amount of added code.  It doesn't inherit because <code>NavLink</code> is a black box.  It ensures navigation is through the NavigationManager rather than Html anchor links and provides direct access to RouteView loading.  The code is in the Repo - it's too long to reproduce here.</p>
+<h2 id="example-pages">Example Pages</h2>
+<p>The application has RouteViews/Pages to demonstrate the new components.  You can review the source code in the Repo.  You can also see the pages on the Demo Site.</p>
+<p><img src="https://shauncurtis.github.io/articles/assets/A-Flexible-App/DemoSite.png" alt="EditForm" /></p>
+<h3 id="routeviewer.razor">RouteViewer.razor</h3>
+<p><a href="https://cec-blazor-database.azurewebsites.net/routeviewer">https://cec-blazor-database.azurewebsites.net/routeviewer</a></p>
+<p>This demonstrates:</p>
+<ol>
+<li>Adding routes dynamically to the Application.  Choose a page to add a custom route for, add a route name and click <em>Go To Route</em>.</li>
+<li>Loading a <code>RouteView</code> without navigation.  Choose a Page and click on <em>Go To View</em>.  The page is displayed, but the Url doesn't change!  Confusing, but it demos the principle.</li>
+<li>Changing the default Layout.  Click on <em>Red Layout</em> and the layout will change to red.  Basic FetchData has a specific layout defined so it will use the original layout.  Click on <em>Normal Layout</em> to change back.</li>
+</ol>
+<h3 id="form.razor">Form.Razor</h3>
+<p><a href="https://cec-blazor-database.azurewebsites.net/form">https://cec-blazor-database.azurewebsites.net/form</a></p>
+<p>This demonstrates a multipart form.  There are four forms:</p>
+<ol>
+<li><em>Form.Razor</em> the base and first form.</li>
+<li><em>Form2.Razor</em> the second form - inherits from the first form.</li>
+<li><em>Form3.Razor</em> the third form - inherits from the first form.</li>
+<li><em>Form4.Razor</em> the result form - inherits from the first form.</li>
+</ol>
+<p>The forms link to data in the WeathForecastService which maintains the form state.  Try leaving the form part way through and then returning.  State is preserved while the SPA session is maintained.</p>
+<h2 id="wrap-up">Wrap Up</h2>
+<p>Hopefully I've demonstrated the principles you can use to build the extra functionality into the core Blazor framework.  None of the components are finished articles.  Use them and develop them as you wish.</p>
+<p>If you're reading this article a long time into the future chack <a href="https://shauncurtis.github.io/articles/A-Flexible-App.html">here</a> for the latest version</p>
+</div></div></div></body></html>
+
+
+
+
+

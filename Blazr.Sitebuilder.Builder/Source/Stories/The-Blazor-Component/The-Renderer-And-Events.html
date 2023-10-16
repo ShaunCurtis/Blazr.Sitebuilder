@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+    <html>
+    <head>
+        <meta charset="UTF-8">
+        <title>The Renderer and the Render Tree</title>
+        <style>
+/* From extension vscode.github */
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+
+.vscode-dark img[src$=\#gh-light-mode-only],
+.vscode-light img[src$=\#gh-dark-mode-only] {
+	display: none;
+}
+
+</style>
+        
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/Microsoft/vscode/extensions/markdown-language-features/media/markdown.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/Microsoft/vscode/extensions/markdown-language-features/media/highlight.css">
+<style>
+            body {
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe WPC', 'Segoe UI', system-ui, 'Ubuntu', 'Droid Sans', sans-serif;
+                font-size: 14px;
+                line-height: 1.6;
+            }
+        </style>
+        <style>
+.task-list-item {
+    list-style-type: none;
+}
+
+.task-list-item-checkbox {
+    margin-left: -20px;
+    vertical-align: middle;
+    pointer-events: none;
+}
+</style>
+        
+    </head>
+    <body class="vscode-body vscode-light">
+        <p><a href="index.html">Back to the Index</a></p>
+<p>A detailed description of thr Render process is beyond the scope of this article, however you need a basic grasp of the concepts to understand the rendering process.</p>
+<p>To quote the MS Documentation:</p>
+<blockquote>
+<p>The <code>Renderer</code> provides mechanisms:</p>
+<ol>
+<li>For rendering hierarchies of <code>IComponent</code> instances;</li>
+<li>Dispatching events to them;</li>
+<li>Notifying when the user interface is being updated.</li>
+</ol>
+</blockquote>
+<h2 id="the-renderer-and-the-render-tree">The Renderer and the Render Tree</h2>
+<p>The <code>Renderer</code> and <code>RenderTree</code> reside in the Client Application in WASM and in the SignalR Hub Session in Server, i.e. one per connected Client Application.</p>
+<p>The UI - defined by html code in the DOM [Document Object Model] - is represented in the application as a <code>RenderTree</code> and managed by a <code>Renderer</code>. Think of the <code>RenderTree</code> as a tree with one or more components attached to each branch. Each component is a C# class  implementing the <code>IComponent</code> interface.</p>
+<p>The <code>Renderer</code> maintains a <code>RenderQueue</code> of <code>RenderFragments</code>.  Components submit <code>RenderFragments</code> to the queue.  The Renderer services this queue and invokes any queued render fragements.</p>
+<p>The <code>Renderer</code> has a diffing process that detects changes in the DOM caused by <code>RenderTree</code> updates.  It passes these changes to the client code to implement in the Browser DOM and update the displayed page.</p>
+<p>The diagram below is a visual representation of the render tree for the out-of-the-box Blazor template.</p>
+<p><img src="https://shauncurtis.github.io/articles/assets/Blazor-Components/Root-Render-Tree.png" alt="Root Render Tree"></p>
+<h2 id="ui-events">UI Events</h2>
+<p>The Render manages UI events, feeding registered events back from the DOM into the RenderTree component instances that defined them.</p>
+<p>Hidden away are two important interfaces that dictate how this happens.</p>
+<ul>
+<li><code>IHandleEvent</code></li>
+<li><code>IHandleAfterRender</code></li>
+</ul>
+<h3 id="ihandleevent">IHandleEvent</h3>
+<p>When the Renderer receives a registered UI event it either:</p>
+<ol>
+<li>Calls <code>IHandleEvent.HandleEventAsync</code> if the component implements <code>IHandleEvent</code>.</li>
+<li>Calls the handler directly.</li>
+</ol>
+<p><code>IHandleEvent</code> defines a single method.</p>
+<pre><code class="language-csharp">Task IHandleEvent.HandleEventAsync(EventCallbackWorkItem callback, <span class="hljs-built_in">object</span>? arg);
+</code></pre>
+<p><code>ComponentBase</code> implements the interface, with the two step call to <code>StateHasChanged</code>.  Ensure you're fundimental understandoing of this piece of code.  It will save you a lot of time in the future.</p>
+<pre><code class="language-csharp">Task IHandleEvent.HandleEventAsync(EventCallbackWorkItem callback, <span class="hljs-built_in">object</span>? arg)
+{
+    <span class="hljs-keyword">var</span> task = callback.InvokeAsync(arg);
+    <span class="hljs-keyword">var</span> shouldAwaitTask = task.Status != TaskStatus.RanToCompletion &amp;&amp;
+        task.Status != TaskStatus.Canceled;
+
+    <span class="hljs-comment">// After each event, we synchronously re-render (unless !ShouldRender())</span>
+    <span class="hljs-comment">// This just saves the developer the trouble of putting &quot;StateHasChanged();&quot;</span>
+    <span class="hljs-comment">// at the end of every event callback.</span>
+    StateHasChanged();
+
+    <span class="hljs-keyword">return</span> shouldAwaitTask ?
+        CallStateHasChangedOnAsyncCompletion(task) :
+        Task.CompletedTask;
+}
+
+<span class="hljs-function"><span class="hljs-keyword">private</span> <span class="hljs-keyword">async</span> Task <span class="hljs-title">CallStateHasChangedOnAsyncCompletion</span>(<span class="hljs-params">Task task</span>)</span>
+{
+    <span class="hljs-keyword">try</span>
+    {
+        <span class="hljs-keyword">await</span> task;
+    }
+    <span class="hljs-keyword">catch</span> <span class="hljs-comment">// avoiding exception filters for AOT runtime support</span>
+    {
+        <span class="hljs-comment">// Ignore exceptions from task cancellations, but don&#x27;t bother issuing a state change.</span>
+        <span class="hljs-keyword">if</span> (task.IsCanceled)
+            <span class="hljs-keyword">return</span>;
+        <span class="hljs-keyword">throw</span>;
+    }
+    StateHasChanged();
+}
+</code></pre>
+<p>If <code>IHandleEvent</code> is not implemented it simply calls the handler directly.</p>
+<pre><code class="language-csharp">Task <span class="hljs-keyword">async</span> IHandleEvent.HandleEventAsync(EventCallbackWorkItem callback, <span class="hljs-built_in">object</span>? arg)
+   =&gt; <span class="hljs-keyword">await</span> callback.InvokeAsync(arg);
+</code></pre>
+<h3 id="ihandleafterrender">IHandleAfterRender</h3>
+<p>When the component completes rendering the Renderer checks the compoment to see if it If a implements <code>IHandleAfterRender</code>the Renderer calls <code>HandleEventAsync</code>.  If it doesn't then the renderer doesn't track the event on the component and nothing happens.</p>
+<p><code>ComponentBase</code> implements the interface.</p>
+<pre><code class="language-csharp">Task IHandleEvent.HandleEventAsync(EventCallbackWorkItem callback, <span class="hljs-built_in">object</span>? arg)
+{
+    <span class="hljs-keyword">var</span> task = callback.InvokeAsync(arg);
+    <span class="hljs-keyword">var</span> shouldAwaitTask = task.Status != TaskStatus.RanToCompletion &amp;&amp;
+        task.Status != TaskStatus.Canceled;
+
+    <span class="hljs-comment">// After each event, we synchronously re-render (unless !ShouldRender())</span>
+    <span class="hljs-comment">// This just saves the developer the trouble of putting &quot;StateHasChanged();&quot;</span>
+    <span class="hljs-comment">// at the end of every event callback.</span>
+    StateHasChanged();
+
+    <span class="hljs-keyword">return</span> shouldAwaitTask ?
+        CallStateHasChangedOnAsyncCompletion(task) :
+        Task.CompletedTask;
+}
+</code></pre>
+<p>If <code>IHandleAfterRender</code> is not implemented then nothing happens.</p>
+<pre><code class="language-csharp">Task IHandleEvent.HandleEventAsync(EventCallbackWorkItem callback, <span class="hljs-built_in">object</span>? arg)
+   =&gt; <span class="hljs-keyword">return</span> Task.CompletedTask;
+</code></pre>
+<h3 id="void-ui-events">Void UI Events</h3>
+<p>The following code won't execute as expected in <code>ComponentBase</code>:</p>
+<pre><code class="language-csharp"><span class="hljs-function"><span class="hljs-keyword">void</span> <span class="hljs-keyword">async</span> <span class="hljs-title">ButtonClick</span>(<span class="hljs-params">MouseEventArgs e</span>)</span> 
+{
+  <span class="hljs-keyword">await</span> Task.Delay(<span class="hljs-number">2000</span>);
+  UpdateADisplayProperty();
+}
+</code></pre>
+<p>The DisplayProperty doesn't display the current value until another <code>StateHasChanged</code> events occurs.  Why? ButtonClick doesn't return anything, so there's no <code>Task</code> for the event handler to wait on.  On the <code>await</code> yield, it runs to completion running the final <code>StateHasChanged</code> before <code>UpdateADisplayProperty</code> completes.</p>
+<p>This is a band-aid fix - it's bad pactice, <strong>DON'T DO IT</strong>.</p>
+<pre><code class="language-csharp"><span class="hljs-function"><span class="hljs-keyword">void</span> <span class="hljs-keyword">async</span> <span class="hljs-title">ButtonClick</span>(<span class="hljs-params">MouseEventArgs e</span>)</span> 
+{
+  <span class="hljs-keyword">await</span> Task.Delay(<span class="hljs-number">2000</span>);
+  UpdateADisplayProperty();
+  StateHasChanged();
+}
+</code></pre>
+<p>The correct solution is:</p>
+<pre><code class="language-csharp"><span class="hljs-function">Task <span class="hljs-keyword">async</span> <span class="hljs-title">ButtonClick</span>(<span class="hljs-params">MouseEventArgs e</span>)</span> 
+{
+  <span class="hljs-keyword">await</span> Task.Delay(<span class="hljs-number">2000</span>);
+  UpdateADisplayProperty();
+}
+</code></pre>
+<p>Now the event handler has a <code>Task</code> to await and doesn't execute <code>StateHasChanged</code> until <code>ButtonClick</code> completes.</p>
+
+        
+        
+    </body>
+    </html>
