@@ -2,20 +2,18 @@
 @using System.Diagnostics
 @implements IContentComponent
 
-<LayoutView Layout="@typeof(ArticleLayout)">
-    <PageTitle>Home</PageTitle>
-    <div>The main content goes here</div>
-
-</LayoutView>
+<LayoutView Layout="@typeof(ArticleLayout)"/>
 
 <SectionContent SectionName="page-header-data">
-    @this.ArticleHeader
+
+    @this.ArticleSeoHeader
+    @this.ArticleOgHeader
+
 </SectionContent>
 
 <SectionContent SectionName="side-bar">
 
     @this.ArticleInfo
-
     @this.TOC
 
 </SectionContent>
@@ -23,60 +21,60 @@
 <SectionContent SectionName="main-content">
     
     @this.ArticleTopBar
-
     @this.ArticleContent
 
 </SectionContent>
 
 
 @code {
-    protected MarkupString ArticleHeader = new MarkupString("<title>Title Goes Here!</title>");
-
+    protected MarkupString ArticleSeoHeader = new MarkupString("<title>Title Goes Here!</title>");
+    protected MarkupString ArticleOgHeader = new MarkupString(string.Empty);
     protected MarkupString ArticleContent = new MarkupString("Loading");
-
     protected MarkupString TOC = new MarkupString("Loading");
-
     protected MarkupString ArticleInfo = new MarkupString("Loading");
-
     protected MarkupString ArticleTopBar = new MarkupString("Loading");
-
     public virtual PageData PageData { get; protected set; } = new();
 
     public async override Task SetParametersAsync(ParameterView parameters)
     {
         parameters.SetParameterProperties(this);
 
-        await this.GetContent();
+        await this.GetContentAsMarkupString();
 
         await base.SetParametersAsync(ParameterView.Empty);
     }
 
-    protected async Task GetContent()
+    protected async Task GetContentAsMarkupString()
     {
-        this.ArticleContent = new MarkupString(this.GetMarkdownHtml());
+        // Get the Markdown text from the file
+        string markdownFlePath = Environment.CurrentDirectory + PageData.MdFile;
+        Debug.Assert(File.Exists(markdownFlePath));
+        string markdownText = await File.ReadAllTextAsync(markdownFlePath);
 
+        // Process the Markdown to html
+        var markdownPipeline = new MarkdownPipelineBuilder().UseAdvancedExtensions().Build();
+        var articleHtml = Markdown.ToHtml(markdownText, markdownPipeline);
+        this.ArticleContent = new MarkupString(articleHtml);
+
+        // Gwt the TOC
         var toc = TOCUtils.GetTOC(articleHtml);
         var tocContent = TOCBuilder.BuildTOC(toc);
         this.TOC = new MarkupString(tocContent ?? string.Empty);
 
-        var headerHtml = ArticleHtmlProvider.BuildArticleTitleHtml(this.PageData);
+        // Get the Article Header
+        var topBarHtml = ArticleHtmlProvider.BuildArticleTitleHtml(this.PageData);
+        this.ArticleTopBar = new MarkupString(topBarHtml ?? string.Empty);
 
-        this.ArticleTopBar = new MarkupString(headerHtml ?? string.Empty);
-
+        // Get the Article Info for the left bar
         var articleInfo = ArticleHtmlProvider.BuildArticleDatesHtml(this.PageData);
         this.ArticleInfo = new MarkupString(articleInfo ?? string.Empty);
-    }
 
-    protected string GetMarkdownHtml()
-    {
-        // Get the Markdown File and process it to html
-        string markdownFlePath = Environment.CurrentDirectory + PageData.MdFile;
-        Debug.Assert(File.Exists(markdownFlePath));
+        // Get the SEO Header information
+        var articleSeoHeader = BaseHtmlProvider.SeoHeaderHtml(this.PageData);
+        this.ArticleSeoHeader = new MarkupString(articleSeoHeader ?? string.Empty);
 
-        string markdownText = await File.ReadAllTextAsync(markdownFlePath);
-
-        var pipeline = new MarkdownPipelineBuilder().UseAdvancedExtensions().Build();
-
-        return Markdown.ToHtml(markdownText, pipeline);
+        // Get the Og Header information
+        var articleOgHeader = BaseHtmlProvider.OgHeaderHtml(this.PageData, SiteData.GetInstance());
+        this.ArticleOgHeader = new MarkupString(articleOgHeader ?? string.Empty);
     }
 }

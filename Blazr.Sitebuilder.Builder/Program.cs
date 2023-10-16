@@ -29,6 +29,7 @@ var siteBuilderFactory = app.Services.GetRequiredService<SiteBuilderFactory>();
 if (siteBuilderFactory is not null)
     await siteBuilderFactory.BuildSiteAsync();
 
+app.UseDefaultFiles();
 app.UseStaticFiles();
 
 app.Run();

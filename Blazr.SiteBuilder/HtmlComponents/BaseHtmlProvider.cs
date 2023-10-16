@@ -16,7 +16,6 @@ public static class BaseHtmlProvider
         builder.AddMeta("author", data.Author);
         builder.AddMeta("description", data.Author);
 
-
         return builder.GetHtml();
     }
 

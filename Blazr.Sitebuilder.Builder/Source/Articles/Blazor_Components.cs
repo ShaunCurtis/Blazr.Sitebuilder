@@ -12,11 +12,9 @@ public class Blazor_Components : ArticleBase
         PublishDate = new DateOnly(2020, 11, 11),
         LastUpdated = new(2021, 2, 16),
         Author = "Shaun Curtis",
-        Group = "Articles",
+        Category = "Articles",
         Tags = "#Blazor;",
         Description = "This article take a detailed look at the anatomy of a component and how it interacts with the rendering process.",
         MdFile = $@".\Source\Articles\Blazor-Components.md",
-        OutputHtmlFile = $@"\Articles\Blazor-Components.md"
-
     };
 }

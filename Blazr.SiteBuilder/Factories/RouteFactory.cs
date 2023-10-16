@@ -13,11 +13,19 @@ public record SiteRouteData(Type Component, string Route, PageData PageData);
 public class RouteFactory
 {
     public IEnumerable<SiteRouteData> RouteList => _routeList.AsEnumerable();
+    public IEnumerable<string> Categories => _categories.AsEnumerable();
+    public IEnumerable<string> Tags => _tags.AsEnumerable();
 
     private List<SiteRouteData> _routeList = new();
+    private List<string> _categories = new();
+    private List<string> _tags = new();
 
+    public RouteFactory()
+    {
+        GetRoutes();
+    }
 
-    public void GetRoutes()
+    private void GetRoutes()
     {
         foreach (Assembly assembly in AppDomain.CurrentDomain.GetAssemblies())
         {
@@ -32,28 +40,23 @@ public class RouteFactory
                     {
                         var route = type.GetCustomAttribute<RouteAttribute>()?.Template;
                         _routeList.Add(new(type, route ?? string.Empty, contentComponent.PageData));
+                        this.AddTags(contentComponent.PageData.Tags);
                     }
                 }
             }
         }
-    }
-}
 
-public static class AttributeExtensions
-{
-    //public static TValue? GetAttributeValue<TAttribute, TValue>(
-    //    this Type type,
-    //    Func<TAttribute, TValue> valueSelector)
-    //    where TAttribute : Attribute
-    //{
-    //    var att = type.GetCustomAttributes(
-    //        typeof(TAttribute), true
-    //    ).FirstOrDefault() as TAttribute;
-    //    if (att != null)
-    //    {
-    //        return valueSelector(att);
-    //    }
-    //    return default(TValue);
-    //}
+        _categories = _routeList.Select(item => item.PageData.Category).Distinct().ToList();
+    }
+
+    private void AddTags(string tags)
+    {
+        var tagList = tags.Split(";");
+        foreach (var tag in tagList)
+        {
+            if (!_tags.Contains(tag))
+                _tags.Add(tag);
+        }
+    }
 }
 

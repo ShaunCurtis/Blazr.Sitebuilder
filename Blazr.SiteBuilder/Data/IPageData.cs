@@ -11,10 +11,9 @@ public interface IPageData
     public string Title { get; }
     public string Description { get;}
     public string Author { get; }
-    public string Group { get; }
+    public string Category { get; }
     public string Tags { get; }
     public string MdFile { get; }
-    public string OutputHtmlFile { get; }
     public DateOnly PublishDate { get; }
     public DateOnly LastUpdated { get; }
 }

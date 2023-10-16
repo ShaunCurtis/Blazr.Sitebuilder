@@ -1,15 +1,38 @@
-﻿<LayoutView Layout="@typeof(HomeLayout)">
-    <PageTitle>Home</PageTitle>
-    <div>The main content goes here</div>
+﻿@page "/Index"
+@using Blazr.SiteBuilder
+@using System.Diagnostics
+@implements IContentComponent
+@inject RouteFactory _rootFactory
 
-</LayoutView>
+<LayoutView Layout="@typeof(ArticleLayout)" />
+
+<SectionContent SectionName="page-header-data">
+
+    @this.SeoHeader
+    @this.OgHeader
+
+</SectionContent>
+
+<SectionContent SectionName="side-bar">
+
+    <div class="list-group">
+
+        @foreach (var category in _rootFactory.Categories)
+        {
+            <a href="@($"/{category}/")" class="list-group-item list-group-item-action">@category</a>
+        }
+
+    </div>
+
+</SectionContent>
 
 <SectionContent SectionName="main-content">
-    <div class="container">
+
+    <div class="container-fluid">
 
         <!-- Content Row -->
-        <div class="columns">
-            <div class="col-9">
+        <div class="row">
+            <div class="col-6 col-lg-7 col-xl-7">
                 <div class="text-container pt-5 pl-5">
                     <h2><span>Hi, I'm Shaun</span><br> aka Cold Elm Coders</h2>
                     <p>An Internet old timer, with all the scars and opinionated views too many years of experience bring!</p>
@@ -20,15 +43,13 @@
                     <p><strong><i>Knowledge will help you solve a problem you have yet to experience.</i></strong></p>
                 </div> <!-- end of text-container -->
             </div> <!-- end of col -->
-            <div class="col-3">
+            <div class="col-6 col-lg-5 col-xl-5">
                 <div class="image-container text-center">
                     <img class="img-80" src="/assets/images/south.jpg" alt="alternative">
                 </div> <!-- end of image-container -->
             </div> <!-- end of col -->
         </div> <!-- end of row -->
-    </div> <!-- end of container -->
-    
-    @*         <!-- Content Row -->
+        <!-- Content Row -->
         <div class="row">
 
             <!-- What am I working on? -->
@@ -120,7 +141,7 @@
         <div class="row">
 
             <!-- Code Credits, Copyright and Licencing -->
-            <div class="col-12" ">
+            <div class="col-12">
                 <div class="card border-left-danger shadow h-100 py-2">
                     <div class="card-body">
                         <div class="row no-gutters align-items-center">
@@ -140,7 +161,7 @@
                                     It doesn't matter which, and it doesn't matter how much: it <strong>Will</strong> make a difference somewhere. &nbsp;
                                 </p>
                                 <p>
-                                    My charity is <a href="https://donate.barnardos.org.uk/">Barnados</a>, so if you don't have a favourite donate <a href="https://donate.barnardos.org.uk/">here</a>.
+                                    My charity is <a href="https://donate.barnardos.org.uk/">Barnados</a>, so if you don't have a favourite donate <a href="https://donate.barnardos.org.uk/">here</a>. &nbsp;
                                     Some of the people I worked with at Fasthosts gave up their Christmas morning to go and give the kids in Bristol
                                     a family Christmas.
                                 </p>
@@ -156,11 +177,38 @@
                 </div>
             </div>
         </div>
-        *@
+    </div> <!-- end of container -->
+
 </SectionContent>
 
-@code {
-    [Parameter, EditorRequired]
-    public string? Name { get; set; }
-}
 
+@code {
+    public PageData PageData { get; } = new()
+        {
+            Title = "Cold Elm Coders",
+            Author = "Shaun Curtis",
+            Description = "Cold Elm Coders Home Page",
+        };
+
+    protected MarkupString SeoHeader = new MarkupString("<title>Title Goes Here!</title>");
+
+    protected MarkupString OgHeader = new MarkupString(string.Empty);
+
+    public async override Task SetParametersAsync(ParameterView parameters)
+    {
+        parameters.SetParameterProperties(this);
+
+        this.GetContent();
+
+        await base.SetParametersAsync(ParameterView.Empty);
+    }
+
+    protected void GetContent()
+    {
+        var seoHeader = BaseHtmlProvider.SeoHeaderHtml(this.PageData);
+        this.SeoHeader = new MarkupString(seoHeader ?? string.Empty);
+
+        var ogHeader = BaseHtmlProvider.OgHeaderHtml(this.PageData, SiteData.GetInstance());
+        this.OgHeader = new MarkupString(ogHeader ?? string.Empty);
+    }
+}

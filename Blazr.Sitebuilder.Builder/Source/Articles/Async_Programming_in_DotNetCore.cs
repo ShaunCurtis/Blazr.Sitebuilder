@@ -13,11 +13,9 @@ public class Async_Programming_in_DotNetCore : ArticleBase
         PublishDate = new DateOnly(2021,2 , 6),
         LastUpdated = new(2021, 2, 6),
         Author = "Shaun Curtis",
-        Group = "Articles",
+        Category = "Articles",
         Tags = "#Async;#DotNetCore;",
         Description = "A Practical Examination of Async Programming in DotNetCore..",
         MdFile = $@".\Source\Articles\Async-Programming-in-DotNetCore.md",
-        OutputHtmlFile = $@"\Articles\Async-Programming-in-DotNetCore.md"
-
     };
 }
