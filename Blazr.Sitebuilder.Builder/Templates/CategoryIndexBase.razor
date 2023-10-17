@@ -8,8 +8,8 @@
 
 <SectionContent SectionName="page-header-data">
 
-    @SiteHtmlProvider.SeoHeaderHtml(this.PageData)
-    @SiteHtmlProvider.OgHeaderHtml(new Tuple<ISiteData, IPageData>(SiteData.GetInstance(), PageData))
+    @SiteHtmlProvider.SeoHeaderHtml(_routeProvider)
+    @SiteHtmlProvider.OgHeaderHtml(_routeProvider)
 
 </SectionContent>
 
@@ -21,7 +21,8 @@
 
 <SectionContent SectionName="main-content">
 
-    <div class="list-group">
+    @SiteHtmlProvider.RouteListHtml(_routeProvider)
+@*     <div class="list-group">
 
     @foreach(var route in _routeProvider.RouteListForCategory(this.PageData.Category))
     {
@@ -29,31 +30,9 @@
     }
 
     </div>
-
+ *@
 </SectionContent>
 
 @code {
     public abstract PageData PageData { get; }
-
-    protected MarkupString SeoHeader = new MarkupString("<title>Title Goes Here!</title>");
-    protected MarkupString OgHeader = new MarkupString(string.Empty);
-    protected MarkupString TOC = new MarkupString("Loading");
-
-    public async override Task SetParametersAsync(ParameterView parameters)
-    {
-        parameters.SetParameterProperties(this);
-
-        this.GetContent();
-
-        await base.SetParametersAsync(ParameterView.Empty);
-    }
-
-    protected void GetContent()
-    {
-         var seoHeader = BaseHtmlProvider.SeoHeaderHtml(this.PageData);
-         this.SeoHeader = new MarkupString(seoHeader ?? string.Empty);
-
-         var ogHeader = BaseHtmlProvider.OgHeaderHtml(this.PageData, SiteData.GetInstance());
-        this.OgHeader = new MarkupString(ogHeader ?? string.Empty);
-    }
 }

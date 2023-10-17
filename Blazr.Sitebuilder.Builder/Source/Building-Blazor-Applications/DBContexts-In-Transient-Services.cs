@@ -13,7 +13,7 @@ public class DBContexts_In_Transient_Services : ArticleBase
         LastUpdated = new(2020, 10, 1),
         Author = "Shaun Curtis",
         Category = "Posts",
-        Tags = "#DbContext;",
+        Tags = "#DbContext;#Blazor;",
         Description = "Why You Shouldn't use DbContexts in Transient Services.",
         MdFile = $@".\Source\Building-Blazor-Applications\DBContexts-In-Transient-Services.md",
     };

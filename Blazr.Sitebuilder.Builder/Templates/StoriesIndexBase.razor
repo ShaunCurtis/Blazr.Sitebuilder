@@ -3,14 +3,13 @@
 
 @implements IContentComponent
 @inject RouteProvider _routeProvider
-@inject StoryProvider _storyProvider
 
 <LayoutView Layout="@typeof(ArticleLayout)" />
 
 <SectionContent SectionName="page-header-data">
 
-    @SiteHtmlProvider.SeoHeaderHtml(this.PageData)
-    @SiteHtmlProvider.OgHeaderHtml(new Tuple<ISiteData, IPageData>(SiteData.GetInstance(), PageData))
+    @SiteHtmlProvider.SeoHeaderHtml(_routeProvider)
+    @SiteHtmlProvider.OgHeaderHtml(_routeProvider)
 
 </SectionContent>
 
@@ -22,7 +21,7 @@
 
 <SectionContent SectionName="main-content">
 
-    @StoryHtmlProvider.StoryListHtml(_storyProvider)
+    @StoryHtmlProvider.StoryListHtml(_routeProvider)
 
 </SectionContent>
 

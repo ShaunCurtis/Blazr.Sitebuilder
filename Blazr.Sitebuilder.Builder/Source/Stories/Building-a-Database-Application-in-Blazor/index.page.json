@@ -1,0 +1,10 @@
+{
+  "Name": "Building a Database Application in Blazor",
+  "Title": "A Blazor Database Application Framework",
+  "Description": "A set of Articles about building a Database Application in Blazor",
+  "PublishDate": "07-07-2021",
+  "LastUpdated": "07-07-2021",
+  "Layout":  "article.html",
+  "Author": "Shaun Curtis",
+  "IsIndex": true
+}

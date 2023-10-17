@@ -3,19 +3,28 @@
 
 @code {
 
-    public static RenderFragment<StoryProvider> StoryListHtml => (provider) => (__builder) =>
+    public static RenderFragment<RouteProvider> StoryListHtml => (provider) => (__builder) =>
         {
             <div class="list-group">
 
                 @{
-                    var _stories = provider.Stories;
+                    var _stories = provider.StoryProvider.Stories;
                     foreach (var route in _stories)
                     {
                         <a href="@($"/stories/{route.StoryUrl}/")" class="list-group-item list-group-item-action">@route.Story</a>
-
                     }
                 }
+            </div>
+        };
 
+    public static RenderFragment<RouteProvider> StoryArticlesListHtml => (provider) => (__builder) =>
+        {
+            <div class="list-group">
+
+                @foreach (var route in provider.StoryProvider.GetStoryArticles(provider.CurrentRoute.PageData.Story))
+                {
+                    <a href="@($"{route.Route}.html")" class="list-group-item list-group-item-action">@route.PageData.Title</a>
+                }
             </div>
         };
 }

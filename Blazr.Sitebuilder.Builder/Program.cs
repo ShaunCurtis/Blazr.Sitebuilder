@@ -6,9 +6,7 @@ using Blazr.SiteBuilder;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddSingleton<HtmlRenderer>();
-builder.Services.AddScoped<ContentRenderer>();
 builder.Services.AddSingleton<RouteProvider>();
-builder.Services.AddSingleton<StoryProvider>();
 builder.Services.AddSingleton<SiteBuilderFactory>();
 builder.Services.AddSingleton<ISiteData, ThisSiteData>();
 

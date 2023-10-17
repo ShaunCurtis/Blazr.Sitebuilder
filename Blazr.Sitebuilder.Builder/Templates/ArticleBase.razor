@@ -1,38 +1,35 @@
 ﻿@using Blazr.SiteBuilder
 @using System.Diagnostics
 @implements IContentComponent
+@inject RouteProvider _routeProvider
 
 <LayoutView Layout="@typeof(ArticleLayout)"/>
 
 <SectionContent SectionName="page-header-data">
 
-    @this.ArticleSeoHeader
-    @this.ArticleOgHeader
+    @SiteHtmlProvider.SeoHeaderHtml(_routeProvider)
+    @SiteHtmlProvider.OgHeaderHtml(_routeProvider)
 
 </SectionContent>
 
 <SectionContent SectionName="side-bar">
 
-    @this.ArticleInfo
+    @ArticleHtmlProvider.ArticleDatesHtml(_routeProvider)
     @this.TOC
 
 </SectionContent>
 
 <SectionContent SectionName="main-content">
     
-    @this.ArticleTopBar
+    @ArticleHtmlProvider.ArticleTitleHtml(_routeProvider)
     @this.ArticleContent
 
 </SectionContent>
 
 
 @code {
-    protected MarkupString ArticleSeoHeader = new MarkupString("<title>Title Goes Here!</title>");
-    protected MarkupString ArticleOgHeader = new MarkupString(string.Empty);
     protected MarkupString ArticleContent = new MarkupString("Loading");
     protected MarkupString TOC = new MarkupString("Loading");
-    protected MarkupString ArticleInfo = new MarkupString("Loading");
-    protected MarkupString ArticleTopBar = new MarkupString("Loading");
     public virtual PageData PageData { get; protected set; } = new();
 
     public async override Task SetParametersAsync(ParameterView parameters)
@@ -60,21 +57,5 @@
         var toc = TOCUtils.GetTOC(articleHtml);
         var tocContent = TOCBuilder.BuildTOC(toc);
         this.TOC = new MarkupString(tocContent ?? string.Empty);
-
-        // Get the Article Header
-        var topBarHtml = ArticleHtmlProvider.BuildArticleTitleHtml(this.PageData);
-        this.ArticleTopBar = new MarkupString(topBarHtml ?? string.Empty);
-
-        // Get the Article Info for the left bar
-        var articleInfo = ArticleHtmlProvider.BuildArticleDatesHtml(this.PageData);
-        this.ArticleInfo = new MarkupString(articleInfo ?? string.Empty);
-
-        // Get the SEO Header information
-        var articleSeoHeader = BaseHtmlProvider.SeoHeaderHtml(this.PageData);
-        this.ArticleSeoHeader = new MarkupString(articleSeoHeader ?? string.Empty);
-
-        // Get the Og Header information
-        var articleOgHeader = BaseHtmlProvider.OgHeaderHtml(this.PageData, SiteData.GetInstance());
-        this.ArticleOgHeader = new MarkupString(articleOgHeader ?? string.Empty);
     }
 }

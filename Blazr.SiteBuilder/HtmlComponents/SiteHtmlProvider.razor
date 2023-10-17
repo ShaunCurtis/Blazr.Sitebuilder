@@ -3,19 +3,19 @@
 
 @code {
 
-    public static RenderFragment<Tuple<ISiteData, IPageData>> OgHeaderHtml => (data) => (__builder) =>
+    public static RenderFragment<RouteProvider> OgHeaderHtml => (provider) => (__builder) =>
     {
-        <meta property="og:site_name" content="@data.Item1.SiteName" />
-        <meta property="og:site" content="@data.Item1.SiteUrl" />
-        <meta property="og:title" content="@data.Item2.Title" />
-        <meta property="og:description" content="@data.Item2.Description" />
+        <meta property="og:site_name" content="@provider.SiteData.SiteName" />
+        <meta property="og:site" content="@provider.SiteData.SiteUrl" />
+        <meta property="og:title" content="@provider.CurrentRoute.PageData.Title" />
+        <meta property="og:description" content="@provider.CurrentRoute.PageData.Description" />
     };
 
-    public static RenderFragment<IPageData> SeoHeaderHtml => (data) => (__builder) =>
+    public static RenderFragment<RouteProvider> SeoHeaderHtml => (provider) => (__builder) =>
     {
-        <title>@data.Title</title>
-        <meta property="author" content="@data.Author" />
-        <meta property="description" content="@data.Description" />
+        <title>@provider.CurrentRoute.PageData.Title</title>
+        <meta property="author" content="@provider.CurrentRoute.PageData.Author" />
+        <meta property="description" content="@provider.CurrentRoute.PageData.Description" />
     };
 
 
