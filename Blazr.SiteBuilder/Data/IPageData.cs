@@ -19,4 +19,5 @@ public interface IPageData
     public DateOnly PublishDate { get; }
     public DateOnly LastUpdated { get; }
     public bool HideInNavigationLists { get; }
+    public bool DefaultRoute { get; }
 }

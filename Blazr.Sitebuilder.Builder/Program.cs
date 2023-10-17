@@ -7,9 +7,13 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddSingleton<HtmlRenderer>();
 builder.Services.AddScoped<ContentRenderer>();
-builder.Services.AddSingleton<RouteFactory>();
-builder.Services.AddSingleton<StoryFactory>();
+builder.Services.AddSingleton<RouteProvider>();
+builder.Services.AddSingleton<StoryProvider>();
 builder.Services.AddSingleton<SiteBuilderFactory>();
+
+// Not sure we need this
+builder.Services.AddScoped<RendererHelper>();
+
 
 
 var app = builder.Build();

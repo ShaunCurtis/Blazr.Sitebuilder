@@ -2,7 +2,7 @@
 @using Blazr.SiteBuilder
 @using System.Diagnostics
 @implements IContentComponent
-@inject RouteFactory _rootFactory
+@inject RouteProvider _rootFactory
 
 <LayoutView Layout="@typeof(ArticleLayout)" />
 
@@ -192,7 +192,8 @@
             Author = "Shaun Curtis",
             Description = "Cold Elm Coders Home Page",
             Category = string.Empty,
-            HideInNavigationLists = true
+            HideInNavigationLists = true,
+            DefaultRoute = true
         };
 
     protected MarkupString SeoHeader = new MarkupString("<title>Title Goes Here!</title>");

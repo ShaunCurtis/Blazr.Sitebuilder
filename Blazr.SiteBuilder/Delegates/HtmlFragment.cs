@@ -4,7 +4,6 @@
 /// If you use it, donate something to a charity somewhere
 /// ============================================================
 
-namespace Blazr.SiteBuilder
-{
-    public delegate void HtmlFragment(HtmlFactory builder);
-}
+namespace Blazr.SiteBuilder;
+
+public delegate string HtmlFragment(RouteProvider routeProvider);

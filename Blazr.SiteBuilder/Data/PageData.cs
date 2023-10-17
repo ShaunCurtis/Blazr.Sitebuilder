@@ -6,7 +6,7 @@
 
 namespace Blazr.SiteBuilder;
 
-public record PageData: IPageData
+public class PageData: IPageData
 {
     public string Title { get; init; } = "Not Set";
     public string Description { get; init; } = "Not Set";
@@ -19,5 +19,7 @@ public record PageData: IPageData
     public DateOnly PublishDate { get; init; } = DateOnly.FromDateTime(DateTime.Now);
     public DateOnly LastUpdated { get; init; } = DateOnly.FromDateTime(DateTime.Now);
     public bool HideInNavigationLists { get; init; } = false;
+    public bool DefaultRoute { get; init; }
 }
+
 

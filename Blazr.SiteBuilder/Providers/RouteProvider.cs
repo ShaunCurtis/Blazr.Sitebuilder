@@ -5,26 +5,35 @@
 /// ============================================================
 
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Reflection;
 
 namespace Blazr.SiteBuilder;
 
 public record SiteRouteData(Type Component, string Route, PageData PageData);
 
-public class RouteFactory
+public class RouteProvider
 {
     public IEnumerable<SiteRouteData> RouteList => _routeList.AsEnumerable();
     public ReadOnlyDictionary<string, int> Categories => _categories.AsReadOnly();
     public IEnumerable<string> Tags => _tags.AsEnumerable();
+    public SiteRouteData CurrentRoute {  get; private set; }
 
     private List<SiteRouteData> _routeList = new();
     private Dictionary<string, int> _categories = new();
     private List<string> _tags = new();
 
-    public RouteFactory()
+    public RouteProvider()
     {
         GetRoutes();
+
+        var defaultRoute = _routeList.FirstOrDefault(item => item.PageData.DefaultRoute);
+        Debug.Assert(defaultRoute != null);
+        this.CurrentRoute = defaultRoute;
     }
+
+    public void SetCurrentRoute(SiteRouteData route)
+        => this.CurrentRoute = route;
 
     public IEnumerable<SiteRouteData> RouteListForCategory(string category) 
         => _routeList

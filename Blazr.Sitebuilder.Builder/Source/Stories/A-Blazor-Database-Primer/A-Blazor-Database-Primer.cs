@@ -5,14 +5,15 @@ namespace Blazr.Sitebuilder.Builder;
 
 [Route("/Stories/A-Blazor-Database-Primer/Index")]
 
-public class ABlazorDatabasePrimer : CategoryIndexBase
+public class A_Blazor_Database_Primer : StoryIndexBase
 {
     public override PageData PageData { get; } = new()
     {
-        Title = "List of Stories",
+        Title = "A Blazor Database Primer",
         Author = "Shaun Curtis",
         Category = "Stories",
-        Description = "List of Stories",
+        Story = "A Blazor Database Primer",
+        Description = "List of Articles in A Blazor Database Primer",
         HideInNavigationLists = true,
     };
 }

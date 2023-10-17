@@ -6,26 +6,36 @@
 
 namespace Blazr.SiteBuilder;
 
-public class StoryFactory
+public class StoryProvider
 {
-    private RouteFactory _routeFactory;
+    private RouteProvider _routeFactory;
     private List<StoryData> _stories;
 
     public IEnumerable<StoryData> Stories => _stories.AsEnumerable();
 
-    public StoryFactory(RouteFactory routeFactory)
+    public StoryProvider(RouteProvider routeFactory)
     {
         _routeFactory = routeFactory;
 
-        var storyArticles = _routeFactory.RouteList.Where(item => item.PageData.Category.Equals("Stories", StringComparison.CurrentCultureIgnoreCase));
+        var storyArticles = _routeFactory.RouteList
+            .Where(item => item.PageData.Category.Equals("Stories", StringComparison.CurrentCultureIgnoreCase)
+             && !string.IsNullOrWhiteSpace(item.PageData.Story));
 
-        _stories = storyArticles.Select(item => item.PageData.Story).Distinct().Select(item => new StoryData(item)).ToList();
+        _stories = storyArticles
+            .Select(item => item.PageData.Story).
+            Distinct().
+            Select(item => new StoryData(item))
+            .ToList();
     }
 
     public IEnumerable<SiteRouteData> GetStoryArticles(string story)
-        => _routeFactory.RouteList
+    { 
+        var list =  _routeFactory.RouteList
         .Where(item => item.PageData.Story.Equals(story, StringComparison.CurrentCultureIgnoreCase))
         .OrderBy(item => item.PageData.Order);
+
+        return list;
+    }
 
 }
 

@@ -5,7 +5,7 @@ namespace Blazr.Sitebuilder.Builder;
 
 [Route("/Stories/Index")]
 
-public class StoriesIndex : CategoryIndexBase
+public class StoriesIndex : StoriesIndexBase
 {
     public override PageData PageData { get; } = new()
     {

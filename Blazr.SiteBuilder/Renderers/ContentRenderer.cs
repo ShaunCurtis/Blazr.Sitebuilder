@@ -7,28 +7,16 @@ namespace Blazr.SiteBuilder;
 
 public class ContentRenderer
 {
-    private readonly HtmlRenderer _htmlRenderer;
-    public ContentRenderer(HtmlRenderer htmlRenderer)
+    private readonly RouteProvider _routeProvider;
+
+    public ContentRenderer(RouteProvider routeProvider)
     {
-        _htmlRenderer = htmlRenderer;
+        _routeProvider = routeProvider;
     }
 
-    // Renders a component T which doesn't require any parameters
-    public Task<string> RenderComponent<T>() where T : IComponent
-        => RenderComponent<T>(ParameterView.Empty);
-
-    // Renders a component T using the provided dictionary of parameters
-    public Task<string> RenderComponent<T>(Dictionary<string, object?> dictionary) where T : IComponent
-        => RenderComponent<T>(ParameterView.FromDictionary(dictionary));
-
-    private Task<string> RenderComponent<T>(ParameterView parameters) where T : IComponent
+    public string Render(HtmlFragment fragment)
     {
-        // Use the default dispatcher to invoke actions in the context of the 
-        // static HTML renderer and return as a string
-        return _htmlRenderer.Dispatcher.InvokeAsync(async () =>
-        {
-            HtmlRootComponent output = await _htmlRenderer.RenderComponentAsync<T>(parameters);
-            return output.ToHtmlString();
-        });
+        return fragment(_routeProvider);
     }
+
 }

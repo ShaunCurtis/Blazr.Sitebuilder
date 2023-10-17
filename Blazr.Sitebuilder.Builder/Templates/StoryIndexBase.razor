@@ -17,17 +17,16 @@
 
 <SectionContent SectionName="side-bar">
 
-    <ul class="list-group">
 
-        @foreach (var category in _rootFactory.Categories)
+    <div class="list-group">
+
+        @foreach (var route in _storyFactory.Stories)
         {
-            <li class="list-group-item d-flex justify-content-between align-items-start">
-                <a href="@($"/{category.Key}/")">@(category.Key)</a>
-                <span class="badge bg-primary text-white text-end rounded-pill">@(category.Value)</span>
-            </li>
+            <a href="@($"/stories/{route.StoryUrl}/")" class="list-group-item list-group-item-action">@route.Story</a>
         }
 
-    </ul>
+    </div>
+
 
 </SectionContent>
 
@@ -35,14 +34,9 @@
 
     <div class="list-group">
 
-        @{
-            var _stories = _storyFactory.Stories;
-
-            foreach (var route in _stories)
-            {
-                <a href="@($"/stories/{route.StoryUrl}/")" class="list-group-item list-group-item-action">@route.Story</a>
-
-            }
+        @foreach (var route in _storyFactory.GetStoryArticles(this.PageData.Story))
+        {
+            <a href="@($"{route.Route}.html")" class="list-group-item list-group-item-action">@route.PageData.Title</a>
         }
 
     </div>

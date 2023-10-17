@@ -9,6 +9,7 @@ namespace Blazr.SiteBuilder;
 public record StoryData
 {
     public string Story { get; } = string.Empty;
+    public string StoryUrl => Story.Trim().Replace(" ", "-");
 
     public StoryData(string story)
     {
