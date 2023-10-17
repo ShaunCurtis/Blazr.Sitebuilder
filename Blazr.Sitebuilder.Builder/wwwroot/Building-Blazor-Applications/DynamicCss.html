@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<base href="/">
+
+	
+
+	
+
+	
+	<link href="/assets/vendor/fontawesome-free/css/all.min.css" rel="stylesheet" type="text/css">
+	<link href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i" rel="stylesheet">
+
+	
+	<link href="/assets/css/sb-admin-2.css" rel="stylesheet" type="text/css">
+	<link href="/assets/css/site.css" rel="stylesheet" type="text/css">
+
+	
+	<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/Microsoft/vscode/extensions/markdown-language-features/media/highlight.css">
+	<link rel="stylesheet" href="/assets/css/article.css" type="text/css">
+
+	
+	<link rel="icon" href="/assets/images/favicon.png">
+
+	<title>Blazor Dynamic Stylesheets</title>
+        <meta property="author" content="Shaun Curtis" />
+        <meta property="description" content="How to change Stylesheets out at run time." />
+    <meta property="og:site_name" content="Cold Elm Coders" />
+        <meta property="og:site" content="https://shauncurtis.github.io/" />
+        <meta property="og:title" content="Blazor Dynamic Stylesheets" />
+        <meta property="og:description" content="How to change Stylesheets out at run time." /></head>
+<body><header class="navbar bg-dark p-2 text-large text-light"><section class="navbar-section  text-light"><a href="/" class="navbar-brand mr-2 text-large text-light p-2">Cold Elm Coders</a>
+			<a href="/Posts" class="btn btn-link text-light">Posts</a>
+			<a href="/Rants" class="btn btn-link text-light">Rants</a>
+			<a href="/Articles" class="btn btn-link text-light">Articles</a>
+			<a href="/Stories" class="btn btn-link text-light">Stories</a>
+			<a href="/Tags" class="btn btn-link text-light">Tags</a></section></header>
+
+	<div class="container-fluid"><div class="row"><div class="col-12 col-sm-3 col-lg-2 bg-light pt-2"><div class="article-info p-2"><div class="mb-2">Published: 01-Jun-2021</div>
+                <div class="mb-2">Updated: 26-Nov-2021</div>
+                <div class="mb-2">Author: Shaun Curtis</div></div>
+    <h4 class="p-2">Table of Contents</h4>
+<ul class="TOC" >
+<li class="TOC-item TOC-item-0" >
+<a class="TOC-link" href="#">Top</a>
+</li>
+</ul>
+</div>
+			
+			<div class="col-12 col-sm-9 col-lg-10 p-2"><div class="pt-2 pb-2 border-bottom mb-4 text-primary"><h1>Blazor Dynamic Stylesheets</h1>
+            <div><small>How to change Stylesheets out at run time.</small></div></div>
+    <p>Some code snippets to change out CSS dynamically in Blazor.</p>
+<p>Set up the default link in the page as:</p>
+<pre><code class="language-html">    &lt;link id=&quot;dynamicCssLink&quot; rel=&quot;stylesheet&quot; href=&quot;/css/site.css&quot; /&gt;
+</code></pre>
+<p>In this case the <code>elementId</code> is <em>dynamicCssLink</em>.</p>
+<p>JS code to go into site.js.</p>
+<pre><code class="language-js">window.DynamicCss = {
+   setCss: function (elementId, url) {
+        var link = document.getElementById(elementId);
+        if (link === undefined) {
+            link = document.createElement(elementId);
+            link.id = elementId;
+            document.head.insertBefore(link, document.head.firstChild);
+            link.type = 'text/css';
+            link.rel = 'stylesheet';
+        }
+        link.href = url;
+        return true;
+    }
+}
+</code></pre>
+<p>Interop libary code.</p>
+<pre><code class="language-csharp">public class InteropLibrary
+{
+    protected IJSRuntime JSRuntime { get; }
+
+    public InteropLibrary(IJSRuntime jsRuntime)
+        =&gt; JSRuntime = jsRuntime;
+
+    public ValueTask&lt;bool&gt; SetDynamicCss(string elementId, string url)
+        =&gt; JSRuntime.InvokeAsync&lt;bool&gt;(&quot;DynamicCss.setCss&quot;, elementId, url);
+}
+</code></pre>
+<p>Register <code>InteropLibrary</code> as a scoped service.</p>
+<pre><code class="language-csharp">builder.Services.AddScoped&lt;InteropLibrary&gt;();
+</code></pre>
+<p>Add an alternative Css file - site-black.css</p>
+<pre><code class="language-css">@import url('open-iconic/font/css/open-iconic-bootstrap.min.css');
+
+html, body {
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    background-color:black !important;
+    color: white !important;
+}
+....
+</code></pre>
+<p>Test index page to demo how to dynamically change out the stylesheet.</p>
+<pre><code class="language-csharp">@page &quot;/&quot;
+
+&lt;PageTitle&gt;Index&lt;/PageTitle&gt;
+
+&lt;h1&gt;Hello, world!&lt;/h1&gt;
+
+Welcome to your new app.
+
+&lt;SurveyPrompt Title=&quot;How is Blazor working for you?&quot; /&gt;
+
+&lt;div class=&quot;m-2&quot;&gt;
+    &lt;button class=&quot;btn @this.buttonColour&quot; @onclick=&quot;SwitchCSS&quot;&gt;@this.buttonLabel&lt;/button&gt;
+&lt;/div&gt;
+
+@code {
+    [Inject] private InteropLibrary? interopLibrary { get; set; }
+
+
+    private bool isDark;
+    private string css =&gt; isDark ? &quot;/css/site-black.css&quot; : &quot;/css/site.css&quot;;
+    private string buttonLabel =&gt; isDark ? &quot;Switch To Light&quot; : &quot;Switch To Dark&quot; ;
+    private string buttonColour =&gt; isDark ? &quot;btn-light&quot; : &quot;btn-dark&quot; ;
+
+    private async Task SwitchCSS()
+    {
+        this.isDark = !this.isDark;
+        await interopLibrary!.SetDynamicCss(&quot;dynamiccsslink&quot;, this.css);
+    }
+}
+</code></pre>
+<p><a href="https://github.com/chanan/BlazorStrap">Source/Idea Material</a></p>
+</div></div></div></body></html>
+
+
+
+
+

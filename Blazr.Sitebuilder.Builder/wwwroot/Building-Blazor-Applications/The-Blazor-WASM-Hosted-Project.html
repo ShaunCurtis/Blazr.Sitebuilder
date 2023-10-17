@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<base href="/">
+
+	
+
+	
+
+	
+	<link href="/assets/vendor/fontawesome-free/css/all.min.css" rel="stylesheet" type="text/css">
+	<link href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i" rel="stylesheet">
+
+	
+	<link href="/assets/css/sb-admin-2.css" rel="stylesheet" type="text/css">
+	<link href="/assets/css/site.css" rel="stylesheet" type="text/css">
+
+	
+	<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/Microsoft/vscode/extensions/markdown-language-features/media/highlight.css">
+	<link rel="stylesheet" href="/assets/css/article.css" type="text/css">
+
+	
+	<link rel="icon" href="/assets/images/favicon.png">
+
+	<title>What is the Blazor WASM Hosted Project</title>
+        <meta property="author" content="Shaun Curtis" />
+        <meta property="description" content="A short tour of the Blazor WASM hosted Project." />
+    <meta property="og:site_name" content="Cold Elm Coders" />
+        <meta property="og:site" content="https://shauncurtis.github.io/" />
+        <meta property="og:title" content="What is the Blazor WASM Hosted Project" />
+        <meta property="og:description" content="A short tour of the Blazor WASM hosted Project." /></head>
+<body><header class="navbar bg-dark p-2 text-large text-light"><section class="navbar-section  text-light"><a href="/" class="navbar-brand mr-2 text-large text-light p-2">Cold Elm Coders</a>
+			<a href="/Posts" class="btn btn-link text-light">Posts</a>
+			<a href="/Rants" class="btn btn-link text-light">Rants</a>
+			<a href="/Articles" class="btn btn-link text-light">Articles</a>
+			<a href="/Stories" class="btn btn-link text-light">Stories</a>
+			<a href="/Tags" class="btn btn-link text-light">Tags</a></section></header>
+
+	<div class="container-fluid"><div class="row"><div class="col-12 col-sm-3 col-lg-2 bg-light pt-2"><div class="article-info p-2"><div class="mb-2">Published: 20-Dec-2021</div>
+                <div class="mb-2">Updated: 20-Dec-2021</div>
+                <div class="mb-2">Author: Shaun Curtis</div></div>
+    <h4 class="p-2">Table of Contents</h4>
+<ul class="TOC" >
+<li class="TOC-item TOC-item-0" >
+<a class="TOC-link" href="#">Top</a>
+<ul class="TOC TOC-0" >
+<li class="TOC-item TOC-item-1" >
+<a class="TOC-link" href="#a-short-tour-of-the-blazor-wasm-hosted-project">A Short Tour of the Blazor WASM hosted Project</a>
+<ul class="TOC TOC-1" >
+<li class="TOC-item TOC-item-2" >
+<a class="TOC-link" href="#client">Client</a>
+</li>
+<li class="TOC-item TOC-item-2" >
+<a class="TOC-link" href="#shared">Shared</a>
+</li>
+<li class="TOC-item TOC-item-2" >
+<a class="TOC-link" href="#server">Server</a>
+</li>
+<li class="TOC-item TOC-item-2" >
+<a class="TOC-link" href="#running-the-project">Running the project</a>
+</li>
+<li class="TOC-item TOC-item-2" >
+<a class="TOC-link" href="#moving-on">Moving On</a>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+			
+			<div class="col-12 col-sm-9 col-lg-10 p-2"><div class="pt-2 pb-2 border-bottom mb-4 text-primary"><h1>What is the Blazor WASM Hosted Project</h1>
+            <div><small>A short tour of the Blazor WASM hosted Project.</small></div></div>
+    <h1 id="a-short-tour-of-the-blazor-wasm-hosted-project">A Short Tour of the Blazor WASM hosted Project</h1>
+<p>The Blazor Web Assembly Core Hosted project is a little confusing for newcomers to Blazor.  This note hopefully sheds some light on it.</p>
+<p>When you add a Web Assembly hosted project to a solution you get a directory project with three sub-directories.  Each contains a Visual Studio project.  These are:</p>
+<ol>
+<li>Client</li>
+<li>Shared</li>
+<li>Server</li>
+</ol>
+<h2 id="client">Client</h2>
+<p>This is your Web Assembly project.  It's where you put all your Blazor code.</p>
+<p>The project file looks like this:</p>
+<pre><code class="language-xml">&lt;Project Sdk=&quot;Microsoft.NET.Sdk.BlazorWebAssembly&quot;&gt;
+
+  &lt;PropertyGroup&gt;
+    &lt;TargetFramework&gt;net6.0&lt;/TargetFramework&gt;
+    &lt;Nullable&gt;enable&lt;/Nullable&gt;
+    &lt;ImplicitUsings&gt;enable&lt;/ImplicitUsings&gt;
+  &lt;/PropertyGroup&gt;
+
+  &lt;ItemGroup&gt;
+    &lt;PackageReference Include=&quot;Microsoft.AspNetCore.Components.WebAssembly&quot; Version=&quot;6.0.0&quot; /&gt;
+    &lt;PackageReference Include=&quot;Microsoft.AspNetCore.Components.WebAssembly.DevServer&quot; Version=&quot;6.0.0&quot; PrivateAssets=&quot;all&quot; /&gt;
+  &lt;/ItemGroup&gt;
+
+  &lt;ItemGroup&gt;
+    &lt;ProjectReference Include=&quot;..\Shared\BlazorApp1.Shared.csproj&quot; /&gt;
+  &lt;/ItemGroup&gt;
+
+&lt;/Project&gt;
+</code></pre>
+<p>Note the Sdk is set to <code>Microsoft.NET.Sdk.BlazorWebAssembly</code>, and it has a dependancy on <em>Shared</em>.</p>
+<p>When you compile this project it builds the code and resource files you need to deploy the project to a web browser and run in WASM mode.</p>
+<p>Note that the project has a <code>wwwroot</code> directory that contains the startup page <code>index.html</code> and the Css resources.</p>
+<p><code>index.html</code> looks like this:</p>
+<pre><code class="language-html">&lt;!DOCTYPE html&gt;
+&lt;html lang=&quot;en&quot;&gt;
+
+&lt;head&gt;
+    &lt;meta charset=&quot;utf-8&quot; /&gt;
+    &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no&quot; /&gt;
+    &lt;title&gt;BlazorApp1&lt;/title&gt;
+    &lt;base href=&quot;/&quot; /&gt;
+    &lt;link href=&quot;css/bootstrap/bootstrap.min.css&quot; rel=&quot;stylesheet&quot; /&gt;
+    &lt;link href=&quot;css/app.css&quot; rel=&quot;stylesheet&quot; /&gt;
+    &lt;link href=&quot;BlazorApp1.Client.styles.css&quot; rel=&quot;stylesheet&quot; /&gt;
+&lt;/head&gt;
+
+&lt;body&gt;
+    &lt;div id=&quot;app&quot;&gt;Loading...&lt;/div&gt;
+
+    &lt;div id=&quot;blazor-error-ui&quot;&gt;
+        An unhandled error has occurred.
+        &lt;a href=&quot;&quot; class=&quot;reload&quot;&gt;Reload&lt;/a&gt;
+        &lt;a class=&quot;dismiss&quot;&gt;🗙&lt;/a&gt;
+    &lt;/div&gt;
+    &lt;script src=&quot;_framework/blazor.webassembly.js&quot;&gt;&lt;/script&gt;
+&lt;/body&gt;
+
+&lt;/html&gt;
+</code></pre>
+<p>More shortly on how this fires up the WASM SPA.</p>
+<h2 id="shared">Shared</h2>
+<p>Shared is a library project.  It contains code shared between the Client and Server projects: the <code>WeatherForecast</code> data class.  It's used in the application and by the API controller.</p>
+<h2 id="server">Server</h2>
+<p>Server is a standard AspNetCore web server project: it's not Blazor.  It has two purposes:</p>
+<ol>
+<li>Act as a host for serving the WASM project files.</li>
+<li>Provide the controllers for API calls from the Client project.</li>
+</ol>
+<p>The project looks like this:</p>
+<pre><code class="language-xml">&lt;Project Sdk=&quot;Microsoft.NET.Sdk.Web&quot;&gt;
+  &lt;PropertyGroup&gt;
+    &lt;TargetFramework&gt;net6.0&lt;/TargetFramework&gt;
+    &lt;Nullable&gt;enable&lt;/Nullable&gt;
+    &lt;ImplicitUsings&gt;enable&lt;/ImplicitUsings&gt;
+  &lt;/PropertyGroup&gt;
+
+  &lt;ItemGroup&gt;
+    &lt;PackageReference Include=&quot;Microsoft.AspNetCore.Components.WebAssembly.Server&quot; Version=&quot;6.0.0&quot; /&gt;
+  &lt;/ItemGroup&gt;
+
+  &lt;ItemGroup&gt;
+    &lt;ProjectReference Include=&quot;..\Client\BlazorApp1.Client.csproj&quot; /&gt;
+    &lt;ProjectReference Include=&quot;..\Shared\BlazorApp1.Shared.csproj&quot; /&gt;
+  &lt;/ItemGroup&gt;
+&lt;/Project&gt;
+</code></pre>
+<p><code>Program</code> looks like this:</p>
+<pre><code class="language-csharp">using Microsoft.AspNetCore.ResponseCompression;
+
+var builder = WebApplication.CreateBuilder(args);
+
+// Add services to the container.
+
+builder.Services.AddControllersWithViews();
+builder.Services.AddRazorPages();
+
+var app = builder.Build();
+
+// Configure the HTTP request pipeline.
+if (app.Environment.IsDevelopment())
+{
+    app.UseWebAssemblyDebugging();
+}
+else
+{
+    app.UseExceptionHandler(&quot;/Error&quot;);
+    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
+    app.UseHsts();
+}
+
+app.UseHttpsRedirection();
+
+app.UseBlazorFrameworkFiles();
+app.UseStaticFiles();
+
+app.UseRouting();
+
+app.MapRazorPages();
+app.MapControllers();
+app.MapFallbackToFile(&quot;index.html&quot;);
+
+app.Run();
+</code></pre>
+<p><code>app.UseBlazorFrameworkFiles()</code> adds the middleware to map and process the requests for the WASM files from any <code>BlazorWebAssembly</code> Sdk dependant project.  The WASM files are mapped to the <code>_framework</code> virtual directory and any <code>wwwroot</code> files in the <code>BlazorWebAssembly</code> project are mapping into the server's root folder.  In this instance the <em>Server</em> project doesn't have it's own <code>wwwroot</code> folder.</p>
+<p><code>app.MapControllers()</code> maps any controllers in the <em>Server</em> project.  In this case the <code>WeatherForecastController</code>.</p>
+<p><code>app.MapFallbackToFile(&quot;index.html&quot;)</code> points to the <code>BlazorWebAssembly</code> project <code>index.html</code> as the default site page.</p>
+<h2 id="running-the-project">Running the project</h2>
+<p>Set the startup project as the <em>Server</em> project.</p>
+<p>The solution starts, opens the site in the browser and hits the fallback file - <code>index.html</code> in the <em>Client</em> project.  This downloads and runs <code>_framework/blazor.webassembly.js</code>.  The <code>UseBlazorFrameworkFiles</code> middleware maps this correctly to the Client project.  The image below shows the <em>bin</em> folder on the Client project, which should help to turn some lights on!</p>
+<p><img src="https://shauncurtis.github.io/posts/assets/WebAssembly/WebAssembly-bin.png" alt="Web Assembly Bin" /></p>
+<p><code>blazor.webassembly.js</code> gets <code>./blazor.boot.json</code>, the manifest file for booting the WASM codebase.  Once started the SPA replaces<code> &lt;div id=&quot;app&quot;&gt;Loading...&lt;/div&gt;</code> with the <code>App.razor</code> component and we have a WASM Single Page Application in the browser.  The only comms. with the server are now API calls to get server based database information.</p>
+<h2 id="moving-on">Moving On</h2>
+<p>While the Blazor out-of-the-box templates are a good starting point for an initial play, you should not base your first project on them.</p>
+<p>It's important to consider design before taking that step.  There are many resources on the Internet.  There's my quick primary on Clean Design which includes a structured Blazor project template.</p>
+<p><a href="https://shauncurtis.github.io/Design/Clean-Design-In-Blazor.html">Clean Design in Blazor</a>.</p>
+</div></div></div></body></html>
+
+
+
+
+

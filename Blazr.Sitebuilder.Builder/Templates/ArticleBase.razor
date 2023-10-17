@@ -1,61 +1,33 @@
 ﻿@using Blazr.SiteBuilder
 @using System.Diagnostics
 @implements IContentComponent
-@inject RouteProvider _routeProvider
+@inject ContentRenderer _contentRenderer;
 
 <LayoutView Layout="@typeof(ArticleLayout)"/>
 
 <SectionContent SectionName="page-header-data">
 
-    @SiteHtmlProvider.SeoHeaderHtml(_routeProvider)
-    @SiteHtmlProvider.OgHeaderHtml(_routeProvider)
+    @SiteHtmlProvider.SeoHeaderHtml(_contentRenderer)
+    @SiteHtmlProvider.OgHeaderHtml(_contentRenderer)
 
 </SectionContent>
 
 <SectionContent SectionName="side-bar">
 
-    @ArticleHtmlProvider.ArticleDatesHtml(_routeProvider)
-    @this.TOC
+    @ArticleHtmlProvider.ArticleDatesHtml(_contentRenderer)
+    @_contentRenderer.TOCContent
 
 </SectionContent>
 
 <SectionContent SectionName="main-content">
     
-    @ArticleHtmlProvider.ArticleTitleHtml(_routeProvider)
-    @this.ArticleContent
+    @ArticleHtmlProvider.ArticleTitleHtml(_contentRenderer)
+    @_contentRenderer.ArticleContent
 
 </SectionContent>
 
 
 @code {
-    protected MarkupString ArticleContent = new MarkupString("Loading");
-    protected MarkupString TOC = new MarkupString("Loading");
     public virtual PageData PageData { get; protected set; } = new();
 
-    public async override Task SetParametersAsync(ParameterView parameters)
-    {
-        parameters.SetParameterProperties(this);
-
-        await this.GetContentAsMarkupString();
-
-        await base.SetParametersAsync(ParameterView.Empty);
-    }
-
-    protected async Task GetContentAsMarkupString()
-    {
-        // Get the Markdown text from the file
-        string markdownFlePath = Environment.CurrentDirectory + PageData.MdFile;
-        Debug.Assert(File.Exists(markdownFlePath));
-        string markdownText = await File.ReadAllTextAsync(markdownFlePath);
-
-        // Process the Markdown to html
-        var markdownPipeline = new MarkdownPipelineBuilder().UseAdvancedExtensions().Build();
-        var articleHtml = Markdown.ToHtml(markdownText, markdownPipeline);
-        this.ArticleContent = new MarkupString(articleHtml);
-
-        // Gwt the TOC
-        var toc = TOCUtils.GetTOC(articleHtml);
-        var tocContent = TOCBuilder.BuildTOC(toc);
-        this.TOC = new MarkupString(tocContent ?? string.Empty);
-    }
-}
+ }

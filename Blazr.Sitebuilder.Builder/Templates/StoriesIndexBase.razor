@@ -2,26 +2,26 @@
 @using System.Diagnostics
 
 @implements IContentComponent
-@inject RouteProvider _routeProvider
+@inject ContentRenderer _contentRenderer;
 
 <LayoutView Layout="@typeof(ArticleLayout)" />
 
 <SectionContent SectionName="page-header-data">
 
-    @SiteHtmlProvider.SeoHeaderHtml(_routeProvider)
-    @SiteHtmlProvider.OgHeaderHtml(_routeProvider)
+    @SiteHtmlProvider.SeoHeaderHtml(_contentRenderer)
+    @SiteHtmlProvider.OgHeaderHtml(_contentRenderer)
 
 </SectionContent>
 
 <SectionContent SectionName="side-bar">
 
-    @SiteHtmlProvider.CategoryListHtml(_routeProvider)
+    @SiteHtmlProvider.CategoryListHtml(_contentRenderer)
 
 </SectionContent>
 
 <SectionContent SectionName="main-content">
 
-    @StoryHtmlProvider.StoryListHtml(_routeProvider)
+    @StoryHtmlProvider.StoryListHtml(_contentRenderer)
 
 </SectionContent>
 

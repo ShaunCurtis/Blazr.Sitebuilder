@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<base href="/">
+
+	
+
+	
+
+	
+	<link href="/assets/vendor/fontawesome-free/css/all.min.css" rel="stylesheet" type="text/css">
+	<link href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i" rel="stylesheet">
+
+	
+	<link href="/assets/css/sb-admin-2.css" rel="stylesheet" type="text/css">
+	<link href="/assets/css/site.css" rel="stylesheet" type="text/css">
+
+	
+	<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/Microsoft/vscode/extensions/markdown-language-features/media/highlight.css">
+	<link rel="stylesheet" href="/assets/css/article.css" type="text/css">
+
+	
+	<link rel="icon" href="/assets/images/favicon.png">
+
+	<title>Blazor Async Behaviour on UI Events</title>
+        <meta property="author" content="Shaun Curtis" />
+        <meta property="description" content="What Async patterns to use for UI events in Blazor." />
+    <meta property="og:site_name" content="Cold Elm Coders" />
+        <meta property="og:site" content="https://shauncurtis.github.io/" />
+        <meta property="og:title" content="Blazor Async Behaviour on UI Events" />
+        <meta property="og:description" content="What Async patterns to use for UI events in Blazor." /></head>
+<body><header class="navbar bg-dark p-2 text-large text-light"><section class="navbar-section  text-light"><a href="/" class="navbar-brand mr-2 text-large text-light p-2">Cold Elm Coders</a>
+			<a href="/Posts" class="btn btn-link text-light">Posts</a>
+			<a href="/Rants" class="btn btn-link text-light">Rants</a>
+			<a href="/Articles" class="btn btn-link text-light">Articles</a>
+			<a href="/Stories" class="btn btn-link text-light">Stories</a>
+			<a href="/Tags" class="btn btn-link text-light">Tags</a></section></header>
+
+	<div class="container-fluid"><div class="row"><div class="col-12 col-sm-3 col-lg-2 bg-light pt-2"><div class="article-info p-2"><div class="mb-2">Published: 01-Oct-2020</div>
+                <div class="mb-2">Updated: 01-Oct-2020</div>
+                <div class="mb-2">Author: Shaun Curtis</div></div>
+    <h4 class="p-2">Table of Contents</h4>
+<ul class="TOC" >
+<li class="TOC-item TOC-item-0" >
+<a class="TOC-link" href="#">Top</a>
+<ul class="TOC TOC-0" >
+<li class="TOC-item TOC-item-1" >
+<ul class="TOC TOC-1" >
+<li class="TOC-item TOC-item-2" >
+<a class="TOC-link" href="#test.razor">Test.Razor</a>
+</li>
+<li class="TOC-item TOC-item-2" >
+<a class="TOC-link" href="#the-void-pattern">The Void Pattern</a>
+</li>
+<li class="TOC-item TOC-item-2" >
+<a class="TOC-link" href="#the-task-pattern">The Task Pattern</a>
+</li>
+<li class="TOC-item TOC-item-2" >
+<a class="TOC-link" href="#the-await-task-pattern">The Await Task Pattern</a>
+</li>
+<li class="TOC-item TOC-item-2" >
+<a class="TOC-link" href="#component-events-and-eventcallbacks">Component Events and EventCallbacks</a>
+</li>
+<li class="TOC-item TOC-item-2" >
+<a class="TOC-link" href="#when-to-use-the-void-pattern">When to use the Void Pattern</a>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+			
+			<div class="col-12 col-sm-9 col-lg-10 p-2"><div class="pt-2 pb-2 border-bottom mb-4 text-primary"><h1>Blazor Async Behaviour on UI Events</h1>
+            <div><small>What Async patterns to use for UI events in Blazor.</small></div></div>
+    <p>This short post describes how Blazor handles UI events and the programming patterns you should use.</p>
+<p>The classic asynchronous pattern for events is the &quot;fire and forget&quot; pattern:</p>
+<pre><code class="language-csharp">void EventHandlerMethod(args)
+// or
+async void EventHandlerMethod(args)
+</code></pre>
+<p>The the event caller doesn't expect a return, so the event handler method should return a <code>void</code>.</p>
+<p>Blazor UI <em>events</em> aren't fire and forget.  They're loaded by the Blazor runtime onto the <code>SynchronisationContext</code> thread and look something like:</p>
+<pre><code class="language-csharp">var task = InvokeAsync(EventMethod);
+StateHasChanged();
+if (!task.IsCompleted)
+{
+    await task;
+    StateHasChanged();
+}
+</code></pre>
+<p>The event handler is called and awaited and then <code>StateHasChanged</code> is called on the component that owns the event.  This ensures that whatever actions the event caused are captured in the re-render event.</p>
+<h2 id="test.razor">Test.Razor</h2>
+<p>We need a test page with some support code:</p>
+<pre><code class="language-html">&lt;div class=&quot;container m-2 px-3 p-t bg-light&quot;&gt;
+    &lt;div class=&quot;row pt-2&quot;&gt;
+        &lt;div class=&quot;col-12&quot;&gt;
+            &lt;h3&gt;Event Buttons&lt;/h3&gt;
+        &lt;/div&gt;
+    &lt;/div&gt;
+    &lt;div class=&quot;row pt-2&quot;&gt;
+        &lt;div class=&quot;col-6&quot;&gt;
+            @value1
+        &lt;/div&gt;
+        &lt;div class=&quot;col-6&quot;&gt;
+            &lt;button class=&quot;btn btn-primary&quot; @onclick=&quot;this.OnClick&quot;&gt;Click&lt;/button&gt;
+        &lt;/div&gt;
+    &lt;/div&gt;
+&lt;/div&gt;
+</code></pre>
+<pre><code class="language-csharp">@code {
+    private string value1 = &quot;not set&quot;;
+}
+</code></pre>
+<h2 id="the-void-pattern">The Void Pattern</h2>
+<p>Let's look at a simple void pattern example that works:</p>
+<pre><code class="language-csharp">private void OnClick(MouseEventArgs e)
+{
+    value1 = &quot;Onclick started&quot;;
+        // run some synchronous code
+    value1 = &quot;Onclick complete&quot;;
+}
+</code></pre>
+<p>Why?  All the code is synchronous.  The event handler completes before <code>StateHasChanged</code> is called.
+This works fine, <code>Value1</code> has the correct value.</p>
+<p>Now lets add an async method into <code>OnClick</code> that still works.</p>
+<pre><code class="language-csharp">@code {
+    private async void Onclick(MouseEventArgs e)
+    {
+        value1 = &quot;Onclick started&quot;;
+        await DoSomethingAsync();
+        value1 = &quot;Onclick complete&quot;;
+    }
+
+    private Task DoSomethingAsync()
+    {
+        // some sync code
+        return Task.CompletedTask;
+    }
+}
+</code></pre>
+<p>Why?  All the code is still synchronous.  <code>DoSomethingAsync</code> may return a <code>Task</code> but it doesn't yield.  The event handler completes before <code>StateHasChanged</code> is called.</p>
+<p>Finally let's make <code>DoSomethingAsync</code> yield - such as doing an API call or getting data from a database - and see the problem.</p>
+<pre><code class="language-csharp">private async void OnClick(MouseEventArgs e)
+{
+    value1 = &quot;Onclick started&quot;;
+    await DoSomethingAsync();
+    value1 = &quot;Onclick complete&quot;;
+}
+
+private async Task DoSomethingAsync()
+    =&gt; await Task.Yield();
+</code></pre>
+<p>Why?  <code>DoSomethingAsync</code> yields back to <code>OnClick</code> before it completes.  <code>OnClick</code> yields back to the Blazor event which has nothing to wait on - <code>OnClick</code> returned a <code>void</code> - so runs to completion and calls <code>StateHasChanged</code>.  The Blazor event completes before <code>OnClick</code> completes.</p>
+<p>The temptation is to add a call the <code>StateHasChanged</code> like this:</p>
+<pre><code class="language-csharp">private async void OnClick(MouseEventArgs e)
+{
+    value1 = &quot;Onclick started&quot;;
+    await DoSomethingAsync();
+    value1 = &quot;Onclick complete&quot;;
+    StateHasChanged();
+}
+</code></pre>
+<p>Which is not the eight answer!</p>
+<h2 id="the-task-pattern">The Task Pattern</h2>
+<p>This is the final async code above changed so <code>OnClick</code> returns a Task.  This now works correctly.</p>
+<pre><code class="language-csharp">private async Task OnClick(MouseEventArgs e)
+{
+    value1 = &quot;Onclick started&quot;;
+    await DoSomethingAsync();
+    value1 = &quot;Onclick complete&quot;;
+}
+
+private async Task DoSomethingAsync()
+    =&gt; await Task.Yield();
+</code></pre>
+<p>Why? The Blazor event now has a Task to wait on and only runs <code>StateHasChanged</code> when <code>OnClick</code> returns a completed Task.</p>
+<h2 id="the-await-task-pattern">The Await Task Pattern</h2>
+<p>You will see the following pattern used on html element events:</p>
+<pre><code class="language-csharp">&lt;button class=&quot;btn btn-warning&quot; @onclick=&quot;async (e) =&gt; await this.OnClick(e)&quot;&gt;Click&lt;/button&gt;
+</code></pre>
+<p>This isn't required.  It's overkill, wrapping a <code>Task</code> in a <code>Task</code>.</p>
+<h2 id="component-events-and-eventcallbacks">Component Events and EventCallbacks</h2>
+<p>A common error is:</p>
+<pre><code class="language-csharp">&lt;MyComponent @onclick=&quot;() =&gt; OnClick()&quot;&gt;Hello&lt;MyComponent&gt;
+</code></pre>
+<p>Components aren't html elements.  There's no <code>OnClick</code> event on <code>MyComponent</code> unless you've created an EventCallback.</p>
+<p>The code below is for a simple button control.</p>
+<pre><code class="language-csharp">// UIButton.razor
+&lt;button class=&quot;btn btn-warning&quot; @onclick=&quot;this.BtnClick&quot;&gt;@ChildContent&lt;/button&gt;
+
+@code {
+    [Parameter] public EventCallback&lt;MouseEventArgs&gt; OnClick { get; set; }
+    [Parameter] public RenderFragment ChildContent { get; set; }
+
+    private async Task BtnClick(MouseEventArgs e)
+        =&gt; await OnClick.InvokeAsync(e);
+}
+</code></pre>
+<p>Note that the <code>BtnClick</code> event handler uses the <code>Task</code> pattern, invokes the EventCallback asynchronously and waits it.</p>
+<p>The <em>Test.razor</em> code looks like this:</p>
+<pre><code class="language-html">&lt;div class=&quot;row pt-2&quot;&gt;
+    &lt;div class=&quot;col-6&quot;&gt;
+        @value5
+    &lt;/div&gt;
+    &lt;div class=&quot;col-6&quot;&gt;
+        &lt;UIButton OnClick=&quot;OnclickComponent&quot;&gt;click me&lt;/UIButton&gt;
+    &lt;/div&gt;
+&lt;/div&gt;
+</code></pre>
+<pre><code class="language-csharp">private string value5 = &quot;notset&quot;;
+
+private async Task OnclickComponent(MouseEventArgs e)
+{
+    value5 = &quot;Onclick started&quot;;
+    await Task.Delay(2000);
+    await DoSomethingAsync();
+    value5 = &quot;Onclick complete&quot;;
+}
+</code></pre>
+<p>The parent <code>OnclickComponent</code> delegate registered with the <code>OnClick</code> EventCallback passes an awaitable Task back to the component.  It's <code>async</code> and <code>Task</code> based all the way.</p>
+<h2 id="when-to-use-the-void-pattern">When to use the Void Pattern</h2>
+<p>Only use the void pattern on true class based events.  The code below shows a simple service which generates a new randon number when <code>NewNumber</code> is called and triggers the <code>NumberChanged</code> event when the number changes.</p>
+<pre><code class="language-csharp">public class RandomNumberService
+{
+    public int Value =&gt; _Value;
+    private int _Value = 0;
+    public event EventHandler NumberChanged;
+
+    public void NewNumber()
+    {
+        var rand = new Random();
+        NotifyNumberChanged(rand.Next(0, 100));
+    }
+
+    public void NotifyNumberChanged(int value)
+    {
+        if (!value.Equals(_Value))
+        {
+            _Value = value;
+            // only trigger event if it has delegates registered
+            NumberChanged?.Invoke(this, EventArgs.Empty);
+        }
+    }
+}
+</code></pre>
+<p>And the code that registers for the event.  Note that <code>OnNumberChange</code> invokes <code>StateHasChanged</code> rather than calling it directly.  You don't know which thread the service code is being executed on, so you need to ensure <code>StateHasChanged</code> is run on the UI thread.  <code>InvokeAsync</code> - a public <code>ComponentBase</code> method - ensures that it is.</p>
+<pre><code class="language-csharp">protected override Task OnInitializedAsync()
+{
+    this.RdmService.NumberChanged += this.OnNumberChange;
+    return base.OnInitializedAsync();
+}
+
+private void OnNumberChange(object sender, EventArgs e)
+    =&gt; this.InvokeAsync(StateHasChanged);
+</code></pre>
+</div></div></div></body></html>
+
+
+
+
+

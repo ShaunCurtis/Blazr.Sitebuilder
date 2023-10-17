@@ -11,12 +11,12 @@ namespace Blazr.SiteBuilder;
 public class SiteBuilderFactory
 {
     private IServiceProvider _serviceProvider;
-    private RouteProvider _routeProvider;
+    private readonly ContentRenderer _contentRenderer;
 
-    public SiteBuilderFactory(IServiceProvider serviceProvider, RouteProvider routeProvider)
+    public SiteBuilderFactory(IServiceProvider serviceProvider, ContentRenderer contentRenderer)
     {
+        _contentRenderer = contentRenderer;
         _serviceProvider = serviceProvider;
-        _routeProvider = routeProvider;
     }
 
     public async Task BuildSiteAsync()
@@ -26,10 +26,10 @@ public class SiteBuilderFactory
 
     public async Task BuildRoutesAsync()
     {
-        foreach (var route in _routeProvider.RouteList)
+        foreach (var route in _contentRenderer.RouteProvider.RouteList)
         {
-            _routeProvider.SetCurrentRoute(route);
-
+            await _contentRenderer.SetCurrentRouteAsync(route);
+ 
             using var htmlRenderer = ActivatorUtilities.CreateInstance<HtmlRenderer>(_serviceProvider);
 
             var html = await htmlRenderer.Dispatcher.InvokeAsync(async () =>

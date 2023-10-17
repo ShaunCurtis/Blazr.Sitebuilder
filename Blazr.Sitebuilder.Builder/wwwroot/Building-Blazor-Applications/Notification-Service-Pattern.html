@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<base href="/">
+
+	
+
+	
+
+	
+	<link href="/assets/vendor/fontawesome-free/css/all.min.css" rel="stylesheet" type="text/css">
+	<link href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i" rel="stylesheet">
+
+	
+	<link href="/assets/css/sb-admin-2.css" rel="stylesheet" type="text/css">
+	<link href="/assets/css/site.css" rel="stylesheet" type="text/css">
+
+	
+	<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/Microsoft/vscode/extensions/markdown-language-features/media/highlight.css">
+	<link rel="stylesheet" href="/assets/css/article.css" type="text/css">
+
+	
+	<link rel="icon" href="/assets/images/favicon.png">
+
+	<title>Blazor Notification Service Pattern</title>
+        <meta property="author" content="Shaun Curtis" />
+        <meta property="description" content="Blazor Notification Service Pattern." />
+    <meta property="og:site_name" content="Cold Elm Coders" />
+        <meta property="og:site" content="https://shauncurtis.github.io/" />
+        <meta property="og:title" content="Blazor Notification Service Pattern" />
+        <meta property="og:description" content="Blazor Notification Service Pattern." /></head>
+<body><header class="navbar bg-dark p-2 text-large text-light"><section class="navbar-section  text-light"><a href="/" class="navbar-brand mr-2 text-large text-light p-2">Cold Elm Coders</a>
+			<a href="/Posts" class="btn btn-link text-light">Posts</a>
+			<a href="/Rants" class="btn btn-link text-light">Rants</a>
+			<a href="/Articles" class="btn btn-link text-light">Articles</a>
+			<a href="/Stories" class="btn btn-link text-light">Stories</a>
+			<a href="/Tags" class="btn btn-link text-light">Tags</a></section></header>
+
+	<div class="container-fluid"><div class="row"><div class="col-12 col-sm-3 col-lg-2 bg-light pt-2"><div class="article-info p-2"><div class="mb-2">Published: 31-Mar-2021</div>
+                <div class="mb-2">Updated: 31-Mar-2021</div>
+                <div class="mb-2">Author: Shaun Curtis</div></div>
+    <h4 class="p-2">Table of Contents</h4>
+<ul class="TOC" >
+<li class="TOC-item TOC-item-0" >
+<a class="TOC-link" href="#">Top</a>
+</li>
+</ul>
+</div>
+			
+			<div class="col-12 col-sm-9 col-lg-10 p-2"><div class="pt-2 pb-2 border-bottom mb-4 text-primary"><h1>Blazor Notification Service Pattern</h1>
+            <div><small>Blazor Notification Service Pattern.</small></div></div>
+    <p>A common issue in Blazor is keeping components updated.  A value changes in one place, how do you make sure everyone else who needs to know are informed.  This is common in the Data Layer to UI interface.  A row in a list is updated in a modal or inline dialog and the list needs to be updated.  It's possible with callbacks and cascading parameters, but adds a lot og unnecessary complexity.</p>
+<p>The solution is to use the Notification Service Pattern.  There are various version of it, but they're just different ways of coding the functionality.  Lets look at the problem in a very simplistic way.</p>
+<ol>
+<li>A <code>RandomNumberService</code> service that generates and exposes a random number.  It can be either Singleton or Scoped.</li>
+<li>A <code>ValueDisplay</code> component that displays the number with a button to update it.</li>
+<li>A RouteView/Page with serveral versions of <code>ValueDisplay</code> wired up differently.</li>
+</ol>
+<p>First we have a Scoped or Singleton Service</p>
+<pre><code class="language-csharp">public class RandomNumberService
+{
+    public int Value =&gt; _Value;
+    private int _Value = 0;
+    public event EventHandler NumberChanged;
+
+    public void NewNumber()
+    {
+        var rand = new Random();
+        NotifyNumberChanged(rand.Next(0, 100));
+    }
+
+    public void NotifyNumberChanged(int value)
+    {
+        if (!value.Equals(_Value))
+        {
+            _Value = value;
+            // only trigger event if it has delegates registered
+            NumberChanged?.Invoke(this, EventArgs.Empty);
+        }
+    }
+}
+</code></pre>
+<p>Add this service to Startup.</p>
+<pre><code class="language-csharp">    public void ConfigureServices(IServiceCollection services)
+    {
+        services.AddRazorPages();
+        services.AddServerSideBlazor();
+        ....
+        services.AddScoped&lt;RandomNumberService&gt;();
+    }
+</code></pre>
+<p>Next we build a display component that injects the <code>RandomNumberService</code>.  It gets it's value either from the Parameter or from the Service.  It has a button to update the number - this could be a save button in an inline edit form.  if <code>WireEvent</code> is true it sets up event wiring.   The component has a bottom row tally to show how many times Initialized, ParamsSet and Render has been called.</p>
+<pre><code class="language-csharp">// We implement IDisposable as we need to unhook the event wiring as part of the component disposal cycle.
+@implements IDisposable
+
+&lt;div class=&quot;container m-2 px-3 p-t bg-info text-white&quot;&gt;
+    &lt;div class=&quot;row&quot;&gt;
+        &lt;div class=&quot;col-12&quot;&gt;
+            &lt;h3&gt;@this.Title&lt;/h3&gt;
+        &lt;/div&gt;
+    &lt;/div&gt;
+    &lt;div class=&quot;row&quot;&gt;
+        &lt;div class=&quot;col-2&quot;&gt;Number&lt;/div&gt;
+        &lt;div class=&quot;col-2&quot;&gt;@this.displayValue&lt;/div&gt;
+        &lt;div class=&quot;col-2&quot;&gt;&lt;button class=&quot;btn btn-secondary&quot; @onclick=&quot;(e) =&gt; NewRandomNumber()&quot;&gt;New Number&lt;/button&gt;&lt;/div&gt;
+    &lt;/div&gt;
+    &lt;div class=&quot;row bg-dark mt-2&quot;&gt;
+        &lt;div class=&quot;col-3&quot;&gt;
+            Initialized:
+        &lt;/div&gt;
+        &lt;div class=&quot;col-1&quot;&gt;
+            @this.InitRun
+        &lt;/div&gt;
+        &lt;div class=&quot;col-3&quot;&gt;
+            Params Set:
+        &lt;/div&gt;
+        &lt;div class=&quot;col-1&quot;&gt;
+            @this.ParamsSetRun
+        &lt;/div&gt;
+        &lt;div class=&quot;col-3&quot;&gt;
+            Rendered:
+        &lt;/div&gt;
+        &lt;div class=&quot;col-1&quot;&gt;
+            @this.Rendered
+        &lt;/div&gt;
+    &lt;/div&gt;
+&lt;/div&gt;
+
+@code {
+    [Inject] private RandomNumberService RdmService { get; set; }
+
+    // Property to control if we wire up to the service event
+    [Parameter] public bool WireEvent { get; set; }
+
+    [Parameter] public string Title { get; set; }
+
+    [Parameter] public int Value { get; set; } = 0;
+
+    // Get the Display value.  If the Parameter Value is 0 (not set) then we get the value from the service
+    private int displayValue =&gt; this.Value &gt; 0 ? this.Value : RdmService.Value;
+
+    protected override Task OnInitializedAsync()
+    {
+        this.InitRun++;
+        if (this.WireEvent)
+            this.RdmService.NumberChanged += this.OnNumberChange;
+
+        return base.OnInitializedAsync();
+    }
+
+    private void NewRandomNumber()
+    =&gt; RdmService.NewNumber();
+
+    // Note that we use InvokeAsync to ensure StateHasChanged is run on the Synchronization Context thread.
+    private async void OnNumberChange(object sender, EventArgs e)
+        =&gt; await this.InvokeAsync(StateHasChanged);
+
+    private int InitRun = 0;
+    private int ParamsSetRun = 0;
+    private int Rendered = 1;
+
+    protected override Task OnParametersSetAsync()
+    {
+        this.ParamsSetRun++;
+        return base.OnParametersSetAsync();
+    }
+
+    // We overide ShouldRender to get it increment the counter
+    // ShouldRender is called as part of the process to queue a render request
+    // we start the counter at 1 as it doesn't get called during the Initialization process
+    protected override bool ShouldRender()
+    {
+        Rendered++;
+        return true;
+    }
+
+    // IDisposable implementation
+    public void Dispose()
+    {
+        if (this.WireEvent)
+            this.RdmService.NumberChanged -= this.OnNumberChange;
+    }
+}
+</code></pre>
+<p>Finally we have a razor display page</p>
+<pre><code class="language-csharp">@page &quot;/Random&quot;
+
+&lt;div class=&quot;container m-2 px-3 p-t bg-primary text-white&quot;&gt;
+    &lt;div class=&quot;row&quot;&gt;
+        &lt;div class=&quot;col-12&quot;&gt;
+            &lt;h3&gt;@this.Title&lt;/h3&gt;
+        &lt;/div&gt;
+    &lt;/div&gt;
+    &lt;div class=&quot;row&quot;&gt;
+        &lt;div class=&quot;col-2&quot;&gt;Number&lt;/div&gt;
+        &lt;div class=&quot;col-2&quot;&gt;@RdmService.Value&lt;/div&gt;
+        &lt;div class=&quot;col-2&quot;&gt;&lt;button class=&quot;btn btn-secondary&quot; @onclick=&quot;(e) =&gt; NewRandomNumber()&quot;&gt;New Number&lt;/button&gt;&lt;/div&gt;
+    &lt;/div&gt;
+    &lt;div class=&quot;row bg-dark mt-2&quot;&gt;
+        &lt;div class=&quot;col-3&quot;&gt;
+            Initialized:
+        &lt;/div&gt;
+        &lt;div class=&quot;col-1&quot;&gt;
+            @this.InitRun
+        &lt;/div&gt;
+        &lt;div class=&quot;col-3&quot;&gt;
+            Params Set:
+        &lt;/div&gt;
+        &lt;div class=&quot;col-1&quot;&gt;
+            @this.ParamsSetRun
+        &lt;/div&gt;
+        &lt;div class=&quot;col-3&quot;&gt;
+            Rendered:
+        &lt;/div&gt;
+        &lt;div class=&quot;col-1&quot;&gt;
+            @this.Rendered
+        &lt;/div&gt;
+    &lt;/div&gt;
+&lt;/div&gt;
+
+&lt;ValueDisplay Title=&quot;Unwired Display&quot;&gt;&lt;/ValueDisplay&gt;
+&lt;ValueDisplay WireEvent=&quot;true&quot; Title=&quot;Wired Display&quot;&gt;&lt;/ValueDisplay&gt;
+&lt;ValueDisplay Value=&quot;RdmService.Value&quot; Title=&quot;Parameter Display&quot;&gt;&lt;/ValueDisplay&gt;
+
+@code {
+    private string Title = &quot;Root&quot;;
+
+    [Inject] private RandomNumberService RdmService { get; set; }
+
+    private void NewRandomNumber()
+        =&gt; RdmService.NewNumber();
+
+    private int InitRun = 0;    
+    private int ParamsSetRun = 0;
+    private int Rendered = 1;
+
+    protected override Task OnInitializedAsync()
+    {
+        InitRun++;
+        return base.OnInitializedAsync();
+    }
+
+    protected override Task OnParametersSetAsync()
+    {
+        this.ParamsSetRun++;
+        return base.OnParametersSetAsync();
+    }
+
+    protected override bool ShouldRender()
+    {
+        Rendered++;
+        return true;
+    }
+}
+</code></pre>
+<p>Once you have this running you can see what happens when you update the number in various controls within the page.  The sure-fire method is the event driven update.</p>
+</div></div></div></body></html>
+
+
+
+
+

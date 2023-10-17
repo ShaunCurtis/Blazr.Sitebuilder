@@ -21,26 +21,11 @@ public class RouteProvider
     public IEnumerable<SiteRouteData> RouteList => _routeList.AsEnumerable();
     public ReadOnlyDictionary<string, int> Categories => _categories.AsReadOnly();
     public IEnumerable<string> Tags => _tags.AsEnumerable();
-    public SiteRouteData CurrentRoute {  get; private set; }
-    public ISiteData SiteData { get; init; }
-    public StoryProvider StoryProvider { get; init; }
-
-    public RouteProvider(ISiteData siteData)
+ 
+    public RouteProvider()
     {
-        this.SiteData = siteData;
-
         GetRoutes();
-
-        var defaultRoute = _routeList.FirstOrDefault(item => item.PageData.DefaultRoute);
-        Debug.Assert(defaultRoute != null);
-        this.CurrentRoute = defaultRoute;
-
-        // import this goes at the end at present
-        StoryProvider = new StoryProvider(this);
     }
-
-    public void SetCurrentRoute(SiteRouteData route)
-        => this.CurrentRoute = route;
 
     public IEnumerable<SiteRouteData> RouteListForCategory(string category) 
         => _routeList

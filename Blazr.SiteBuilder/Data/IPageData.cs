@@ -15,7 +15,7 @@ public interface IPageData
     public string Story { get; }
     public int Order { get; }
     public string Tags { get; }
-    public string MdFile { get; }
+    public string? MdFile { get; }
     public DateOnly PublishDate { get; }
     public DateOnly LastUpdated { get; }
     public bool HideInNavigationLists { get; }

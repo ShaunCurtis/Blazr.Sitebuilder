@@ -7,11 +7,10 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddSingleton<HtmlRenderer>();
 builder.Services.AddSingleton<RouteProvider>();
+builder.Services.AddSingleton<StoryProvider>();
 builder.Services.AddSingleton<SiteBuilderFactory>();
-builder.Services.AddSingleton<ISiteData, ThisSiteData>();
-
-// Not sure we need this
-builder.Services.AddScoped<RendererHelper>();
+builder.Services.AddSingleton<ISiteData, SiteData>();
+builder.Services.AddSingleton<ContentRenderer>();
 
 
 

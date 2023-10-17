@@ -15,7 +15,7 @@ public class PageData: IPageData
     public string Story { get; init; } = string.Empty;
     public string Tags { get; init; } = "";
     public int Order { get; init; } = 0;
-    public string MdFile { get; init; } = "article.md";
+    public string? MdFile { get; init; }
     public DateOnly PublishDate { get; init; } = DateOnly.FromDateTime(DateTime.Now);
     public DateOnly LastUpdated { get; init; } = DateOnly.FromDateTime(DateTime.Now);
     public bool HideInNavigationLists { get; init; } = false;

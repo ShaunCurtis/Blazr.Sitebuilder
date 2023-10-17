@@ -2,7 +2,7 @@
 @namespace Blazr.SiteBuilder
 
 @code {
-    public static RenderFragment<RouteProvider> ArticleDatesHtml => (provider) => (__builder) =>
+    public static RenderFragment<ContentRenderer> ArticleDatesHtml => (provider) => (__builder) =>
         {
             <div class="article-info p-2">
                 <div class="mb-2">Published: @provider.CurrentRoute.PageData.PublishDate.AsGlobalDate()</div>
@@ -12,7 +12,7 @@
 
         };
 
-    public static RenderFragment<RouteProvider> ArticleTitleHtml => (provider) => (__builder) =>
+    public static RenderFragment<ContentRenderer> ArticleTitleHtml => (provider) => (__builder) =>
     {
         <div class="pt-2 pb-2 border-bottom mb-4 text-primary">
             <h1>@provider.CurrentRoute.PageData.Title</h1>
