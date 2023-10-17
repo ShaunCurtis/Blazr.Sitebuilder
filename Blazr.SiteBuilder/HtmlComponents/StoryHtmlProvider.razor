@@ -1,0 +1,21 @@
+﻿@inherits RazorBase
+@namespace Blazr.SiteBuilder
+
+@code {
+
+    public static RenderFragment<StoryProvider> StoryListHtml => (provider) => (__builder) =>
+        {
+            <div class="list-group">
+
+                @{
+                    var _stories = provider.Stories;
+                    foreach (var route in _stories)
+                    {
+                        <a href="@($"/stories/{route.StoryUrl}/")" class="list-group-item list-group-item-action">@route.Story</a>
+
+                    }
+                }
+
+            </div>
+        };
+}

@@ -2,30 +2,20 @@
 @using System.Diagnostics
 
 @implements IContentComponent
-@inject RouteProvider _rootFactory
+@inject RouteProvider _routeProvider
 
 <LayoutView Layout="@typeof(ArticleLayout)" />
 
 <SectionContent SectionName="page-header-data">
 
-    @this.SeoHeader
-    @this.OgHeader
+    @SiteHtmlProvider.SeoHeaderHtml(this.PageData)
+    @SiteHtmlProvider.OgHeaderHtml(new Tuple<ISiteData, IPageData>(SiteData.GetInstance(), PageData))
 
 </SectionContent>
 
 <SectionContent SectionName="side-bar">
 
-    <ul class="list-group">
-
-        @foreach (var category in _rootFactory.Categories)
-        {
-            <li class="list-group-item d-flex justify-content-between align-items-start">
-                <a href="@($"/{category.Key}/")">@(category.Key)</a>
-                <span class="badge bg-primary text-white text-end rounded-pill">@(category.Value)</span>
-            </li>
-        }
-
-    </ul>
+    @SiteHtmlProvider.CategoryListHtml(_routeProvider)
 
 </SectionContent>
 
@@ -33,7 +23,7 @@
 
     <div class="list-group">
 
-    @foreach(var route in _rootFactory.RouteListForCategory(this.PageData.Category))
+    @foreach(var route in _routeProvider.RouteListForCategory(this.PageData.Category))
     {
         <a href="@($"{route.Route}.html")" class="list-group-item list-group-item-action">@route.PageData.Title</a>
     }

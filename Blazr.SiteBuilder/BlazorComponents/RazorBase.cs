@@ -3,7 +3,11 @@
 /// License: Use And Donate
 /// If you use it, donate something to a charity somewhere
 /// ============================================================
+using Microsoft.AspNetCore.Components.Rendering;
 
 namespace Blazr.SiteBuilder;
 
-public delegate void HtmlFragment(HtmlFactory builder);
+public abstract class RazorBase
+{
+    protected virtual void BuildRenderTree(RenderTreeBuilder builder) { }
+}

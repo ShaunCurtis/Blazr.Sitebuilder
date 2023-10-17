@@ -5,6 +5,7 @@
 /// ============================================================
 namespace Blazr.SiteBuilder;
 
+//TODO - Do we need this?
 public class ContentRenderer
 {
     private readonly RouteProvider _routeProvider;
@@ -12,11 +13,6 @@ public class ContentRenderer
     public ContentRenderer(RouteProvider routeProvider)
     {
         _routeProvider = routeProvider;
-    }
-
-    public string Render(HtmlFragment fragment)
-    {
-        return fragment(_routeProvider);
     }
 
 }

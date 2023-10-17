@@ -8,13 +8,14 @@ namespace Blazr.SiteBuilder;
 
 public static class HtmlProvider
 {
-    public static string CategoryList(RouteProvider routeProvider)
+    public static string? SeoHeaderHtml(IPageData data)
     {
         var builder = new HtmlFactory();
 
         builder.AddHeaderTitle(data.Title);
         builder.AddMeta("author", data.Author);
-        builder.AddMeta("description", data.Author);
+        builder.AddMeta("description", data.Description);
+
 
         return builder.GetHtml();
     }

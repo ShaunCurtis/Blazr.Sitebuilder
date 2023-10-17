@@ -22,9 +22,11 @@ public class RouteProvider
     private List<SiteRouteData> _routeList = new();
     private Dictionary<string, int> _categories = new();
     private List<string> _tags = new();
+    public ISiteData SiteData { get; init; }
 
-    public RouteProvider()
+    public RouteProvider(ISiteData siteData)
     {
+        this.SiteData = siteData;
         GetRoutes();
 
         var defaultRoute = _routeList.FirstOrDefault(item => item.PageData.DefaultRoute);

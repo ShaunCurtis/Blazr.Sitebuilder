@@ -2,22 +2,26 @@
 @using Blazr.SiteBuilder
 @using System.Diagnostics
 @implements IContentComponent
-@inject RouteProvider _rootFactory
+@inject RouteProvider _routeProvider
 
 <LayoutView Layout="@typeof(ArticleLayout)" />
 
 <SectionContent SectionName="page-header-data">
 
-    @this.SeoHeader
+    @SiteHtmlProvider.SeoHeaderHtml(this.PageData)
+    @SiteHtmlProvider.OgHeaderHtml(new Tuple<ISiteData, IPageData>(SiteData.GetInstance(), this.PageData))
+@*     @this.SeoHeader
     @this.OgHeader
-
+ *@
 </SectionContent>
 
 <SectionContent SectionName="side-bar">
 
-    <ul class="list-group">
+    @SiteHtmlProvider.CategoryListHtml(_routeProvider)
 
-        @foreach (var category in _rootFactory.Categories)
+@*     <ul class="list-group">
+
+        @foreach (var category in _routeProvider.Categories)
         {
             <li class="list-group-item d-flex justify-content-between align-items-start">
                 <a href="@($"/{category.Key}/")">@(category.Key)</a>
@@ -26,7 +30,7 @@
         }
 
     </ul>
-
+ *@
 </SectionContent>
 
 <SectionContent SectionName="main-content">

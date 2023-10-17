@@ -25,3 +25,11 @@ public class SiteData : ISiteData
             SiteUrl = "https://shauncurtis.github.io/"
         });
 }
+
+public class ThisSiteData : ISiteData
+{
+    public string SiteName { get; init; } = "Cold Elm Coders";
+
+    public string SiteUrl { get; init; } = @"https://shauncurtis.github.io/";
+
+}
