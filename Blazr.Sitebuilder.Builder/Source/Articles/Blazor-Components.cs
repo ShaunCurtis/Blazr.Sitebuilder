@@ -4,9 +4,9 @@ using Blazr.SiteBuilder;
 namespace Blazr.Sitebuilder.Builder;
 
 [Route("/Articles/Blazor-Components")]
-public class Blazor_Components : ArticleBase
+public class Blazor_Components : ArticlesFolderBase
 {
-    public override PageData PageData { get; protected set; } = new()
+    public override PageData PageData => base.PageData with
     {
         Title = "A Deep Dive into Components",
         PublishDate = new DateOnly(2020, 11, 11),
@@ -15,6 +15,6 @@ public class Blazor_Components : ArticleBase
         Category = "Articles",
         Tags = "#Blazor;",
         Description = "This article take a detailed look at the anatomy of a component and how it interacts with the rendering process.",
-        MdFile = $@".\Source\Articles\Blazor-Components.md",
+        MarkdownFile = $@"Hydra.md",
     };
 }

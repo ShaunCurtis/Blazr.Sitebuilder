@@ -4,9 +4,9 @@ using Blazr.SiteBuilder;
 namespace Blazr.Sitebuilder.Builder;
 
 [Route("/Building-Blazor-Applications/Blazor-Async-UI-Events")]
-public class Blazor_Async_UI_Events : ArticleBase
+public class Blazor_Async_UI_Events : BuildingBlazorApplicationsFolderBase
 {
-    public override PageData PageData { get; protected set; } = new()
+    public override PageData PageData => base.PageData with
     {
         Title = "Blazor Async Behaviour on UI Events",
         PublishDate = new DateOnly(2020, 10, 1),
@@ -15,6 +15,6 @@ public class Blazor_Async_UI_Events : ArticleBase
         Category = "Posts",
         Tags = "#Blazor;",
         Description = "What Async patterns to use for UI events in Blazor.",
-        MdFile = $@".\Source\Building-Blazor-Applications\Blazor-Async-UI-Events.md",
+        MarkdownFile = $@"Blazor-Async-UI-Events.md",
     };
 }

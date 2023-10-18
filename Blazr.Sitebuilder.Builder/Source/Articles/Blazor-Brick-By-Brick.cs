@@ -4,9 +4,9 @@ using Blazr.SiteBuilder;
 namespace Blazr.Sitebuilder.Builder;
 
 [Route("/Articles/Blazor-Brick-By-Brick")]
-public class Blazor_Brick_By_Brick : ArticleBase
+public class Blazor_Brick_By_Brick : ArticlesFolderBase
 {
-    public override PageData PageData { get; protected set; } = new()
+    public override PageData PageData => base.PageData with
     {
         Title = "Building a Blazor App from Scratch",
         PublishDate = new DateOnly(2022, 1, 4),
@@ -15,6 +15,6 @@ public class Blazor_Brick_By_Brick : ArticleBase
         Category = "Articles",
         Tags = "#Blazor;",
         Description = "This article describes how to build a Blazor App from the standard AspNetCore Web template.",
-        MdFile = $@".\Source\Articles\Blazor-Brick-By-Brick.md",
+        MarkdownFile = $@"Blazor-Brick-By-Brick.md",
     };
 }

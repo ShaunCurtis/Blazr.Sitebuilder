@@ -4,9 +4,9 @@ using Blazr.SiteBuilder;
 namespace Blazr.Sitebuilder.Builder;
 
 [Route("/Articles/Building-Edit-Forms")]
-public class Building_Edit_Forms : ArticleBase
+public class Building_Edit_Forms : ArticlesFolderBase
 {
-    public override PageData PageData { get; protected set; } = new()
+    public override PageData PageData => base.PageData with
     {
         Title = "Managing Form Edit State in Blazor",
         PublishDate = new DateOnly(2021, 2, 8),
@@ -15,6 +15,6 @@ public class Building_Edit_Forms : ArticleBase
         Category = "Articles",
         Tags = "#Blazor;",
         Description = "How to build Blazor Edit Forms that manage state.",
-        MdFile = $@".\Source\Articles\Building-Edit-Forms.md",
+        MarkdownFile = $@"Building-Edit-Forms.md",
     };
 }

@@ -4,9 +4,9 @@ using Blazr.SiteBuilder;
 namespace Blazr.Sitebuilder.Builder;
 
 [Route("/Articles/Blazor-AllinOne")]
-public class Blazor_AllinOne : ArticleBase
+public class Blazor_AllinOne : ArticlesFolderBase
 {
-    public override PageData PageData { get; protected set; } = new()
+    public override PageData PageData => base.PageData with
     {
         Title = "Blazor All In One - Multi SPA Hosting",
         PublishDate = new DateOnly(2021, 2, 26),
@@ -15,6 +15,6 @@ public class Blazor_AllinOne : ArticleBase
         Category = "Articles",
         Tags = "#Blazor;",
         Description = "How to build a single Blazor Application that runs in both WASM and Server Modes.",
-        MdFile = $@".\Source\Articles\Blazor-AllinOne.md",
+        MarkdownFile = $"Blazor-AllinOne.md",
     };
 }

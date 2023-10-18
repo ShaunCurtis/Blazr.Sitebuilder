@@ -4,10 +4,9 @@ using Blazr.SiteBuilder;
 namespace Blazr.Sitebuilder.Builder;
 
 [Route("/Articles/Async-Programming-in-DotNetCore")]
-
-public class Async_Programming_in_DotNetCore : ArticleBase
+public class Async_Programming_in_DotNetCore : ArticlesFolderBase
 {
-    public override PageData PageData { get; protected set; } = new()
+    public override PageData PageData => base.PageData with
     {
         Title = "Async Programming in DotNetCore",
         PublishDate = new DateOnly(2021,2 , 6),
@@ -16,6 +15,6 @@ public class Async_Programming_in_DotNetCore : ArticleBase
         Category = "Articles",
         Tags = "#Async;#DotNetCore;",
         Description = "A Practical Examination of Async Programming in DotNetCore..",
-        MdFile = $@".\Source\Articles\Async-Programming-in-DotNetCore.md",
+        MarkdownFile = $"Async-Programming-in-DotNetCore.md",
     };
 }

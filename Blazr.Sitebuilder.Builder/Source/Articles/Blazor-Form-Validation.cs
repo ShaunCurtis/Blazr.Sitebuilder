@@ -4,9 +4,9 @@ using Blazr.SiteBuilder;
 namespace Blazr.Sitebuilder.Builder;
 
 [Route("/Articles/Blazor-Form-Validation")]
-public class Blazor_Form_Validation : ArticleBase
+public class Blazor_Form_Validation : ArticlesFolderBase
 {
-    public override PageData PageData { get; protected set; } = new()
+    public override PageData PageData => base.PageData with
     {
         Title = "Blazor Form Validation",
         PublishDate = new DateOnly(2021, 3, 11),
@@ -15,6 +15,6 @@ public class Blazor_Form_Validation : ArticleBase
         Category = "Articles",
         Tags = "#Blazor;",
         Description = "A Blazor validation control to manage and monitor validation state in a form.",
-        MdFile = $@".\Source\Articles\Blazor-Form-Validation.md",
+        MarkdownFile = $@".\Source\Articles\Blazor-Form-Validation.md",
     };
 }

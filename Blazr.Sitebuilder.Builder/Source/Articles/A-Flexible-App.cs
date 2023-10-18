@@ -4,9 +4,9 @@ using Blazr.SiteBuilder;
 namespace Blazr.Sitebuilder.Builder;
 
 [Route("/Articles/A-Flexible-App")]
-public class A_Flexible_App : ArticleBase
+public class A_Flexible_App : ArticlesFolderBase
 {
-    public override PageData PageData { get; protected set; } = new()
+    public override PageData PageData => base.PageData with 
     {
         Title = "Creating a Dynamic Blazor App Component",
         PublishDate = new DateOnly(2021, 4, 9),
@@ -15,6 +15,6 @@ public class A_Flexible_App : ArticleBase
         Category = "Articles",
         Tags = "#Blazor;",
         Description = "This article shows how to add Dynamic Routing, Layouts and RouteViews to the Blazor App Component.",
-        MdFile = $@".\Source\Articles\A-Flexible-App.md",
+        MarkdownFile = $"A-Flexible-App.md",
     };
 }

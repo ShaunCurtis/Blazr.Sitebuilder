@@ -1,12 +1,11 @@
-﻿using Blazr.Sitebuilder.Builder.Templates;
-using Blazr.SiteBuilder;
+﻿using Blazr.SiteBuilder;
 
 namespace Blazr.Sitebuilder.Builder;
 
 [Route("/Articles/XML-XSD-Serialization")]
-public class XML_XSD_Serialization : ArticleBase
+public class XML_XSD_Serialization : ArticlesFolderBase
 {
-    public override PageData PageData { get; protected set; } = new()
+    public override PageData PageData => base.PageData with
     {
         Title = "DotNetCore XML/XSD Serialization",
         PublishDate = new DateOnly(2021, 2, 26),
@@ -15,6 +14,6 @@ public class XML_XSD_Serialization : ArticleBase
         Category = "Articles",
         Tags = "#Serialization;",
         Description = "A quick method to Deserialize Data with a XSD definition",
-        MdFile = $@".\Source\Articles\XML-XSD-Serialization.md",
+        MarkdownFile = $@"XML-XSD-Serialization.md",
     };
 }

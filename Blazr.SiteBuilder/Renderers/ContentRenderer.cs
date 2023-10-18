@@ -37,15 +37,17 @@ public class ContentRenderer
     public async Task SetCurrentRouteAsync(SiteRouteData route)
     {
         this.CurrentRoute = route;
-        if (route.PageData.MdFile is not null)
-            await GetContentAsMarkupString();
+        await GetContentAsMarkupString();
     }
 
 
     protected async Task GetContentAsMarkupString()
     {
+        if (PageData.MarkdownFile is null || PageData.ContentDirectory is null)
+            return;
+
         // Get the Markdown text from the file
-        string markdownFlePath = Environment.CurrentDirectory + PageData.MdFile;
+        string markdownFlePath = Path.Combine(new string[] { Environment.CurrentDirectory, PageData.ContentDirectory, PageData.MarkdownFile });
         Debug.Assert(File.Exists(markdownFlePath));
         string markdownText = await File.ReadAllTextAsync(markdownFlePath);
 

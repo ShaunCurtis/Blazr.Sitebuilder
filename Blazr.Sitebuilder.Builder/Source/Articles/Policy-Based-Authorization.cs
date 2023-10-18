@@ -4,9 +4,9 @@ using Blazr.SiteBuilder;
 namespace Blazr.Sitebuilder.Builder;
 
 [Route("/Articles/Policy-Based-Authorization")]
-public class Policy_Based_Authorization : ArticleBase
+public class Policy_Based_Authorization : ArticlesFolderBase
 {
-    public override PageData PageData { get; protected set; } = new()
+    public override PageData PageData => base.PageData with
     {
         Title = "Policy Base Authorization in Blazor",
         PublishDate = new DateOnly(2021, 2, 26),
@@ -15,6 +15,6 @@ public class Policy_Based_Authorization : ArticleBase
         Category = "Articles",
         Tags = "#Blazor;#Auth;",
         Description = "This article describes how to implement policy based authentication in blazor Applications.",
-        MdFile = $@".\Source\Articles\Policy-Based-Authorization.md",
+        MarkdownFile = $@"Policy-Based-Authorization.md",
     };
 }
