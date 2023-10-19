@@ -6,7 +6,7 @@ namespace Blazr.Sitebuilder.Builder;
 [Route("/stories/Clean-Design-Template-for-Blazor/Clean-Design-Blazor-Template-UI")]
 public class Clean_Design_Blazor_Template_UI : ArticleBase
 {
-    public override PageData PageData { get; protected set; } = new()
+    public override PageData PageData { get; } = new()
     {
         Title = "The UI in the Clean Design Blazor Template",
         PublishDate = new DateOnly(2021, 11, 25),
@@ -17,6 +17,7 @@ public class Clean_Design_Blazor_Template_UI : ArticleBase
         Order = 40,
         Tags = "#Blazor;#CleanDesign;",
         Description = "The UI in the Clean Design Blazor Template.",
-        MdFile = $@".\Source\stories\Clean-Design-Template-for-Blazor\Clean-Design-Blazor-Template-UI.md",
+        ContentDirectory = $@".\Source\stories\Clean-Design-Template-for-Blazor\",
+        MarkdownFile = $@"Clean-Design-Blazor-Template-UI.md",
     };
 }

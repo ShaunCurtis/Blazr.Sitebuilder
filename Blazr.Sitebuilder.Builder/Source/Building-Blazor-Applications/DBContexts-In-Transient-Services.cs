@@ -1,12 +1,11 @@
-﻿using Blazr.Sitebuilder.Builder.Templates;
-using Blazr.SiteBuilder;
+﻿using Blazr.SiteBuilder;
 
 namespace Blazr.Sitebuilder.Builder;
 
 [Route("/Building-Blazor-Applications/DBContexts-In-Transient-Services")]
-public class DBContexts_In_Transient_Services : ArticleBase
+public class DBContexts_In_Transient_Services : BuildingBlazorApplicationsFolderBase
 {
-    public override PageData PageData { get; protected set; } = new()
+    public override PageData PageData => base.PageData with
     {
         Title = "Notes on DbContexts in Transient Services",
         PublishDate = new DateOnly(2020, 10, 1),
@@ -15,6 +14,6 @@ public class DBContexts_In_Transient_Services : ArticleBase
         Category = "Posts",
         Tags = "#DbContext;#Blazor;",
         Description = "Why You Shouldn't use DbContexts in Transient Services.",
-        MdFile = $@".\Source\Building-Blazor-Applications\DBContexts-In-Transient-Services.md",
+        MarkdownFile = $@"DBContexts-In-Transient-Services.md",
     };
 }

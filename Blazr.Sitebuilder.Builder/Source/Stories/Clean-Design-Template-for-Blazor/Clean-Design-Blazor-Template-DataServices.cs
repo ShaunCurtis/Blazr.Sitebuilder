@@ -6,7 +6,7 @@ namespace Blazr.Sitebuilder.Builder;
 [Route("/stories/Clean-Design-Template-for-Blazor/Clean-Design-Blazor-Template-DataServices")]
 public class Clean_Design_Blazor_Template_DataServices : ArticleBase
 {
-    public override PageData PageData { get; protected set; } = new()
+    public override PageData PageData { get; } = new()
     {
         Title = "Data Services in the Clean Design Blazor Template",
         PublishDate = new DateOnly(2021, 11, 28),
@@ -17,6 +17,7 @@ public class Clean_Design_Blazor_Template_DataServices : ArticleBase
         Order=30,
         Tags = "#Blazor;#CleanDesign;",
         Description = "Data Services in the Clean Design Blazor Template.",
-        MdFile = $@".\Source\stories\Clean-Design-Template-for-Blazor\Clean-Design-Blazor-Template-DataServices.md",
+        ContentDirectory = $@".\Source\stories\Clean-Design-Template-for-Blazor\",
+        MarkdownFile = $@"Clean-Design-Blazor-Template-DataServices.md",
     };
 }

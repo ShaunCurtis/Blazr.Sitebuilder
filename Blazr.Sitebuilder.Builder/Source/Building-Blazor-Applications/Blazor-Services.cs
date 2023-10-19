@@ -4,9 +4,9 @@ using Blazr.SiteBuilder;
 namespace Blazr.Sitebuilder.Builder;
 
 [Route("/Building-Blazor-Applications/Blazor-Services")]
-public class Blazor_Services : ArticleBase
+public class Blazor_Services : BuildingBlazorApplicationsFolderBase
 {
-    public override PageData PageData { get; protected set; } = new()
+    public override PageData PageData => base.PageData with
     {
         Title = "Blazor Services",
         PublishDate = new DateOnly(2022, 1, 4),
@@ -15,6 +15,7 @@ public class Blazor_Services : ArticleBase
         Category = "Posts",
         Tags = "#Blazor;",
         Description = "An examination of Blazor DI and Services.",
-        MdFile = $@".\Source\Building-Blazor-Applications\Blazor-Services.md",
+        MarkdownFile = $@"Blazor-Services.md",
+        HideInNavigationLists = false,
     };
 }

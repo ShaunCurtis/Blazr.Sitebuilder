@@ -6,7 +6,7 @@ namespace Blazr.Sitebuilder.Builder;
 [Route("/Stories/A-Blazor-Database-Primer/Chapter-2")]
 public class A_Blazor_Database_Primer_Chapter2 : ArticleBase
 {
-    public override PageData PageData { get; protected set; } = new()
+    public override PageData PageData { get; } = new()
     {
         Title = "A Blazor Database Primer - Chapter 2 - The Data Store and Data Classes",
         PublishDate = new DateOnly(2021, 8, 13),
@@ -17,6 +17,7 @@ public class A_Blazor_Database_Primer_Chapter2 : ArticleBase
         Order=2,
         Tags = "#Blazor;#Components;",
         Description = "The Data Store and Data Classes.",
-        MdFile = $@".\Source\Stories\A-Blazor-Database-Primer\Chapter-2.md",
+        ContentDirectory = $@".\Source\Stories\A-Blazor-Database-Primer\",
+        MarkdownFile = $@"Chapter-2.md",
     };
 }

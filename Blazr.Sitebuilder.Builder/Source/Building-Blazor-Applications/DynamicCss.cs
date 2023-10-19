@@ -4,9 +4,9 @@ using Blazr.SiteBuilder;
 namespace Blazr.Sitebuilder.Builder;
 
 [Route("/Building-Blazor-Applications/DynamicCss")]
-public class DynamicCss : ArticleBase
+public class DynamicCss : BuildingBlazorApplicationsFolderBase
 {
-    public override PageData PageData { get; protected set; } = new()
+    public override PageData PageData => base.PageData with
     {
         Title = "Blazor Dynamic Stylesheets",
         PublishDate = new DateOnly(2021, 6, 1),
@@ -15,6 +15,6 @@ public class DynamicCss : ArticleBase
         Category = "Posts",
         Tags = "#Blazor;#CSS",
         Description = "How to change Stylesheets out at run time.",
-        MdFile = $@".\Source\Building-Blazor-Applications\DynamicCss.md",
+        MarkdownFile = $@"DynamicCss.md",
     };
 }

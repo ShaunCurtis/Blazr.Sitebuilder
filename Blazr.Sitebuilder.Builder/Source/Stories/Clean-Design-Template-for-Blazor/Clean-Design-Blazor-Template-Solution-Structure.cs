@@ -6,7 +6,7 @@ namespace Blazr.Sitebuilder.Builder;
 [Route("/stories/Clean-Design-Template-for-Blazor/Clean-Design-Blazor-Template-Solution-Structure")]
 public class Clean_Design_Blazor_Template_Solution_Structure : ArticleBase
 {
-    public override PageData PageData { get; protected set; } = new()
+    public override PageData PageData { get; } = new()
     {
         Title = "Solution Structure in the Clean Design Blazor Template",
         PublishDate = new DateOnly(2021, 11, 25),
@@ -17,6 +17,7 @@ public class Clean_Design_Blazor_Template_Solution_Structure : ArticleBase
         Order = 20,
         Tags = "#Blazor;#CleanDesign;",
         Description = "Solution Structure in the Clean Design Blazor Template.",
-        MdFile = $@".\Source\stories\Clean-Design-Template-for-Blazor\Clean-Design-Blazor-Template-Solution-Structure.md",
+        ContentDirectory = $@".\Source\stories\Clean-Design-Template-for-Blazor\",
+        MarkdownFile = $@"Clean-Design-Blazor-Template-Solution-Structure.md",
     };
 }

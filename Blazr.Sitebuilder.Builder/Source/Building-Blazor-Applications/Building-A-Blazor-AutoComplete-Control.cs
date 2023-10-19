@@ -4,9 +4,9 @@ using Blazr.SiteBuilder;
 namespace Blazr.Sitebuilder.Builder;
 
 [Route("/Building-Blazor-Applications/Building-A-Blazor-AutoComplete-Control")]
-public class Building_A_Blazor_AutoComplete_Control : ArticleBase
+public class Building_A_Blazor_AutoComplete_Control : BuildingBlazorApplicationsFolderBase
 {
-    public override PageData PageData { get; protected set; } = new()
+    public override PageData PageData => base.PageData with
     {
         Title = "Building a Blazor AutoComplete Control",
         PublishDate = new DateOnly(2022, 11, 22),
@@ -15,6 +15,6 @@ public class Building_A_Blazor_AutoComplete_Control : ArticleBase
         Category = "Posts",
         Tags = "#Blazor;",
         Description = "How to build your own Blazor AutoComplete Control.",
-        MdFile = $@".\Source\Building-Blazor-Applications\Building-A-Blazor-AutoComplete-Control.md",
+        MarkdownFile = $@"Building-A-Blazor-AutoComplete-Control.md",
     };
 }

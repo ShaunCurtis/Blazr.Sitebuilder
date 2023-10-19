@@ -6,7 +6,7 @@ namespace Blazr.Sitebuilder.Builder;
 [Route("/stories/Clean-Design-Template-for-Blazor/Clean-Design-In-Blazor")]
 public class Clean_Design_In_Blazor : ArticleBase
 {
-    public override PageData PageData { get; protected set; } = new()
+    public override PageData PageData { get; } = new()
     {
         Title = "Clean Design Principles in Blazor Applications",
         PublishDate = new DateOnly(2021, 11, 25),
@@ -17,6 +17,7 @@ public class Clean_Design_In_Blazor : ArticleBase
         Order = 5,
         Tags = "#Blazor;#CleanDesign;",
         Description = "A series of articles about implementing Clean Design principles in Blazor Applications.",
-        MdFile = $@".\Source\stories\Clean-Design-Template-for-Blazor\Clean-Design-In-Blazor.md",
+        ContentDirectory = $@".\Source\stories\Clean-Design-Template-for-Blazor\",
+        MarkdownFile = $@"Clean-Design-In-Blazor.md",
     };
 }

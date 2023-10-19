@@ -4,9 +4,9 @@ using Blazr.SiteBuilder;
 namespace Blazr.Sitebuilder.Builder;
 
 [Route("/Building-Blazor-Applications/The-Blazor-WASM-Hosted-Project")]
-public class The_Blazor_WASM_Hosted_Project : ArticleBase
+public class The_Blazor_WASM_Hosted_Project : BuildingBlazorApplicationsFolderBase
 {
-    public override PageData PageData { get; protected set; } = new()
+    public override PageData PageData => base.PageData with
     {
         Title = "What is the Blazor WASM Hosted Project",
         PublishDate = new DateOnly(2021, 12, 20),
@@ -15,6 +15,6 @@ public class The_Blazor_WASM_Hosted_Project : ArticleBase
         Category = "Posts",
         Tags = "#Blazor;#CSS",
         Description = "A short tour of the Blazor WASM hosted Project.",
-        MdFile = $@".\Source\Building-Blazor-Applications\The-Blazor-WASM-Hosted-Project.md",
+        MarkdownFile = "The-Blazor-WASM-Hosted-Project.md",
     };
 }

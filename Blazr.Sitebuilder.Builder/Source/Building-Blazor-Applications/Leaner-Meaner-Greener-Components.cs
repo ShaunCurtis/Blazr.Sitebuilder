@@ -4,10 +4,10 @@ using Blazr.SiteBuilder;
 namespace Blazr.Sitebuilder.Builder;
 
 [Route("/Building-Blazor-Applications/Leaner-Meaner-Greener-Components")]
-public class Leaner_Meaner_Greener_Components : ArticleBase
+public class Leaner_Meaner_Greener_Components : BuildingBlazorApplicationsFolderBase
 {
-    public override PageData PageData { get; protected set; } = new()
-    {
+    public override PageData PageData => base.PageData with
+    { 
         Title = "Leaner, Meaner, Greener Components",
         PublishDate = new DateOnly(2022, 11, 4),
         LastUpdated = new(2022, 11, 4),
@@ -15,6 +15,6 @@ public class Leaner_Meaner_Greener_Components : ArticleBase
         Category = "Posts",
         Tags = "#Blazor;#Components;",
         Description = "Building Leaner, Meaner, Greener Blazor Components - AKA Rethinking the Blazor Component.",
-        MdFile = $@".\Source\Building-Blazor-Applications\Leaner-Meaner-Greener-Components.md",
+        MarkdownFile = $"Leaner-Meaner-Greener-Components.md",
     };
 }

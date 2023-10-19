@@ -6,7 +6,7 @@ namespace Blazr.Sitebuilder.Builder;
 [Route("/Modern-Coding/Nullable-And-VS-2022")]
 public class Nullable_And_VS_2022 : ArticleBase
 {
-    public override PageData PageData { get; protected set; } = new()
+    public override PageData PageData { get; } = new()
     {
         Title = "Nullable in Visual Studio 2022",
         PublishDate = new DateOnly(2021, 11, 27),
@@ -15,6 +15,7 @@ public class Nullable_And_VS_2022 : ArticleBase
         Category = "Modern-Coding",
         Tags = "#Nullable;#CSharp;",
         Description = "Notes about Nullable and breaking changes in Visual Studio 2022.",
-        MdFile = $@".\Source\Modern-Coding\Nullable-And-VS-2022.md",
+        ContentDirectory = @".\Source\Modern-Coding\",
+        MarkdownFile = "Nullable-And-VS-2022.md",
     };
 }
