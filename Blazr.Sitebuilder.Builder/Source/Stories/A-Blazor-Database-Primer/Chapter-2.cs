@@ -4,7 +4,7 @@ using Blazr.SiteBuilder;
 namespace Blazr.Sitebuilder.Builder;
 
 [Route("/Stories/A-Blazor-Database-Primer/Chapter-2")]
-public class A_Blazor_Database_Primer_Chapter2 : StoryBase
+public class A_Blazor_Database_Primer_Chapter2 : StoryObseleteBase
 {
     public override PageData PageData { get; } = new()
     {

@@ -1,6 +1,3 @@
-::: danger
-This set of articles and code base is out of date. They don't reflect my current framework. Use them at your risk.
-:::
 
 This the second article in a series on Building Blazor Database Applications.  It describes the Data and Core Domain boilerplate code used to make deploying application specific data services simple.  It is a total rewrite from earlier releases.
 

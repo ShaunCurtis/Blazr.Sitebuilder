@@ -5,7 +5,7 @@ namespace Blazr.Sitebuilder.Builder;
 
 [Route("/Stories/A-Blazor-Database-Primer/Index")]
 
-public class A_Blazor_Database_Primer : StoryBase
+public class A_Blazor_Database_Primer : StoryObseleteBase
 {
     public override PageData PageData { get; } = new()
     {

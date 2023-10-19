@@ -1,0 +1,39 @@
+﻿@using Blazr.SiteBuilder
+@using System.Diagnostics
+@implements IContentComponent
+@inject ContentRenderer _contentRenderer;
+
+<LayoutView Layout="@typeof(ArticleLayout)" />
+
+<SectionContent SectionName="page-header-data">
+
+    @SiteHtmlProvider.SeoHeaderHtml(_contentRenderer)
+    @SiteHtmlProvider.OgHeaderHtml(_contentRenderer)
+
+</SectionContent>
+
+<SectionContent SectionName="side-bar">
+
+    @ArticleHtmlProvider.ArticleDatesHtml(_contentRenderer)
+    @_contentRenderer.TOCContent
+
+</SectionContent>
+
+<SectionContent SectionName="main-content">
+
+    @ArticleHtmlProvider.ArticleTitleHtml(_contentRenderer)
+    <div class="mb-2">
+        <h3>Document List</h3>
+        @StoryHtmlProvider.StoryArticlesListHtml(_contentRenderer)
+    </div>
+    <div class="md-danger">
+        This set of articles and code base is out of date. They don't reflect my current framework. Use them at your risk.
+    </div>
+    @_contentRenderer.ArticleContent
+
+</SectionContent>
+
+
+@code {
+    public virtual PageData PageData { get; } = new();
+}

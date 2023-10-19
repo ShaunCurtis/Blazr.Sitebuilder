@@ -29,7 +29,7 @@ public class SiteBuilderFactory
         foreach (var route in _contentRenderer.RouteProvider.RouteList)
         {
             await _contentRenderer.SetCurrentRouteAsync(route);
- 
+
             using var htmlRenderer = ActivatorUtilities.CreateInstance<HtmlRenderer>(_serviceProvider);
 
             var html = await htmlRenderer.Dispatcher.InvokeAsync(async () =>
@@ -48,6 +48,31 @@ public class SiteBuilderFactory
 
             // Write file
             await File.WriteAllTextAsync(htmlFlePath, html);
+
+            //Check for assets in the content directory to copy
+            if (route.PageData.ContentDirectory is not null)
+            {
+                string assetFilePath = Path.Combine(new string[] { Environment.CurrentDirectory, route.PageData.ContentDirectory, "assets" });
+
+                var source = new DirectoryInfo(assetFilePath);
+                if (source.Exists)
+                {
+                    string targetFIlePath = Path.Combine(new string[] { Environment.CurrentDirectory, "assets" });
+                    var target = Directory.CreateDirectory(targetFIlePath);
+
+                    CopyFilesRecursively(source, target);
+                }
+            }
         }
     }
+
+    private static void CopyFilesRecursively(DirectoryInfo source, DirectoryInfo target)
+    {
+        foreach (DirectoryInfo dir in source.GetDirectories())
+            CopyFilesRecursively(dir, target.CreateSubdirectory(dir.Name));
+
+        foreach (FileInfo file in source.GetFiles())
+            file.CopyTo(Path.Combine(target.FullName, file.Name), true);
+    }
+
 }

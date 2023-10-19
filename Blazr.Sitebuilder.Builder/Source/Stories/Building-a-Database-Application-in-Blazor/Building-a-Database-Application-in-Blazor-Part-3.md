@@ -1,7 +1,4 @@
-﻿::: danger
-This set of articles and code base is out of date. They don't reflect my current framework. Use them at your risk.
-:::
-
+﻿
 ## Introduction
 
 This is the third in a series of articles looking at how to build and structure a Database Application in Blazor. The articles so far are:

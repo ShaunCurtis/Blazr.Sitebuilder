@@ -1,0 +1,1215 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<base href="/">
+
+	
+
+	
+
+	
+	<link href="/assets/vendor/fontawesome-free/css/all.min.css" rel="stylesheet" type="text/css">
+	<link href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i" rel="stylesheet">
+
+	
+	<link href="/assets/css/sb-admin-2.css" rel="stylesheet" type="text/css">
+	<link href="/assets/css/site.css" rel="stylesheet" type="text/css">
+
+	
+	<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/Microsoft/vscode/extensions/markdown-language-features/media/highlight.css">
+	<link rel="stylesheet" href="/assets/css/article.css" type="text/css">
+
+	
+	<link rel="icon" href="/assets/images/favicon.png">
+
+	<title>Building the Services</title>
+        <meta property="author" content="Shaun Curtis" />
+        <meta property="description" content="This article describes building the CRUDL data services for a Blazor Database Application." />
+    <meta property="og:site_name" content="Cold Elm Coders" />
+        <meta property="og:site" content="https://shauncurtis.github.io/" />
+        <meta property="og:title" content="Building the Services" />
+        <meta property="og:description" content="This article describes building the CRUDL data services for a Blazor Database Application." /></head>
+<body><header class="navbar bg-dark p-2 text-large text-light"><section class="navbar-section  text-light"><a href="/" class="navbar-brand mr-2 text-large text-light p-2">Cold Elm Coders</a>
+			<a href="/Posts" class="btn btn-link text-light">Posts</a>
+			<a href="/Rants" class="btn btn-link text-light">Rants</a>
+			<a href="/Articles" class="btn btn-link text-light">Articles</a>
+			<a href="/Stories" class="btn btn-link text-light">Stories</a>
+			<a href="/Tags" class="btn btn-link text-light">Tags</a></section></header>
+
+	<div class="container-fluid"><div class="row"><div class="col-12 col-sm-3 col-lg-2 bg-light pt-2"><div class="article-info p-2"><div class="mb-2">Published: 07-Jul-2021</div>
+                <div class="mb-2">Updated: 07-Jul-2021</div>
+                <div class="mb-2">Author: Shaun Curtis</div></div>
+    <h4 class="p-2">Table of Contents</h4>
+<ul class="TOC" >
+<li class="TOC-item TOC-item-0" >
+<a class="TOC-link" href="#">Top</a>
+<ul class="TOC TOC-0" >
+<li class="TOC-item TOC-item-1" >
+<ul class="TOC TOC-1" >
+<li class="TOC-item TOC-item-2" >
+<a class="TOC-link" href="#repository-and-database">Repository and Database</a>
+</li>
+<li class="TOC-item TOC-item-2" >
+<a class="TOC-link" href="#objective">Objective</a>
+</li>
+<li class="TOC-item TOC-item-2" >
+<a class="TOC-link" href="#services">Services</a>
+</li>
+<li class="TOC-item TOC-item-2" >
+<a class="TOC-link" href="#data-access">Data Access</a>
+</li>
+<li class="TOC-item TOC-item-2" >
+<a class="TOC-link" href="#data-classes">Data Classes</a>
+</li>
+<li class="TOC-item TOC-item-2" >
+<a class="TOC-link" href="#the-data-access-tier">The Data Access Tier</a>
+</li>
+<li class="TOC-item TOC-item-2" >
+<a class="TOC-link" href="#connector-services">Connector Services</a>
+</li>
+<li class="TOC-item TOC-item-2" >
+<a class="TOC-link" href="#wrap-up">Wrap Up</a>
+</li>
+<li class="TOC-item TOC-item-2" >
+<a class="TOC-link" href="#history">History</a>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+			
+			<div class="col-12 col-sm-9 col-lg-10 p-2"><div class="pt-2 pb-2 border-bottom mb-4 text-primary"><h1>Building the Services</h1>
+            <div><small>This article describes building the CRUDL data services for a Blazor Database Application.</small></div></div>
+    <div class="mb-2"><h3>Document List</h3>
+        <ul><li><a href="/Stories/Building-a-Database-Application-in-Blazor/Building-a-Database-Application-in-Blazor-Part-1.html">Project Structure and Framework</a></li><li><a href="/Stories/Building-a-Database-Application-in-Blazor/Index.html">Building a Database Application in Blazor</a></li><li><a href="/Stories/Building-a-Database-Application-in-Blazor/Building-a-Database-Application-in-Blazor-Part-2.html">Building the Services</a></li><li><a href="/Stories/Building-a-Database-Application-in-Blazor/Building-a-Database-Application-in-Blazor-Part-3.html">Building Edit and View UI Components</a></li><li><a href="/Stories/Building-a-Database-Application-in-Blazor/Building-a-Database-Application-in-Blazor-Part-4.html">Building thw UI Components</a></li><li><a href="/Stories/Building-a-Database-Application-in-Blazor/Building-a-Database-Application-in-Blazor-Part-5.html">View Components - CRUD List Operations in the UI</a></li></ul></div>
+    <div class="md-danger">
+        This set of articles and code base is out of date. They don't reflect my current framework. Use them at your risk.
+    </div>
+    <p>This the second article in a series on Building Blazor Database Applications.  It describes the Data and Core Domain boilerplate code used to make deploying application specific data services simple.  It is a total rewrite from earlier releases.</p>
+<p>The articles in the series are:</p>
+<ol>
+<li>Project Structure and Framework.</li>
+<li>Services - Building the CRUD Data Layers.</li>
+<li>View Components - CRUD Edit and View Operations in the UI.</li>
+<li>UI Components - Building HTML/CSS Controls.</li>
+<li>View Components - CRUD List Operations in the UI.</li>
+</ol>
+<h2 id="repository-and-database">Repository and Database</h2>
+<p>The repository for the articles has moved to <a href="https://github.com/ShaunCurtis/Blazor.Database">Blazor.Database Repository</a>.  All previous repos are obselete and will be removed shortly.</p>
+<p>There's a SQL script in /SQL in the repository for building the database.</p>
+<p>The demo site has changed now the Server and WASM have been combined.  The site starts in Server mode - <a href="https://cec-blazor-database.azurewebsites.net/">https://cec-blazor-database.azurewebsites.net/</a>.</p>
+<h2 id="objective">Objective</h2>
+<p>Our goal: build library code so declaring a standard UI View service is as simple as this:</p>
+<pre><code class="language-csharp">public class WeatherForecastViewService : BaseModelViewService&lt;WeatherForecast&gt;, IModelViewService&lt;WeatherForecast&gt;
+{
+    public WeatherForecastViewService(IDataServiceConnector dataServiceConnector) : base(dataServiceConnector) { }
+}
+</code></pre>
+<p>And declaring a database <code>DbContext</code> that looks like:</p>
+<pre><code class="language-csharp">    public class MSSQLWeatherDbContext : DbContext
+    {
+        public MSSQLWeatherDbContext(DbContextOptions&lt;MSSQLWeatherDbContext&gt; options) : base(options) {}
+
+        public DbSet&lt;WeatherForecast&gt; WeatherForecast { get; set; }
+    }
+</code></pre>
+<p>Our process for adding a new database entity is:</p>
+<ol>
+<li>Add the necessary table/view to the database.</li>
+<li>Define the model and edit record classes.</li>
+<li>Define a <code>DbSet</code> in the <code>DbContext</code>.</li>
+<li>Define one or more model view services and register them with the Services container.</li>
+</ol>
+<p>There will be complications with certain entities, but that doesn't invalidate the approach - 80%+ of the code in the library.</p>
+<h2 id="services">Services</h2>
+<p>Blazor uses DI [Dependency Injection] and IOC [Inversion of Control] principles.  If you're unfamiliar with these concepts, do a little <a href="https://www.codeproject.com/Articles/5274732/Dependency-Injection-and-IoC-Containers-in-Csharp">backgound reading</a> before diving into Blazor.  It'll save you time in the long run!</p>
+<p>Blazor Singleton and Transient services are relatively straight forward.  You can read more about them in the <a href="https://docs.microsoft.com/en-us/aspnet/core/blazor/fundamentals/dependency-injection">Microsoft Documentation</a>.  Scoped are a little more complicated.</p>
+<ol>
+<li>A scoped service object exists for the lifetime of a client application session - note client and not server.  Any application resets, such as F5 or navigation away from the application, resets all scoped services.  A duplicated tab in a browser creates a new application, and a new set of scoped services.</li>
+<li>A scoped service can be restricted to an single object (normally a component) in code.  The <code>OwningComponentBase</code> component class restricts the life of a scoped service to the lifetime of that component.</li>
+</ol>
+<p><code>Services</code> is the Blazor IOC [Inversion of Control] container. Service instances are declared as follows:</p>
+<ol>
+<li>Blazor Server, in <code>Startup.cs</code> method <code>ConfigureServices</code></li>
+<li>Blazor WASM in <code>Program.cs</code>.</li>
+</ol>
+<p>This solution uses a set of Service Collection extension methods such as <code>AddInMemoryApplicationServices</code> to logically organise the solution services.</p>
+<pre><code class="language-csharp">// Blazr.Database.Web/startup.cs
+public void ConfigureServices(IServiceCollection services)
+{
+    services.AddRazorPages();
+    services.AddServerSideBlazor();
+    // the local application Services defined in ServiceCollectionExtensions.cs
+    // services.AddApplicationServices(this.Configuration);
+    services.AddInMemoryApplicationServices(this.Configuration);
+}
+</code></pre>
+<p>Extensions are declared as a static extension methods in a static class.  Various methods are shown below.</p>
+<pre><code class="language-csharp">//Blazr.Database/Extensions/ServiceCollectionExtensions.cs
+public static class ServiceCollectionExtensions
+{
+    public static IServiceCollection AddWASMApplicationServices(this IServiceCollection services)
+    {
+        services.AddScoped&lt;IDataBroker, APIDataBroker&gt;();
+        AddCommonServices(services);
+
+        return services;
+    }
+    public static IServiceCollection AddSQLServerApplicationServices(this IServiceCollection services, IConfiguration configuration)
+    {
+        // Local MS SQL DB Setup
+        var dbContext = configuration.GetValue&lt;string&gt;(&quot;Configuration:DBContext&quot;);
+        services.AddDbContextFactory&lt;MSSQLWeatherDbContext&gt;(options =&gt; options.UseSqlServer(dbContext), ServiceLifetime.Singleton);
+        services.AddSingleton&lt;IDataBroker, WeatherSQLDataBroker&gt;();
+        AddCommonServices(services);
+
+        return services;
+    }
+
+    public static IServiceCollection AddSQLiteServerApplicationServices(this IServiceCollection services, IConfiguration configuration)
+    {
+        // In Memory SQLite DB Setup
+        var memdbContext = &quot;Data Source=:memory:&quot;;
+        services.AddDbContextFactory&lt;SQLiteWeatherDbContext&gt;(options =&gt; options.UseSqlite(memdbContext), ServiceLifetime.Singleton);
+        services.AddSingleton&lt;IDataBroker, WeatherSQLiteDataBroker&gt;();
+        AddCommonServices(services);
+
+        return services;
+    }
+
+    public static IServiceCollection AddInMemoryServerApplicationServices(this IServiceCollection services, IConfiguration configuration)
+    {
+        // In Memory Datastore Setup
+        services.AddSingleton&lt;IInMemoryDataStore, InMemoryWeatherDataStore&gt;();
+        services.AddSingleton&lt;IDataBroker, WeatherInMemoryDataBroker&gt;();
+        AddCommonServices(services);
+
+        return services;
+    }
+
+    private static void AddCommonServices(this IServiceCollection services)
+    {
+        services.AddBlazorSPA();
+        services.AddScoped&lt;ILogger, Logger&lt;LoggingBroker&gt;&gt;();
+        services.AddScoped&lt;ILoggingBroker, LoggingBroker&gt;();
+        services.AddScoped&lt;IDateTimeBroker, DateTimeBroker&gt;();
+        services.AddScoped&lt;IDataServiceConnector, WeatherDataServiceConnector&gt;();
+        services.AddScoped&lt;WeatherForecastViewService&gt;();
+    }
+}
+</code></pre>
+<p>The WASM project <code>program.cs</code> setup looks like this:</p>
+<pre><code class="language-csharp">// program.cs
+public static async Task Main(string[] args)
+{
+    .....
+    // Added here as we don't have access to builder in AddApplicationServices
+    builder.Services.AddScoped(sp =&gt; new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
+    // the Services for the Application
+    builder.Services.AddWASMApplicationServices();
+    .....
+}
+</code></pre>
+<p>Points:</p>
+<ol>
+<li>There's an <code>IServiceCollection</code> extension method for each project/library to encapsulate the specific services needed for the project.</li>
+<li>Only the data layer service is different.  The Server version, used by both the Blazor Server and the WASM API Server, interfaces with the database and Entity Framework.  It's scoped as a Singleton.</li>
+<li>Everything is async, using a <code>DbContextFactory</code> and manage <code>DbContext</code> instances as they are used.  The WASM version uses <code>HttpClient</code> to make calls to the API.</li>
+<li>The <em>Brokers</em> and <em>Connectors</em> handle data requests through generics.  <code>TRecord</code> defines which dataset is retrieved and returned.</li>
+</ol>
+<h3 id="generics">Generics</h3>
+<p>The boilerplate library code relies heavily on Generics.  Two generic entities are defined:</p>
+<ol>
+<li><code>TRecord</code> represents a model record class.  It must be a class, implement <code>IDbRecord</code> and define an empty <code>new()</code>.  <code>TRecord</code> is used at the method level.</li>
+<li><code>TEditRecord</code> represent a model edit class. It must be a class, implement <code>IEditRecord</code> and define an empty <code>new()</code>.  <code>TEditRecord</code> is used at the method level.</li>
+<li><code>TDbContext</code> is the database context. It must inherit from the <code>DbContext</code> class.</li>
+</ol>
+<p>Class declarations look like this:</p>
+<pre><code class="language-csharp">public class ServerDataBroker&lt;TDbContext&gt; :
+    BaseDataBroker,
+    IDataBroker
+    where TDbContext : DbContext
+......
+    // example method template  
+    public virtual ValueTask&lt;TRecord&gt; SelectRecordAsync&lt;TRecord&gt;(Guid id) where TRecord : class, IDbRecord&lt;TRecord&gt;, new()
+        =&gt; ValueTask.FromResult(new TRecord());
+
+</code></pre>
+<h2 id="data-access">Data Access</h2>
+<p>Before diving into the detail, let's look at the main CRUD methods we implement:</p>
+<ol>
+<li><em>SelectAllRecords</em> - get a List of records in the dataset.</li>
+<li><em>SelectPagedRecords</em> - get a List of paged and sorted records in the dataset.</li>
+<li><em>SelectRecord</em> - get a single record</li>
+<li><em>SelectRecordListCount</em> - get the total number of records.</li>
+<li><em>CreateRecord</em> - Create a new record</li>
+<li><em>UpdateRecord</em> - Update the record</li>
+<li><em>DeleteRecord</em> - Delete the record</li>
+</ol>
+<p>Keep these in mind as we work through this article.</p>
+<h3 id="dbtaskresult">DbTaskResult</h3>
+<p>Data layer CUD operations return a <code>DbTaskResult</code> object.  Most properties are self-evident.  It's designed to be consumed by the UI to build CSS Framework entities such as Alerts and Toasts.</p>
+<pre><code class="language-csharp">public class DbTaskResult
+{
+    public string Message { get; set; } = null;
+    public MessageType Type { get; set; } = MessageType.None;
+    public bool IsOK { get; set; } = true;
+    public object Data { get; set; } = null;
+}
+</code></pre>
+<h2 id="data-classes">Data Classes</h2>
+<p>Data classes implement <code>IDbRecord</code>.  All reside in the Core Domain - <em>Blazr.Database.Core</em>.</p>
+<ol>
+<li><code>ID</code> is a <code>Guid</code>, a unique Identity field for the record.</li>
+<li><code>DisplayName</code> provides a generic name for the record.  We use this in titles, lookup lists and other UI components.</li>
+<li><code>GetDbSetName()</code> provides a method of defining a <code>DbSet</code> name other that the record name.  By default it gets the set name.</li>
+</ol>
+<pre><code class="language-csharp">public interface IDbRecord&lt;TRecord&gt; 
+    where TRecord : class, IDbRecord&lt;TRecord&gt;, new()
+{
+    public Guid ID { get; }
+    public string DisplayName { get; }
+    public string GetDbSetName() =&gt; new TRecord().GetType().Name;
+}
+</code></pre>
+<p>Edit classes implement <code>IEditRecord</code> and <code>IValidation</code></p>
+<ol>
+<li><code>ID</code> is a <code>Guid</code>, a unique Identity field for the record.</li>
+<li><code>Populate()</code> populates the instance from the provided <code>TRecord</code>.</li>
+<li><code>GetRecord()</code> gets a new <code>TRecord</code> from the class instance.</li>
+</ol>
+<pre><code class="language-csharp">public interface IEditRecord&lt;TRecord&gt;
+    where TRecord : class, IDbRecord&lt;TRecord&gt;, new()
+{
+    public Guid ID { get; }
+
+    public void Populate(IDbRecord&lt;TRecord&gt; dbRecord);
+
+    public TRecord GetRecord();
+}
+</code></pre>
+<p>More about Validation later.</p>
+<pre><code class="language-csharp">public interface IValidation
+{
+    public bool Validate(ValidationMessageStore validationMessageStore, string fieldname, object model = null);
+}
+</code></pre>
+<h3 id="weatherforecast">WeatherForecast</h3>
+<p>Here's the dataclass for a WeatherForecast data entity.</p>
+<p>Points:</p>
+<ol>
+<li>Entity Framework attributes used for property labelling.</li>
+<li>Implementation of <code>IDbRecord</code>.</li>
+<li>Defined as a <code>record</code> with immutable properties.</li>
+</ol>
+<pre><code class="language-csharp">public record WeatherForecast : IDbRecord&lt;WeatherForecast&gt;
+{
+    [Key] public Guid ID { get; init; } = Guid.Empty;
+
+    public DateTimeOffset Date { get; init; } = DateTimeOffset.Now;
+
+    public int TemperatureC { get; init; } = 0;
+
+    public string Summary { get; init; } = string.Empty;
+
+    [NotMapped] public int TemperatureF =&gt; 32 + (int)(TemperatureC / 0.5556);
+
+    [NotMapped] public string DisplayName =&gt; $&quot;Weather Forecast for {this.Date.LocalDateTime.ToShortDateString()} &quot;;
+
+    // A long string field to demo using a max row in a data table
+    [NotMapped] public string Description =&gt; $&quot;The Weather Forecast for this {this.Date.DayOfWeek}, the {this.Date.Day} of the month {this.Date.Month} in the year of {this.Date.Year} is {this.Summary}.  From the font of all knowledge!&quot;;
+}
+</code></pre>
+<p>And the editable version - <code>EditWeatherForecast</code>.</p>
+<p>Points:</p>
+<ol>
+<li>Implementation of <code>IEditRecord</code> and <code>IValidation</code>.</li>
+<li>Defined as a <code>class</code> with setter properties</li>
+<li><code>GetRecord</code> returns a <code>WeatherForecast</code> record.</li>
+<li><code>Populate</code> populates the current class with data from a <code>WeatherForecast</code>.</li>
+<li><code>Validate</code> runs the configured validations on the class properties. More later.</li>
+</ol>
+<pre><code class="language-csharp">public class EditWeatherForecast : IValidation, IEditRecord&lt;WeatherForecast&gt;
+{
+    public Guid ID { get; set; } = Guid.Empty;
+
+    public DateTimeOffset Date { get; set; } = DateTimeOffset.Now;
+
+    public int TemperatureC { get; set; } = 0;
+
+    public int TemperatureF =&gt; 32 + (int)(TemperatureC / 0.5556);
+
+    public string Summary { get; set; } = string.Empty;
+
+    public Guid GUID { get; init; } = Guid.NewGuid();
+
+    public string DisplayName =&gt; $&quot;Weather Forecast for {this.Date.LocalDateTime.ToShortDateString()} &quot;;
+
+    public WeatherForecast GetRecord() =&gt; new WeatherForecast
+    {
+        ID = this.ID,
+        Date = this.Date,
+        TemperatureC = this.TemperatureC,
+        Summary = this.Summary
+    };
+
+    public void Populate(IDbRecord&lt;WeatherForecast&gt; dbRecord)
+    {
+        var rec = (WeatherForecast)dbRecord;
+        this.ID = rec.ID;
+        this.Date = rec.Date;
+        this.TemperatureC = rec.TemperatureC;
+        this.Summary = rec.Summary;
+    }
+
+    public bool Validate(ValidationMessageStore validationMessageStore, string fieldname, object model = null)
+    {
+        model = model ?? this;
+        bool trip = false;
+
+        this.Summary.Validation(&quot;Summary&quot;, model, validationMessageStore)
+            .LongerThan(2, &quot;Your description needs to be a little longer! 3 letters minimum&quot;)
+            .Validate(ref trip, fieldname);
+
+        this.Date.Validation(&quot;Date&quot;, model, validationMessageStore)
+            .NotDefault(&quot;You must select a date&quot;)
+            .LessThan(DateTime.Now.AddMonths(1), true, &quot;Date can only be up to 1 month ahead&quot;)
+            .Validate(ref trip, fieldname);
+
+        this.TemperatureC.Validation(&quot;TemperatureC&quot;, model, validationMessageStore)
+            .LessThan(70, &quot;The temperature must be less than 70C&quot;)
+            .GreaterThan(-60, &quot;The temperature must be greater than -60C&quot;)
+            .Validate(ref trip, fieldname);
+
+        return !trip;
+    }
+
+}
+</code></pre>
+<h2 id="the-data-access-tier">The Data Access Tier</h2>
+<p>The application implements two Entity Framework <code>DBContext</code> classes and one <code>InMemoryDataStore</code>.  All reside in the Data Domain - <em>Blazr.Database.Data</em>.</p>
+<h4 id="mssqlweatherdbcontext">MSSQLWeatherDbContext</h4>
+<p>The class is  basic, creating a <code>DbSet</code> per dataclass.  The DBSet either must be the same name as the dataclass, or the record <code>GetDbSetName</code> must return the correct <code>DbSet</code> name.</p>
+<pre><code class="language-csharp">    public class MSSQLWeatherDbContext : DbContext
+    {
+        private readonly Guid _id;
+
+        public LocalWeatherDbContext(DbContextOptions&lt;LocalWeatherDbContext&gt; options)
+            : base(options)
+            =&gt; _id = Guid.NewGuid();
+
+        public DbSet&lt;WeatherForecast&gt; WeatherForecast { get; set; }
+    }
+</code></pre>
+<h4 id="sqliteweatherdbcontext">SQLiteWeatherDBContext</h4>
+<p>The application implements a single Entity Framework <code>DbContext</code>, and a builder to build out the datbase instance and populate with data.</p>
+<pre><code class="language-csharp">public class SQLiteWeatherDbContext : DbContext
+{
+    /// &lt;summary&gt;
+    /// New Method - creates a guid in case we need to track it
+    /// &lt;/summary&gt;
+    /// &lt;param name=&quot;options&quot;&gt;&lt;/param&gt;
+    public SQLiteWeatherDbContext(DbContextOptions&lt;SQLiteWeatherDbContext&gt; options)
+        : base(options)
+          =&gt; this.BuildInMemoryDatabase();
+
+    /// &lt;summary&gt;
+    /// DbSet for the &lt;see cref=&quot;DbWeatherForecast&quot;/&gt; record
+    /// &lt;/summary&gt;
+    public DbSet&lt;WeatherForecast&gt; WeatherForecast { get; set; }
+
+    private void BuildInMemoryDatabase()
+    {
+        var conn = this.Database.GetDbConnection();
+        conn.Open();
+        var cmd = conn.CreateCommand();
+        cmd.CommandText = &quot;CREATE TABLE [WeatherForecast]([ID] UNIQUEIDENTIFIER PRIMARY KEY, [Date] [smalldatetime] NOT NULL, [TemperatureC] [int] NOT NULL, [Summary] [varchar](255) NULL)&quot;;
+        cmd.ExecuteNonQuery();
+        foreach (var forecast in this.NewForecasts)
+        {
+            cmd.CommandText = $&quot;INSERT INTO WeatherForecast([ID], [Date], [TemperatureC], [Summary]) VALUES({Guid.NewGuid()} ,'{forecast.Date.LocalDateTime.ToLongDateString()}', {forecast.TemperatureC}, '{forecast.Summary}')&quot;;
+            cmd.ExecuteNonQuery();
+        }
+    }
+
+    private static readonly string[] Summaries = new[]
+    {
+        &quot;Freezing&quot;, &quot;Bracing&quot;, &quot;Chilly&quot;, &quot;Cool&quot;, &quot;Mild&quot;, &quot;Warm&quot;, &quot;Balmy&quot;, &quot;Hot&quot;, &quot;Sweltering&quot;, &quot;Scorching&quot;
+    };
+
+    private List&lt;WeatherForecast&gt; NewForecasts
+    {
+        get
+        {
+            var rng = new Random();
+
+            return Enumerable.Range(1, 80).Select(index =&gt; new WeatherForecast
+            {
+                //ID = index,
+                Date = DateTime.Now.AddDays(index),
+                TemperatureC = rng.Next(-20, 55),
+                Summary = Summaries[rng.Next(Summaries.Length)]
+            }).ToList();
+        }
+    }
+}
+</code></pre>
+<h4 id="inmemoryweatherdbcontext">InMemoryWeatherDBContext</h4>
+<pre><code class="language-csharp">public class InMemoryWeatherDataStore : IInMemoryDataStore
+{
+    public InMemoryDataSet&lt;WeatherForecast&gt; WeatherForecast { get; set; }
+
+    public InMemoryWeatherDataStore()
+    {
+        this.WeatherForecast = new InMemoryDataSet&lt;WeatherForecast&gt;();
+        WeatherForecast.LoadData(LoadWeatherForecastData());
+    }
+
+    public List&lt;WeatherForecast&gt; LoadWeatherForecastData()
+    {
+        var summaries = new[] {
+            &quot;Freezing&quot;, &quot;Bracing&quot;, &quot;Chilly&quot;, &quot;Cool&quot;, &quot;Mild&quot;, &quot;Warm&quot;, &quot;Balmy&quot;, &quot;Hot&quot;, &quot;Sweltering&quot;, &quot;Scorching&quot;
+        };
+        var rng = new Random();
+
+        return Enumerable.Range(1, 80).Select(index =&gt; new WeatherForecast
+        {
+            ID = Guid.NewGuid(),
+            Date = DateTime.Now.AddDays(index),
+            TemperatureC = rng.Next(-20, 55),
+            Summary = summaries[rng.Next(summaries.Length)]
+        }).ToList();
+    }
+
+    public InMemoryDataSet&lt;TRecord&gt; GetDataSet&lt;TRecord&gt;() where TRecord : class, IDbRecord&lt;TRecord&gt;, new()
+    {
+        var dbSetName = new TRecord().GetDbSetName();
+        // Get the property info object for the DbSet 
+        var pinfo = this.GetType().GetProperty(dbSetName);
+        InMemoryDataSet&lt;TRecord&gt; dbSet = null;
+        Debug.Assert(pinfo != null);
+        // Get the property DbSet
+        try
+        {
+            dbSet = (InMemoryDataSet&lt;TRecord&gt;)pinfo.GetValue(this);
+        }
+        catch
+        {
+            throw new InvalidOperationException($&quot;{dbSetName} does not have a matching DBset &quot;);
+        }
+        Debug.Assert(dbSet != null);
+        return dbSet;
+    }
+}
+</code></pre>
+<h4 id="dbcontextextensions">DbContextExtensions</h4>
+<p>We're using generics, so our methods only know about <code>TRecord</code> and the <code>IDbRecord</code> interface.  We therefore need a methodology to get the correct <code>DbSet</code>.  We use either a naming convention - the name of the record, the DbSet and the Table/View is the same - or declare the <code>DbSet</code> name in the record class through <code>GetDbSetName</code>.  We implement the method to get the <code>DbSet</code> as an extension method on <code>DbContext</code>.</p>
+<p>The method uses reflection to find the <code>DbSet</code> for <code>TRecord</code>.</p>
+<pre><code class="language-csharp">public static DbSet&lt;TRecord&gt; GetDbSet&lt;TRecord&gt;(this DbContext context) where TRecord : class, IDbRecord&lt;TRecord&gt;, new()
+{
+    var dbSetName = new TRecord().GetDbSetName();
+    // Get the property info object for the DbSet 
+    var pinfo = context.GetType().GetProperty(dbSetName);
+    DbSet&lt;TRecord&gt; dbSet = null;
+    Debug.Assert(pinfo != null);
+    // Get the property DbSet
+    try
+    {
+        dbSet = (DbSet&lt;TRecord&gt;)pinfo.GetValue(context);
+    }
+    catch
+    {
+        throw new InvalidOperationException($&quot;{dbSetName} does not have a matching DBset &quot;);
+    }
+    Debug.Assert(dbSet != null);
+    return dbSet;
+}
+</code></pre>
+<h3 id="data-brokers">Data Brokers</h3>
+<p><code>IDataBroker</code> resides in the Core Domain - <em>Blazr.SPA.Core</em> - defining the interface the Core Domain Connectors use.  The implementations all reside in the Data Domain - <em>Blazr.SPA.Data</em>.</p>
+<h4 id="idatabroker">IDataBroker</h4>
+<p><code>IDataBroker</code> defines the base CRUD methods DataServices must implement.  Brokers are services defined in the Services container using the interface and consumed through the interface.  Note <code>TRecord</code> with it's constraints is defined at method level.  <code>SelectPagedRecordsAsync</code> uses a <code>RecordPagingData</code> object which we'll look at in article 5.</p>
+<pre><code class="language-csharp">    public interface IDataBroker
+    {
+        public ValueTask&lt;List&lt;TRecord&gt;&gt; SelectAllRecordsAsync&lt;TRecord&gt;() where TRecord : class, IDbRecord&lt;TRecord&gt;, new();
+        
+        public ValueTask&lt;List&lt;TRecord&gt;&gt; SelectPagedRecordsAsync&lt;TRecord&gt;(RecordPagingData pagingData) where TRecord : class, IDbRecord&lt;TRecord&gt;, new();
+        
+        public ValueTask&lt;TRecord&gt; SelectRecordAsync&lt;TRecord&gt;(Guid id) where TRecord : class, IDbRecord&lt;TRecord&gt;, new();
+        
+        public ValueTask&lt;int&gt; SelectRecordListCountAsync&lt;TRecord&gt;() where TRecord : class, IDbRecord&lt;TRecord&gt;, new();
+        
+        public ValueTask&lt;DbTaskResult&gt; UpdateRecordAsync&lt;TRecord&gt;(TRecord record) where TRecord : class, IDbRecord&lt;TRecord&gt;, new();
+        
+        public ValueTask&lt;DbTaskResult&gt; InsertRecordAsync&lt;TRecord&gt;(TRecord record) where TRecord : class, IDbRecord&lt;TRecord&gt;, new();
+        
+        public ValueTask&lt;DbTaskResult&gt; DeleteRecordAsync&lt;TRecord&gt;(TRecord record) where TRecord : class, IDbRecord&lt;TRecord&gt;, new();
+    }
+</code></pre>
+<h4 id="basedatabroker">BaseDataBroker</h4>
+<p><code>BaseDataBroker</code> is abstract implementation of <code>IDataBroker</code>.  It provides default records, lists or <em>not implemented</em> <code>DBTaskResult</code> messages.</p>
+<pre><code class="language-csharp">    public abstract class BaseDataBroker: IDataBroker
+    {
+        public virtual ValueTask&lt;List&lt;TRecord&gt;&gt; SelectAllRecordsAsync&lt;TRecord&gt;() where TRecord : class, IDbRecord&lt;TRecord&gt;, new()
+            =&gt; ValueTask.FromResult(new List&lt;TRecord&gt;());
+        
+        public virtual ValueTask&lt;List&lt;TRecord&gt;&gt; SelectPagedRecordsAsync&lt;TRecord&gt;(RecordPagingData paginatorData) where TRecord : class, IDbRecord&lt;TRecord&gt;, new()
+            =&gt; ValueTask.FromResult(new List&lt;TRecord&gt;());
+        
+        public virtual ValueTask&lt;TRecord&gt; SelectRecordAsync&lt;TRecord&gt;(Guid id) where TRecord : class, IDbRecord&lt;TRecord&gt;, new()
+            =&gt; ValueTask.FromResult(new TRecord());
+        
+        public virtual ValueTask&lt;int&gt; SelectRecordListCountAsync&lt;TRecord&gt;() where TRecord : class, IDbRecord&lt;TRecord&gt;, new()
+            =&gt; ValueTask.FromResult(0);
+        
+        public virtual ValueTask&lt;DbTaskResult&gt; UpdateRecordAsync&lt;TRecord&gt;(TRecord record) where TRecord : class, IDbRecord&lt;TRecord&gt;, new()
+            =&gt; ValueTask.FromResult(new DbTaskResult() { IsOK = false, Type = MessageType.NotImplemented, Message = &quot;Method not implemented&quot; });
+        
+        public virtual ValueTask&lt;DbTaskResult&gt; InsertRecordAsync&lt;TRecord&gt;(TRecord record) where TRecord : class, IDbRecord&lt;TRecord&gt;, new()
+            =&gt; ValueTask.FromResult(new DbTaskResult() { IsOK = false, Type = MessageType.NotImplemented, Message = &quot;Method not implemented&quot; });
+        
+        public virtual ValueTask&lt;DbTaskResult&gt; DeleteRecordAsync&lt;TRecord&gt;(TRecord record) where TRecord : class, IDbRecord&lt;TRecord&gt;, new()
+            =&gt; ValueTask.FromResult(new DbTaskResult() { IsOK = false, Type = MessageType.NotImplemented, Message = &quot;Method not implemented&quot; });
+    }
+</code></pre>
+<h4 id="sqlserverdatabroker">SQLServerDataBroker</h4>
+<p>This is the concrete server-side implementation.  Each database operation is implemented using separate <code>DbContext</code> instances.  Note <code>GetDBSet</code> used to get the correct DBSet for <code>TRecord</code>.</p>
+<pre><code class="language-csharp">public class SQLServerDataBroker&lt;TDbContext&gt; :
+    BaseDataBroker,
+    IDataBroker
+    where TDbContext : DbContext
+{
+    protected virtual IDbContextFactory&lt;TDbContext&gt; DBContext { get; set; } = null;
+
+    public SQLServerDataBroker(IConfiguration configuration, IDbContextFactory&lt;TDbContext&gt; dbContext)
+        =&gt; this.DBContext = dbContext;
+
+    public override async ValueTask&lt;List&lt;TRecord&gt;&gt; SelectAllRecordsAsync&lt;TRecord&gt;()
+    {
+        using var dbContext = this.DBContext.CreateDbContext();
+        var list = await dbContext
+        .GetDbSet&lt;TRecord&gt;()
+        .ToListAsync() 
+        ?? new List&lt;TRecord&gt;();
+        return list;
+    }
+
+    public override async ValueTask&lt;List&lt;TRecord&gt;&gt; SelectPagedRecordsAsync&lt;TRecord&gt;(RecordPagingData pagingData)
+    {
+        using var dbContext = this.DBContext.CreateDbContext();
+        var dbset = dbContext
+            .GetDbSet&lt;TRecord&gt;();
+
+        var isSortable = typeof(TRecord).GetProperty(pagingData.SortColumn) != null;
+        List&lt;TRecord&gt; list;
+        if (pagingData.Sort &amp;&amp; isSortable)
+        {
+            list = await dbset
+                .OrderBy(pagingData.SortDescending ? $&quot;{pagingData.SortColumn} descending&quot; : pagingData.SortColumn)
+                .Skip(pagingData.StartRecord)
+                .Take(pagingData.PageSize)
+                .ToListAsync() 
+                ?? new List&lt;TRecord&gt;();
+        }
+        else
+        {
+            list = await dbset
+                .Skip(pagingData.StartRecord)
+                .Take(pagingData.PageSize)
+                .ToListAsync() 
+                ?? new List&lt;TRecord&gt;();
+        }
+        return list;
+    }
+
+    public override async ValueTask&lt;TRecord&gt; SelectRecordAsync&lt;TRecord&gt;(Guid id)
+    {
+        using var dbContext = this.DBContext.CreateDbContext();
+        var list = await dbContext
+            .GetDbSet&lt;TRecord&gt;()
+            .FirstOrDefaultAsync(item =&gt; ((IDbRecord&lt;TRecord&gt;)item).ID == id) ?? default;
+
+        return list;
+    }
+
+    public override async ValueTask&lt;int&gt; SelectRecordListCountAsync&lt;TRecord&gt;()
+    {
+        using var dbContext = this.DBContext.CreateDbContext();
+        var count = await dbContext
+            .GetDbSet&lt;TRecord&gt;()
+            .CountAsync();
+
+        return count;
+    }
+
+    public override async ValueTask&lt;DbTaskResult&gt; UpdateRecordAsync&lt;TRecord&gt;(TRecord record)
+    {
+        using var context = this.DBContext.CreateDbContext();
+        context.Entry(record).State = EntityState.Modified;
+        var result = await this.UpdateContext(context);
+        return result;
+    }
+
+    public override async ValueTask&lt;DbTaskResult&gt; InsertRecordAsync&lt;TRecord&gt;(TRecord record)
+    {
+        using var context = this.DBContext.CreateDbContext();
+        context.GetDbSet&lt;TRecord&gt;().Add(record);
+        var result = await this.UpdateContext(context);
+        return result;
+    }
+
+    public override async ValueTask&lt;DbTaskResult&gt; DeleteRecordAsync&lt;TRecord&gt;(TRecord record)
+    {
+        using var context = this.DBContext.CreateDbContext();
+        context.Entry(record).State = EntityState.Deleted;
+        var result = await this.UpdateContext(context);
+        return result;
+    }
+
+    /// Helper method to update the context and return a DBTaskResult
+    protected async Task&lt;DbTaskResult&gt; UpdateContext(DbContext context)
+        =&gt; await context.SaveChangesAsync() &gt; 0 ? DbTaskResult.OK() : DbTaskResult.NotOK();
+}
+</code></pre>
+<h4 id="sqlitedatabroker">SQLiteDataBroker</h4>
+<p>This is the concrete server-side implementation.  All database operations use a single <code>DbContext</code> instances.  Note <code>GetDBSet</code> gets the correct DBSet for <code>TRecord</code>.</p>
+<pre><code class="language-csharp">public class SQLiteDataBroker&lt;TDbContext&gt; :
+    BaseDataBroker,
+    IDataBroker
+    where TDbContext : DbContext
+{
+
+    protected virtual IDbContextFactory&lt;TDbContext&gt; DBContext { get; set; } = null;
+
+    private DbContext _dbContext;
+
+    public SQLiteDataBroker(IConfiguration configuration, IDbContextFactory&lt;TDbContext&gt; dbContext)
+    {
+        this.DBContext = dbContext;
+        _dbContext = this.DBContext.CreateDbContext();
+        // Debug.WriteLine($&quot;==&gt; New Instance {this.ToString()} ID:{this.ServiceID.ToString()} &quot;);
+    }
+
+    public override async ValueTask&lt;List&lt;TRecord&gt;&gt; SelectAllRecordsAsync&lt;TRecord&gt;()
+    {
+        var dbset = _dbContext.GetDbSet&lt;TRecord&gt;();
+        return await dbset.ToListAsync() ?? new List&lt;TRecord&gt;();
+    }
+
+    public override async ValueTask&lt;List&lt;TRecord&gt;&gt; SelectPagedRecordsAsync&lt;TRecord&gt;(RecordPagingData paginatorData)
+    {
+        var dbset = _dbContext.GetDbSet&lt;TRecord&gt;();
+        var isSortable = typeof(TRecord).GetProperty(pagingData.SortColumn) != null;
+        if (pagingData.Sort &amp;&amp; isSortable)
+        {
+            var list = await dbset
+                .OrderBy(pagingData.SortDescending ? $&quot;{pagingData.SortColumn} descending&quot; : pagingData.SortColumn)
+                .Skip(pagingData.StartRecord)
+                .Take(pagingData.PageSize).ToListAsync() ?? new List&lt;TRecord&gt;();
+            return list;
+        }
+        else
+        {
+            var list = await dbset
+                .Skip(pagingData.StartRecord)
+                .Take(pagingData.PageSize).ToListAsync() ?? new List&lt;TRecord&gt;();
+            return list;
+        }
+    }
+
+    public override async ValueTask&lt;TRecord&gt; SelectRecordAsync&lt;TRecord&gt;(Guid id)
+    {
+        var dbset = _dbContext.GetDbSet&lt;TRecord&gt;();
+        return await dbset.FirstOrDefaultAsync(item =&gt; ((IDbRecord&lt;TRecord&gt;)item).ID == id) ?? default;
+    }
+
+    public override async ValueTask&lt;int&gt; SelectRecordListCountAsync&lt;TRecord&gt;()
+    {
+        var dbset = _dbContext.GetDbSet&lt;TRecord&gt;();
+        return await dbset.CountAsync();
+    }
+
+    public override async ValueTask&lt;DbTaskResult&gt; UpdateRecordAsync&lt;TRecord&gt;(TRecord record)
+    {
+        _dbContext.Entry(record).State = EntityState.Modified;
+        var x = await _dbContext.SaveChangesAsync();
+        return new DbTaskResult() { IsOK = true, Type = MessageType.Success };
+    }
+
+    public override async ValueTask&lt;DbTaskResult&gt; InsertRecordAsync&lt;TRecord&gt;(TRecord record)
+    {
+        var dbset = _dbContext.GetDbSet&lt;TRecord&gt;();
+        dbset.Add(record);
+        var x = await _dbContext.SaveChangesAsync();
+        return new DbTaskResult() { IsOK = true, Type = MessageType.Success };
+    }
+
+    public override async ValueTask&lt;DbTaskResult&gt; DeleteRecordAsync&lt;TRecord&gt;(TRecord record)
+    {
+        _dbContext.Entry(record).State = EntityState.Deleted;
+        var x = await _dbContext.SaveChangesAsync();
+        return new DbTaskResult() { IsOK = true, Type = MessageType.Success };
+    }
+}
+</code></pre>
+<h4 id="inmemorydatastorebroker">InMemoryDataStoreBroker</h4>
+<p>This provides a datastore for demo sites and testing.</p>
+<pre><code class="language-csharp">public class InMemoryDataStoreBroker&lt;TContext&gt; :
+    BaseDataBroker,
+    IDataBroker
+    where TContext : IInMemoryDataStore
+{
+    protected virtual IInMemoryDataStore DataContext { get; set; } = null;
+
+    public InMemoryDataStoreBroker(IInMemoryDataStore dataContext)
+        =&gt; this.DataContext = dataContext;
+
+    public override ValueTask&lt;List&lt;TRecord&gt;&gt; SelectAllRecordsAsync&lt;TRecord&gt;()
+        =&gt; ValueTask.FromResult&lt;List&lt;TRecord&gt;&gt;(DataContext
+        .GetDataSet&lt;TRecord&gt;()
+        .ToList());
+
+    public override ValueTask&lt;List&lt;TRecord&gt;&gt; SelectPagedRecordsAsync&lt;TRecord&gt;(RecordPagingData paginatorData)
+    {
+        var dbSet = DataContext
+            .GetDataSet&lt;TRecord&gt;()
+            .ToList();
+        if (pagingData.Sort)
+        {
+            dbSet = dbSet
+                .AsQueryable()
+                .OrderBy(pagingData.SortDescending ? $&quot;{pagingData.SortColumn} descending&quot; : pagingData.SortColumn)
+                .ToList();
+        }
+        return ValueTask.FromResult ( dbSet
+            .Skip(pagingData.StartRecord)
+            .Take(pagingData.PageSize)
+            .ToList()
+            );
+    }
+
+    public override ValueTask&lt;TRecord&gt; SelectRecordAsync&lt;TRecord&gt;(Guid id)
+        =&gt; ValueTask.FromResult&lt;TRecord&gt;(DataContext
+            .GetDataSet&lt;TRecord&gt;()
+            .FirstOrDefault(item =&gt; ((IDbRecord&lt;TRecord&gt;)item).ID == id));
+
+    public override ValueTask&lt;int&gt; SelectRecordListCountAsync&lt;TRecord&gt;()
+        =&gt; ValueTask.FromResult&lt;int&gt;(DataContext
+            .GetDataSet&lt;TRecord&gt;()
+            .Count());
+
+    public override ValueTask&lt;DbTaskResult&gt; UpdateRecordAsync&lt;TRecord&gt;(TRecord record)
+    {
+        var result = this.DataContext.GetDataSet&lt;TRecord&gt;().Update(record);
+        var dbResult = new DbTaskResult() { IsOK = result, Message = &quot;Record Updated&quot; };
+        return ValueTask.FromResult&lt;DbTaskResult&gt;(dbResult);
+    }
+
+    public override ValueTask&lt;DbTaskResult&gt; InsertRecordAsync&lt;TRecord&gt;(TRecord record)
+    {
+        var result = this.DataContext.GetDataSet&lt;TRecord&gt;().Insert(record);
+        var dbResult = new DbTaskResult() { IsOK = result, Message = &quot;Record Added&quot; };
+        return ValueTask.FromResult&lt;DbTaskResult&gt;(dbResult);
+    }
+
+    public override ValueTask&lt;DbTaskResult&gt; DeleteRecordAsync&lt;TRecord&gt;(TRecord record)
+    {
+        var result = this.DataContext.GetDataSet&lt;TRecord&gt;().Delete(record);
+        var dbResult = new DbTaskResult() { IsOK = result, Message = &quot;Record Deleted&quot; };
+        return ValueTask.FromResult&lt;DbTaskResult&gt;(dbResult);
+    }
+}
+</code></pre>
+<h4 id="apidatabroker">APIDataBroker</h4>
+<p>The <code>APIDataBroker</code> looks a little different.  It implements the interface, but uses <code>HttpClient</code> to get/post requests to the API on the server.</p>
+<p>The service map looks like this:</p>
+<p>View Service =&gt; APIDataBroker =&gt; API Controller =&gt; ServerDataBroker =&gt; DBContext</p>
+<pre><code class="language-csharp">public class APIDataBroker : BaseDataBroker, IDataBroker
+{
+    protected HttpClient HttpClient { get; set; }
+
+    public APIDataBroker(IConfiguration configuration, HttpClient httpClient)
+        =&gt; this.HttpClient = httpClient;
+
+    public override async ValueTask&lt;List&lt;TRecord&gt;&gt; SelectAllRecordsAsync&lt;TRecord&gt;()
+        =&gt; await this.HttpClient.GetFromJsonAsync&lt;List&lt;TRecord&gt;&gt;($&quot;/api/{GetRecordName&lt;TRecord&gt;()}/list&quot;);
+
+    public override async ValueTask&lt;List&lt;TRecord&gt;&gt; SelectPagedRecordsAsync&lt;TRecord&gt;(RecordPagingData paginatorData)
+    {
+        var response = await this.HttpClient.PostAsJsonAsync($&quot;/api/{GetRecordName&lt;TRecord&gt;()}/listpaged&quot;, paginatorData);
+        return await response.Content.ReadFromJsonAsync&lt;List&lt;TRecord&gt;&gt;();
+    }
+
+    public override async ValueTask&lt;TRecord&gt; SelectRecordAsync&lt;TRecord&gt;(Guid id)
+    {
+        var response = await this.HttpClient.PostAsJsonAsync($&quot;/api/{GetRecordName&lt;TRecord&gt;()}/read&quot;, id);
+        var result = await response.Content.ReadFromJsonAsync&lt;TRecord&gt;();
+        return result;
+    }
+
+    public override async ValueTask&lt;int&gt; SelectRecordListCountAsync&lt;TRecord&gt;()
+        =&gt; await this.HttpClient.GetFromJsonAsync&lt;int&gt;($&quot;/api/{GetRecordName&lt;TRecord&gt;()}/count&quot;);
+
+    public override async ValueTask&lt;DbTaskResult&gt; UpdateRecordAsync&lt;TRecord&gt;(TRecord record)
+    {
+        var response = await this.HttpClient.PostAsJsonAsync&lt;TRecord&gt;($&quot;/api/{GetRecordName&lt;TRecord&gt;()}/update&quot;, record);
+        var result = await response.Content.ReadFromJsonAsync&lt;DbTaskResult&gt;();
+        return result;
+    }
+
+    public override async ValueTask&lt;DbTaskResult&gt; InsertRecordAsync&lt;TRecord&gt;(TRecord record)
+    {
+        var response = await this.HttpClient.PostAsJsonAsync&lt;TRecord&gt;($&quot;/api/{GetRecordName&lt;TRecord&gt;()}/create&quot;, record);
+        var result = await response.Content.ReadFromJsonAsync&lt;DbTaskResult&gt;();
+        return result;
+    }
+
+    public override async ValueTask&lt;DbTaskResult&gt; DeleteRecordAsync&lt;TRecord&gt;(TRecord record)
+    {
+        var response = await this.HttpClient.PostAsJsonAsync&lt;TRecord&gt;($&quot;/api/{GetRecordName&lt;TRecord&gt;()}/update&quot;, record);
+        var result = await response.Content.ReadFromJsonAsync&lt;DbTaskResult&gt;();
+        return result;
+    }
+
+    protected string GetRecordName&lt;TRecord&gt;() where TRecord : class, new()
+        =&gt; new TRecord().GetType().Name;
+
+}
+</code></pre>
+<h4 id="api-controllers">API Controllers</h4>
+<p>Controllers are implemented in a specific project - <em>Blazr.Database.Controllers</em>, one per DataClass.  They reside in the Data Domain, but can't reside in the project used to to build the WASM executables as they require the <code>Microsoft.AsnNetCore.App</code> framework.</p>
+<p>The WeatherForecast Controller is shown below.  It routes requests through the <code>IDataBroker</code> registered service.</p>
+<pre><code class="language-csharp">[ApiController]
+public class WeatherForecastController : ControllerBase
+{
+    protected IDataBroker DataService { get; set; }
+    private readonly ILogger&lt;WeatherForecastController&gt; logger;
+
+    public WeatherForecastController(ILogger&lt;WeatherForecastController&gt; logger, IDataBroker dataService)
+    {
+        this.DataService = dataService;
+        this.logger = logger;
+    }
+
+    [MVC.Route(&quot;/api/weatherforecast/list&quot;)]
+    [HttpGet]
+    public async Task&lt;List&lt;WeatherForecast&gt;&gt; GetList() =&gt; await DataService.SelectAllRecordsAsync&lt;WeatherForecast&gt;();
+
+    [MVC.Route(&quot;/api/weatherforecast/listpaged&quot;)]
+    [HttpPost]
+    public async Task&lt;List&lt;WeatherForecast&gt;&gt; Read([FromBody] RecordPagingData data) =&gt; await DataService.SelectPagedRecordsAsync&lt;WeatherForecast&gt;(data);
+
+    [MVC.Route(&quot;/api/weatherforecast/count&quot;)]
+    [HttpGet]
+    public async Task&lt;int&gt; Count() =&gt; await DataService.SelectRecordListCountAsync&lt;WeatherForecast&gt;();
+
+    [MVC.Route(&quot;/api/weatherforecast/get&quot;)]
+    [HttpGet]
+    public async Task&lt;WeatherForecast&gt; GetRec(Guid id) =&gt; await DataService.SelectRecordAsync&lt;WeatherForecast&gt;(id);
+
+    [MVC.Route(&quot;/api/weatherforecast/read&quot;)]
+    [HttpPost]
+    public async Task&lt;WeatherForecast&gt; Read([FromBody] Guid id) =&gt; await DataService.SelectRecordAsync&lt;WeatherForecast&gt;(id);
+
+    [MVC.Route(&quot;weatherforecast/update&quot;)]
+    [HttpPost]
+    public async Task&lt;DbTaskResult&gt; Update([FromBody]WeatherForecast record) =&gt; await DataService.UpdateRecordAsync&lt;WeatherForecast&gt;(record);
+
+    [MVC.Route(&quot;weatherforecast/create&quot;)]
+    [HttpPost]
+    public async Task&lt;DbTaskResult&gt; Create([FromBody]WeatherForecast record) =&gt; await DataService.CreateRecordAsync&lt;WeatherForecast&gt;(record);
+
+    [MVC.Route(&quot;weatherforecast/delete&quot;)]
+    [HttpPost]
+    public async Task&lt;DbTaskResult&gt; Delete([FromBody] WeatherForecast record) =&gt; await DataService.DeleteRecordAsync&lt;WeatherForecast&gt;(record);
+    }
+</code></pre>
+<h2 id="connector-services">Connector Services</h2>
+<p>Connectors are the Core Domain interface to the Data Domain.  They talk to Brokers.  All the code resides in <code>ModelDataServiceConnector</code>.</p>
+<h4 id="idataserviceconnector">IDataServiceConnector</h4>
+<p><code>IDataServiceConnector</code> defines the common interface.</p>
+<pre><code class="language-csharp">public interface IDataServiceConnector
+{
+    ValueTask&lt;DbTaskResult&gt; AddRecordAsync&lt;TModel&gt;(TModel model) where TModel : class, IDbRecord&lt;TModel&gt;, new();
+
+    ValueTask&lt;TModel&gt; GetRecordByIdAsync&lt;TModel&gt;(Guid ModelId) where TModel : class, IDbRecord&lt;TModel&gt;, new();
+
+    ValueTask&lt;DbTaskResult&gt; ModifyRecordAsync&lt;TModel&gt;(TModel model) where TModel : class, IDbRecord&lt;TModel&gt;, new();
+
+    ValueTask&lt;DbTaskResult&gt; RemoveRecordAsync&lt;TModel&gt;(TModel model) where TModel : class, IDbRecord&lt;TModel&gt;, new();
+
+    ValueTask&lt;int&gt; GetRecordCountAsync&lt;TModel&gt;() where TModel : class, IDbRecord&lt;TModel&gt;, new();
+
+    ValueTask&lt;List&lt;TModel&gt;&gt; GetAllRecordsAsync&lt;TModel&gt;() where TModel : class, IDbRecord&lt;TModel&gt;, new();
+
+    ValueTask&lt;List&lt;TModel&gt;&gt; GetPagedRecordsAsync&lt;TModel&gt;(RecordPagingData paginatorData) where TModel : class, IDbRecord&lt;TModel&gt;, new();
+}
+</code></pre>
+<h4 id="modeldataserviceconnector">ModelDataServiceConnector</h4>
+<p><code>ModelDataServiceConnector</code> implements the interface and connects to the defined <code>IDataBroker</code> defined service.</p>
+<pre><code class="language-csharp">public abstract class ModelDataServiceConnector : IDataServiceConnector
+
+{
+    private readonly IDataBroker dataBroker;
+    private readonly ILoggingBroker loggingBroker;
+
+    public ModelDataServiceConnector(IDataBroker dataBroker, ILoggingBroker loggingBroker)
+    {
+        this.dataBroker = dataBroker;
+        this.loggingBroker = loggingBroker;
+    }
+
+    public async ValueTask&lt;DbTaskResult&gt; AddRecordAsync&lt;TModel&gt;(TModel model) where TModel : class, IDbRecord&lt;TModel&gt;, new()
+        =&gt; await this.dataBroker.InsertRecordAsync&lt;TModel&gt;(model);
+
+    public async ValueTask&lt;List&lt;TModel&gt;&gt; GetAllRecordsAsync&lt;TModel&gt;() where TModel : class, IDbRecord&lt;TModel&gt;, new()
+        =&gt; await this.dataBroker.SelectAllRecordsAsync&lt;TModel&gt;();
+
+    public async ValueTask&lt;List&lt;TModel&gt;&gt; GetPagedRecordsAsync&lt;TModel&gt;(RecordPagingData pagingData) where TModel : class, IDbRecord&lt;TModel&gt;, new()
+        =&gt; await this.dataBroker.SelectPagedRecordsAsync&lt;TModel&gt;(pagingData);
+
+    public async ValueTask&lt;TModel&gt; GetRecordByIdAsync&lt;TModel&gt;(Guid modelId) where TModel : class, IDbRecord&lt;TModel&gt;, new()
+        =&gt; await this.dataBroker.SelectRecordAsync&lt;TModel&gt;(modelId);
+
+    public async ValueTask&lt;DbTaskResult&gt; ModifyRecordAsync&lt;TModel&gt;(TModel model) where TModel : class, IDbRecord&lt;TModel&gt;, new()
+        =&gt; await this.dataBroker.UpdateRecordAsync&lt;TModel&gt;(model);
+
+    public async ValueTask&lt;DbTaskResult&gt; RemoveRecordAsync&lt;TModel&gt;(TModel model) where TModel : class, IDbRecord&lt;TModel&gt;, new()
+        =&gt; await this.dataBroker.DeleteRecordAsync&lt;TModel&gt;(model);
+
+    public async ValueTask&lt;int&gt; GetRecordCountAsync&lt;TModel&gt;() where TModel : class, IDbRecord&lt;TModel&gt;, new()
+        =&gt; await this.dataBroker.SelectRecordListCountAsync&lt;TModel&gt;();
+}
+</code></pre>
+<h4 id="weatherdataserviceconnector">WeatherDataServiceConnector</h4>
+<p>The actual project implementation.</p>
+<pre><code class="language-csharp">public class WeatherDataServiceConnector : ModelDataServiceConnector
+{
+    public WeatherDataServiceConnector(IDataBroker dataBroker, ILoggingBroker loggingBroker) : base(dataBroker, loggingBroker) { }
+}
+</code></pre>
+<h3 id="view-services">View Services</h3>
+<p>View Services are the classes that represent the application core logic.  The UI view uses view services to interact with data.  The key mindset is no data structures in the UI.  If the UI refers to some data, the data resides in a View Service, and the UI accesses that data through a view.</p>
+<p>In data driven applications View Services come in three basic flavours:</p>
+<ol>
+<li><em>Model View Services</em> - these expose single base model data to the UI.</li>
+<li><em>Compound Model Services</em> - these expose complex models built from base models.  An example would be a weather station and its associated daily weather station data.</li>
+<li><em>Edit Model Services</em> - these transform record data into editable model classes and expose and manage the edit process for Compound Model Services.</li>
+</ol>
+<h4 id="imodelviewservice">IModelViewService</h4>
+<p><code>IModelViewService</code> defines the common base interface for a Model View Service.</p>
+<p>Note:</p>
+<ol>
+<li>Generic <code>TRecord</code>.</li>
+<li>Properties holding the current record and record list.</li>
+<li>Boolean logic properties to simplify state management.</li>
+<li>Events for record and list changes.</li>
+<li>Reset methods to reset the service/record/list.</li>
+<li>CRUDL methods that update/use the current record/list.</li>
+</ol>
+<pre><code class="language-csharp">public interface IModelViewService&lt;TRecord&gt;
+    where TRecord : class, new()
+{
+    public Guid Id { get; }
+    public TRecord Record { get; }
+    public List&lt;TRecord&gt; Records { get; }
+    public int RecordCount { get; }
+    public DbTaskResult DbResult { get; }
+    public RecordPager RecordPager { get; }
+    public bool IsRecord { get; }
+    public bool HasRecords { get; }
+    public bool IsNewRecord { get; }
+
+    public event EventHandler RecordHasChanged;
+    public event EventHandler ListHasChanged;
+
+    public ValueTask ResetServiceAsync();
+    public ValueTask ResetRecordAsync();
+    public ValueTask ResetListAsync();
+    public ValueTask GetRecordsAsync();
+    public ValueTask&lt;bool&gt; SaveRecordAsync(TRecord record);
+    public ValueTask&lt;bool&gt; GetRecordAsync(Guid id);
+    public ValueTask&lt;bool&gt; NewRecordAsync();
+    public ValueTask&lt;bool&gt; DeleteRecordAsync();
+}
+</code></pre>
+<h4 id="basemodelviewservice">BaseModelViewService</h4>
+<p><code>BaseModelViewService</code> implements <code>IModelViewService</code>.  It contains all the boilerplate code.</p>
+<pre><code class="language-csharp">public abstract class BaseModelViewService&lt;TRecord&gt; :
+    IDisposable,
+    IModelViewService&lt;TRecord&gt;
+    where TRecord : class, IDbRecord&lt;TRecord&gt;, new()
+{
+    public Guid Id { get; } = Guid.NewGuid();
+
+    public TRecord Record
+    {
+        get =&gt; _record;
+        private set
+        {
+            this._record = value;
+            this.RecordHasChanged?.Invoke(value, EventArgs.Empty);
+        }
+    }
+    private TRecord _record = null;
+
+    public List&lt;TRecord&gt; Records
+    {
+        get =&gt; _records;
+        private set
+        {
+            this._records = value;
+            this.ListHasChanged?.Invoke(value, EventArgs.Empty);
+        }
+    }
+    private List&lt;TRecord&gt; _records = null;
+
+    public DbTaskResult DbResult { get; set; } = new DbTaskResult();
+
+    public RecordPager RecordPager { get; private set; }
+
+    public bool HasRecord =&gt; this.Record != null;
+
+    public bool HasRecords =&gt; this.Records != null &amp;&amp; this.Records.Count &gt; 0;
+
+    public bool IsNewRecord { get; protected set; } = true;
+
+    protected IDataServiceConnector DataServiceConnector { get; set; }
+
+    public int RecordCount =&gt; throw new NotImplementedException();
+
+    public event EventHandler RecordHasChanged;
+
+    public event EventHandler ListHasChanged;
+
+    public BaseModelViewService(IDataServiceConnector dataServiceConnector)
+    {
+        this.DataServiceConnector = dataServiceConnector;
+        this.RecordPager = new RecordPager(10, 5);
+        this.RecordPager.PageChanged += this.OnPageChanged;
+    }
+
+    public void SetRecord(TRecord record)
+    {
+        this.Record = record;
+    }
+
+    public async ValueTask ResetServiceAsync()
+    {
+        await this.ResetListAsync();
+        await this.ResetRecordAsync();
+    }
+
+    public ValueTask ResetListAsync()
+    {
+        this.Records = null;
+        return ValueTask.CompletedTask;
+    }
+
+    public ValueTask ResetRecordAsync()
+    {
+        this.Record = null;
+        this.IsNewRecord = false;
+        return ValueTask.CompletedTask;
+    }
+
+    public async ValueTask GetRecordsAsync()
+    {
+        this.Records = await DataServiceConnector.GetPagedRecordsAsync&lt;TRecord&gt;(this.RecordPager.GetData);
+        this.RecordPager.RecordCount = await GetRecordListCountAsync();
+        this.ListHasChanged?.Invoke(null, EventArgs.Empty);
+    }
+
+    public async ValueTask&lt;bool&gt; GetRecordAsync(Guid id)
+    {
+        if (!id.Equals(Guid.Empty))
+        {
+            this.IsNewRecord = false;
+            this.Record = await DataServiceConnector.GetRecordByIdAsync&lt;TRecord&gt;(id);
+        }
+        else
+        {
+            this.Record = new TRecord();
+            this.IsNewRecord = true;
+        }
+        return this.IsRecord;
+    }
+
+    public async ValueTask&lt;int&gt; GetRecordListCountAsync()
+        =&gt; await DataServiceConnector.GetRecordCountAsync&lt;TRecord&gt;();
+
+    public async ValueTask&lt;bool&gt; SaveRecordAsync(TRecord record)
+    {
+        if (this.IsNewRecord)
+            this.DbResult = await DataServiceConnector.AddRecordAsync&lt;TRecord&gt;(record);
+        else
+            this.DbResult = await DataServiceConnector.ModifyRecordAsync(record);
+        await this.GetRecordsAsync();
+        this.IsNewRecord = false;
+        return this.DbResult.IsOK;
+    }
+
+    public async ValueTask&lt;bool&gt; DeleteRecordAsync()
+    {
+        this.DbResult = await DataServiceConnector.RemoveRecordAsync&lt;TRecord&gt;(this.Record);
+        return this.DbResult.IsOK;
+    }
+
+    protected async void OnPageChanged(object sender, EventArgs e)
+        =&gt; await this.GetRecordsAsync();
+
+    protected void NotifyRecordChanged(object sender, EventArgs e)
+        =&gt; this.RecordHasChanged?.Invoke(sender, e);
+
+    protected void NotifyListChanged(object sender, EventArgs e)
+        =&gt; this.ListHasChanged?.Invoke(sender, e);
+
+    public ValueTask&lt;bool&gt; NewRecordAsync()
+    {
+        this.Record = new TRecord();
+        this.IsNewRecord = true;
+        return ValueTask.FromResult(false);
+    }
+
+    public virtual void Dispose()
+    {
+    }
+}
+</code></pre>
+<h4 id="weatherforecastviewservice">WeatherForecastViewService</h4>
+<p>The boilerplating payback comes in the declaration of <code>WeatherForecastViewService</code>:</p>
+<pre><code class="language-csharp">public class WeatherForecastViewService : 
+    BaseModelViewService&lt;WeatherForecast&gt;, 
+    IModelViewService&lt;WeatherForecast&gt;
+{
+    public WeatherForecastViewService(IDataServiceConnector dataServiceConnector) : base(dataServiceConnector) { }
+}
+</code></pre>
+<h2 id="wrap-up">Wrap Up</h2>
+<p>This article shows how the data services can be built using a set of abstract classes implementing boilerplate code for CRUDL operations.  I've purposely kept error checking in the code to a minimum, to make it much more readable.  You can implement as little or as much as you like.</p>
+<p>Some key points to note:</p>
+<ol>
+<li>Aysnc code is used throughout the projects.  The data access is all async.  ValueTasks are used where possible.</li>
+<li>Generics make much of the boilerplating possible.  They create complexity, but are worth the effort.</li>
+<li>Interfaces are crucial for Dependancy Injection and UI boilerplating.  All connections between the Data and  Core Domain and the UI and Core Domain should be implemented as interfaces.  An interface with a single implementation is good.  The payback comes in maintainability and future updates.</li>
+<li>The <em>Blazr.SPA</em> library has three namespaces to reflect the domain model.  <em>Blazor.Database.Core</em> should only depend on <em>Blazr.SPA.Core</em>.</li>
+</ol>
+<p>If you're reading this article in the future, check the readme in the repository for the latest version of this article set.</p>
+<h2 id="history">History</h2>
+<ul>
+<li>15-Sep-2020: Initial version.</li>
+<li>2-Oct-2020: Minor formatting updates and typo fixes.</li>
+<li>17-Nov-2020: Major Blazor.CEC library changes.  Change to ViewManager from Router and new Component base implementation.</li>
+<li>28-Mar-2021: Major updates to Services, project structure and data editing.</li>
+<li>24-June-2021: revisions to data layers.</li>
+<li>06-Aug-2012: revisions to reflect the project and library remodelling to the domain model.</li>
+</ul>
+</div></div></div></body></html>
+
+
+
+
+
