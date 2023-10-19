@@ -1,6 +1,5 @@
 ﻿@using Blazr.SiteBuilder
 @using System.Diagnostics
-
 @implements IContentComponent
 @inject ContentRenderer _contentRenderer;
 
@@ -15,16 +14,23 @@
 
 <SectionContent SectionName="side-bar">
 
-    @StoryHtmlProvider.StoryListHtml(_contentRenderer)
+    @ArticleHtmlProvider.ArticleDatesHtml(_contentRenderer)
+    @_contentRenderer.TOCContent
 
 </SectionContent>
 
 <SectionContent SectionName="main-content">
 
-    @StoryHtmlProvider.StoryArticlesListGroupHtml(_contentRenderer)
+    @ArticleHtmlProvider.ArticleTitleHtml(_contentRenderer)
+    <div class="mb-2">
+        <h3>Document List</h3>
+        @StoryHtmlProvider.StoryArticlesListHtml(_contentRenderer)
+    </div>
+    @_contentRenderer.ArticleContent
 
 </SectionContent>
 
+
 @code {
-    public abstract PageData PageData { get; }
+    public virtual PageData PageData { get; } = new();
 }

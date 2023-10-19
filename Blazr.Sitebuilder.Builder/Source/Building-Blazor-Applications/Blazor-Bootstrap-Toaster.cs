@@ -15,7 +15,7 @@ public class Blazor_Bootstrap_Toaster : BuildingBlazorApplicationsFolderBase
         Category = "Posts",
         Tags = "#Blazor;",
         Description = "Building a Blazor Bootstrap Toaster.",
-        MarkdownFile = $@"Blazor-Bootstrap-Toaster.md",
+        MarkdownFile = "Blazor-Bootstrap-Toaster.md",
         HideInNavigationLists = false,
     };
 }

@@ -1,14 +1,5 @@
----
-title: Chapter 6 - Rebuilding FetchData
-oneliner: Rebuilding FetchData
-precis: Rebuilding FetchData
-date: 2021-08-13
-published: 2021-08-13
----
 
-# A Blazor Database Primer - Rebuilding FetchData
-
-This chapter focuses on rebuilding the FetchData page.  Thwe original page looks like this:
+The original page looks like this:
 
 ```csharp
 @page "/fetchdata"

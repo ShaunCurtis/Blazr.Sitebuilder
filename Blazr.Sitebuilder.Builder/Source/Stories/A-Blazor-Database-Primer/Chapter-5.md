@@ -1,12 +1,3 @@
----
-title: Chapter 5 - Adding a WASM SPA to the Solution
-oneliner: Adding a WASM SPA to the Solution
-precis: Adding a WASM SPA to the Solution
-date: 2021-08-13
-published: 2021-08-13
----
-
-# Chapter 5 - Adding a WASM SPA to the Solution
 
 Developing a Blazor application in Server mode is much easier than in WASM mode.  However, you probably want to deploy your application as a WASM solution.
 

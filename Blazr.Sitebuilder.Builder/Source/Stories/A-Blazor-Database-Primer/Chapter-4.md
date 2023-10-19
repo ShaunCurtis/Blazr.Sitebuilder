@@ -1,12 +1,3 @@
----
-title: Chapter 4 - Setting up the Solution to Run
-oneliner: Setting up the Solution to Run
-precis: Setting up the Solution to Run
-date: 2021-08-13
-published: 2021-08-13
----
-
-# Chapter 4 - Setting up the Solution to Run
 
 At this point we're ready to re-build the projects and run the solution.
 

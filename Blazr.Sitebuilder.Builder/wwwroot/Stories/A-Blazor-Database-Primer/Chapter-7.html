@@ -1,0 +1,911 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<base href="/">
+
+	
+
+	
+
+	
+	<link href="/assets/vendor/fontawesome-free/css/all.min.css" rel="stylesheet" type="text/css">
+	<link href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i" rel="stylesheet">
+
+	
+	<link href="/assets/css/sb-admin-2.css" rel="stylesheet" type="text/css">
+	<link href="/assets/css/site.css" rel="stylesheet" type="text/css">
+
+	
+	<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/Microsoft/vscode/extensions/markdown-language-features/media/highlight.css">
+	<link rel="stylesheet" href="/assets/css/article.css" type="text/css">
+
+	
+	<link rel="icon" href="/assets/images/favicon.png">
+
+	<title>Chapter 7 - Adding Sorting and Paging to the List Form</title>
+        <meta property="author" content="Shaun Curtis" />
+        <meta property="description" content="In this chapter we will add sorting and paging to the WeatherForecast list form." />
+    <meta property="og:site_name" content="Cold Elm Coders" />
+        <meta property="og:site" content="https://shauncurtis.github.io/" />
+        <meta property="og:title" content="Chapter 7 - Adding Sorting and Paging to the List Form" />
+        <meta property="og:description" content="In this chapter we will add sorting and paging to the WeatherForecast list form." /></head>
+<body><header class="navbar bg-dark p-2 text-large text-light"><section class="navbar-section  text-light"><a href="/" class="navbar-brand mr-2 text-large text-light p-2">Cold Elm Coders</a>
+			<a href="/Posts" class="btn btn-link text-light">Posts</a>
+			<a href="/Rants" class="btn btn-link text-light">Rants</a>
+			<a href="/Articles" class="btn btn-link text-light">Articles</a>
+			<a href="/Stories" class="btn btn-link text-light">Stories</a>
+			<a href="/Tags" class="btn btn-link text-light">Tags</a></section></header>
+
+	<div class="container-fluid"><div class="row"><div class="col-12 col-sm-3 col-lg-2 bg-light pt-2"><div class="article-info p-2"><div class="mb-2">Published: 13-Aug-2021</div>
+                <div class="mb-2">Updated: 13-Aug-2021</div>
+                <div class="mb-2">Author: Shaun Curtis</div></div>
+    <h4 class="p-2">Table of Contents</h4>
+<ul class="TOC" >
+<li class="TOC-item TOC-item-0" >
+<a class="TOC-link" href="#">Top</a>
+<ul class="TOC TOC-0" >
+<li class="TOC-item TOC-item-1" >
+<ul class="TOC TOC-1" >
+<li class="TOC-item TOC-item-2" >
+<a class="TOC-link" href="#refactoring-the-form">Refactoring the Form</a>
+</li>
+<li class="TOC-item TOC-item-2" >
+<a class="TOC-link" href="#paging">Paging</a>
+</li>
+<li class="TOC-item TOC-item-2" >
+<a class="TOC-link" href="#broker-updates">Broker Updates</a>
+</li>
+<li class="TOC-item TOC-item-2" >
+<a class="TOC-link" href="#connector-updates">Connector Updates</a>
+</li>
+<li class="TOC-item TOC-item-2" >
+<a class="TOC-link" href="#recordpager">RecordPager</a>
+</li>
+<li class="TOC-item TOC-item-2" >
+<a class="TOC-link" href="#new-ui-components">New UI Components</a>
+</li>
+<li class="TOC-item TOC-item-2" >
+<a class="TOC-link" href="#viewservice-updates">ViewService Updates</a>
+</li>
+<li class="TOC-item TOC-item-2" >
+<a class="TOC-link" href="#sort-control">Sort Control</a>
+</li>
+<li class="TOC-item TOC-item-2" >
+<a class="TOC-link" href="#listcontext">ListContext</a>
+</li>
+<li class="TOC-item TOC-item-2" >
+<a class="TOC-link" href="#weatherforecastlistform">WeatherForecastListForm</a>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+			
+			<div class="col-12 col-sm-9 col-lg-10 p-2"><div class="pt-2 pb-2 border-bottom mb-4 text-primary"><h1>Chapter 7 - Adding Sorting and Paging to the List Form</h1>
+            <div><small>In this chapter we will add sorting and paging to the WeatherForecast list form.</small></div></div>
+    <div class="mb-2"><h3>Document List</h3>
+        <ul><li><a href="/Stories/A-Blazor-Database-Primer/Index.html">A Blazor Database Primer</a></li><li><a href="/Stories/A-Blazor-Database-Primer/Chapter-1.html">Chapter 1 - Project Design and Structure</a></li><li><a href="/Stories/A-Blazor-Database-Primer/Chapter-2.html">Chapter 2 - The Data Store and Data Classes</a></li><li><a href="/Stories/A-Blazor-Database-Primer/Chapter-3.html">Chapter 3 - The Business and Application Code</a></li><li><a href="/Stories/A-Blazor-Database-Primer/Chapter-4.html">Chapter 4 - Setting up the Solution to Run</a></li><li><a href="/Stories/A-Blazor-Database-Primer/Chapter-5.html">Chapter 5 - Adding a WASM SPA to the Solution</a></li><li><a href="/Stories/A-Blazor-Database-Primer/Chapter-6.html">Chapter 6 -  Rebuilding FetchData</a></li><li><a href="/Stories/A-Blazor-Database-Primer/Chapter-7.html">Chapter 7 - Adding Sorting and Paging to the List Form</a></li></ul></div>
+    <h2 id="refactoring-the-form">Refactoring the Form</h2>
+<p>We need to refactor our current <code>WeatherForecastListForm</code> to separate out the boilerplate code so we can re-use it in other list forms.  We'll place all the boilerplate code in <code>ListFormBase</code>.  This is an abstract class using generics and the <code>TRecord</code> generic type we have already used in the data and core domain code.</p>
+<h3 id="listformbase">ListFormBase</h3>
+<p>Add a <em>BaseForms</em> folder to <em>Blazr.Primer.UI/Forms</em>, and add a <code>ListFormBase</code> class.  This is the initial code:</p>
+<pre><code class="language-csharp">using Blazr.Primer.Core;
+using Microsoft.AspNetCore.Components;
+using System;
+using System.Threading.Tasks;
+
+namespace Blazr.Primer.UI.Forms
+{
+    public abstract class ListFormBase&lt;TRecord&gt; : ComponentBase, IDisposable
+        where TRecord : class, IRecord, new()
+    {
+        private bool _isFirstRender = true;
+
+        protected IViewService&lt;TRecord&gt; ViewService { get; set; }
+
+        [Inject] private Func&lt;object, object&gt; serviceDelegate { get; set; }
+
+        [Inject] private NavigationManager NavManager { get; set; }
+
+        public override async Task SetParametersAsync(ParameterView parameters)
+        {
+            parameters.SetParameterProperties(this);
+            if (_isFirstRender)
+            {
+                LoadViewService();
+                await this.LoadRecords();
+                this.ViewService.RecordListHasChanged += OnListChanged;
+                _isFirstRender = false;
+            }
+            await base.SetParametersAsync(ParameterView.Empty);
+        }
+        
+        protected virtual void LoadViewService()
+            =&gt; this.ViewService = (IViewService&lt;TRecord&gt;)this.serviceDelegate(new TRecord());
+
+        protected virtual async ValueTask LoadRecords()
+            =&gt; await this.ViewService.GetRecordsAsync();
+
+        protected void OnListChanged(object sender, EventArgs e)
+            =&gt; this.InvokeAsync(this.StateHasChanged);
+
+        protected virtual void Exit()
+            =&gt; this.NavManager.NavigateTo(&quot;/&quot;);
+
+        public void Dispose()
+            =&gt; this.ViewService.RecordListHasChanged -= OnListChanged;
+    }
+}
+</code></pre>
+<ol>
+<li>The component is <code>abstract</code>, you can't use it directly.</li>
+<li>The component implements <code>IDisposable</code> as we are hooking up events which we need to dispose correctly.</li>
+<li><code>TRecord</code> has the regular constraints.</li>
+<li>All the required services are loaded in <code>SetParametersAsync</code>.  This ensures everything is up and running before, prior to <code>OnInitialized{Async}</code>.</li>
+<li><code>serviceDelegate</code> is a function delegate that gets injected as a Service.  We will look at the service implementation shortly.</li>
+<li><code>LoadViewService</code> uses <code>serviceDelegate</code> to get the service for an instance of <code>TRecord</code>.</li>
+<li><code>LoadRecordsAsync</code> is virtual, so can be overidden.  It calls <code>IViewService.GetRecordsAsync()</code> to populate the ViewService.</li>
+<li>The component hooks up to the View <code>RecordListHasChanged</code> in <code>SetParametersAsync</code>, and unhooks in <code>Dispose</code>.</li>
+<li>When <code>OnListChanged</code> gets invoked on a list change event, the component re-renders, showing the updated list.</li>
+</ol>
+<p>We'll modify <code>WeatherForecastListForm</code> later when we've added more UI Components.</p>
+<h3 id="servicecollectionextensions">ServiceCollectionExtensions</h3>
+<p>In <em>Razr.Primer</em> we update <code>ServiceCollectionExtensions</code></p>
+<pre><code class="language-csharp">        private static void AddCommonServices(this IServiceCollection services)
+        {
+            services.AddScoped&lt;IDataConnector, DataConnector&gt;();
+            services.AddScoped&lt;WeatherForecastViewService&gt;();
+            AddViewServiceManager(services);
+        }
+        private static void AddViewServiceManager(this IServiceCollection services)
+        {
+            services.AddScoped&lt;Func&lt;object, object&gt;&gt;(
+                serviceProvider =&gt; key =&gt;
+                {
+                    switch (key)
+                    {
+                        case WeatherForecast t1:
+                            return serviceProvider.GetService&lt;WeatherForecastViewService&gt;();
+
+                        default:
+                            throw new NotImplementedException($&quot;You are attempting to switch to a non-existant service for {key.GetType().Name}&quot;);
+                    }
+                }
+                );
+        }
+</code></pre>
+<p><code>AddViewServiceManager</code> adds a scoped delegate of type <code>Func&lt;object, object&gt;</code>.  It gets passes an object and returns an object.  <code>key</code> is the passed object.  The switch tests if key is a <code>WeatherForecast</code>.  If so it returns <code>WeatherForecastViewService</code>.</p>
+<p>We use this to define which View Service is associated with which data record type as defined in <code>ListFormBase</code>:</p>
+<pre><code class="language-csharp">this.ViewService = (IViewService&lt;TRecord&gt;)this.serviceDelegate(new TRecord());
+</code></pre>
+<p>We call the injected delegate, passing an instance of <code>TRecord</code> and get back the associated ViewService, cast as a <code>IViewService</code>.</p>
+<h2 id="paging">Paging</h2>
+<p>There are two options we have in implementing paging:</p>
+<ol>
+<li><strong>Expensive/Easy</strong> - we drag the full data set up to the View or Paging control and only display one page of the data.  This is realatively easy to code, but expensive as we haul atound large data sets.</li>
+<li><strong>Cheap/Complex</strong> - we pass paging data down to the data domain and only retrieve and pass around a dataset containing the page required.  This is a little more complex to code, but cheap on the amount of data we haul around.</li>
+</ol>
+<p>We take the Cheap/Complex option - it's more scaleable.</p>
+<p>We will see the full pager class later in this chapter.  For now we define a simple <code>RecordPagingData</code> data class containing the essential data for the data domain.  This includes paging and sorting information.</p>
+<pre><code class="language-csharp">// Directory : BlazorDB.Core/Data
+namespace Blazr.Primer.Core.Data
+{
+    public class RecordPagingData
+    {
+        public int Page { get; set; } = 1;
+        public int PageSize { get; set; } = 25;
+        public bool Sort { get; set; } = false;
+        public string SortColumn { get; set; } = string.Empty;
+        public bool SortDescending { get; set; } = false;
+    }
+}
+</code></pre>
+<h2 id="broker-updates">Broker Updates</h2>
+<p>Add the <strong>System.Linq.Dynamic.Core</strong> Nuget package to <em>BlazorDB.Data</em>.</p>
+<p>Add a new method definition to <code>IDataBroker</code>.</p>
+<pre><code class="language-csharp">// File: BlazorDb.Core/Interfaces/IDataBroker.cs
+public ValueTask&lt;List&lt;TRecord&gt;&gt; SelectPagedRecordsAsync&lt;TRecord&gt;(RecordPagingData pagingData) where TRecord : class, IRecord, new();
+public ValueTask&lt;int&gt; SelectRecordListCountAsync&lt;TRecord&gt;() where TRecord : class, IRecord, new();
+</code></pre>
+<p>Add an implementation to <code>DataBroker</code>.</p>
+<pre><code class="language-csharp">// File: BlazorDb.Data/Brokers/DataBroker.cs
+public virtual ValueTask&lt;List&lt;TRecord&gt;&gt; SelectPagedRecordsAsync&lt;TRecord&gt;(RecordPagingData pagingData) where TRecord : class, IRecord, new()
+    =&gt; throw new InvalidOperationException($&quot;The SelectPagedRecordsAsync method is not implements for this Broker.&quot;);
+
+public virtual ValueTask&lt;int&gt; SelectRecordListCountAsync&lt;TRecord&gt;() where TRecord : class, IRecord, new()
+    =&gt; throw new InvalidOperationException($&quot;The SelectRecordListCountAsync method is not implements for this Broker.&quot;);
+</code></pre>
+<p>Add the Server implementation to <code>ServerDataBroker</code>.</p>
+<pre><code class="language-csharp">// File: BlazorDb.Data/Brokers/ServerDataBroker.cs
+using System.Linq.Dynamic.Core;
+
+.....
+
+public async override ValueTask&lt;List&lt;TRecord&gt;&gt; SelectPagedRecordsAsync&lt;TRecord&gt;(RecordPagingData pagingData)
+{
+    var dbset = await dataStore.GetDataSet&lt;TRecord&gt;();
+    if (pagingData.Sort)
+    {
+        try
+        {
+            dbset = dbset
+                .AsQueryable()
+                .OrderBy(pagingData.SortDescending ? $&quot;{pagingData.SortColumn} descending&quot; : pagingData.SortColumn)
+                .ToList();
+        }
+        catch 
+        {
+            throw new InvalidOperationException(&quot;Error in sorting data set.  This is normally caused by an invalid column name.&quot;);
+        }
+    }
+    return dbset
+        .Skip(pagingData.StartRecord)
+        .Take(pagingData.PageSize)
+        .ToList();
+}
+
+public override async ValueTask&lt;int&gt; SelectRecordListCountAsync&lt;TRecord&gt;()
+{
+    var dbset = await dataStore.GetDataSet&lt;TRecord&gt;();
+    return dbset.Count;
+}
+</code></pre>
+<p>This method uses Dynamic Linq to order the list if <code>Sort</code> is true, and then Linq <code>Skip</code> and <code>Take</code> methods to get the data page.</p>
+<p>Add the API implementation to <code>APIDataBroker</code>.</p>
+<pre><code class="language-csharp">// File: BlazorDb.Data/Brokers/APIDataBroker.cs
+public override async ValueTask&lt;List&lt;TRecord&gt;&gt; SelectPagedRecordsAsync&lt;TRecord&gt;(RecordPagingData pagingData)
+{
+    var response = await this.HttpClient.PostAsJsonAsync($&quot;/api/{GetRecordName&lt;TRecord&gt;()}/listpaged&quot;, pagingData);
+    return await response.Content.ReadFromJsonAsync&lt;List&lt;TRecord&gt;&gt;();
+}
+
+public override async ValueTask&lt;int&gt; SelectRecordListCountAsync&lt;TRecord&gt;()
+    =&gt; await this.HttpClient.GetFromJsonAsync&lt;int&gt;($&quot;/api/{GetRecordName&lt;TRecord&gt;()}/count&quot;);
+</code></pre>
+<h3 id="testing">Testing</h3>
+<p>We can now test <code>ServerDataBroker</code>.</p>
+<p>Add some helper methods to <code>WeatherForecastHelper</code></p>
+<pre><code class="language-csharp">/.....
+
+public static ValueTask&lt;List&lt;WeatherForecast&gt;&gt; GetPagedWeatherForecastListAsync(List&lt;WeatherForecast&gt; list, RecordPagingData pagingData)
+    =&gt; ValueTask.FromResult(list
+        .Skip(pagingData.StartRecord)
+        .Take(pagingData.PageSize)
+        .ToList());
+
+public static ValueTask&lt;int&gt; GetWeatherForecastListCountAsync(List&lt;WeatherForecast&gt; list)
+    =&gt; ValueTask.FromResult(list.Count);
+
+</code></pre>
+<p>Add a <code>Theory</code> method to <code>DataBrokerTests</code>.  We use a <code>Theory</code> so we can test various normal and boundary conditions, such as requesting a page that doesn't exist.</p>
+<pre><code class="language-csharp">// File: BlazorDb.Test/Unit/DataBrokerTests.cs
+[Theory]
+[InlineData(55, 2, 10, 10)]
+[InlineData(15, 2, 10, 5)]
+[InlineData(5, 2, 10, 0)]
+[InlineData(0, -1, 10, 0)]
+public async void DataBrokerShouldGetPagedWeatherForecastsAsync(int noOfRecords, int page, int pageSize, int expectedCount)
+{
+    // define
+    var pagingData = new RecordPagingData
+    {
+        Page = page,
+        PageSize = pageSize,
+        Sort = false,
+        SortColumn = &quot;ID&quot;,
+        SortDescending = false
+    };
+    var records = WeatherForcastUtils.CreateRandomWeatherForecastList(noOfRecords);
+
+    var weatherForecastDataStore = new WeatherDataStore();
+    weatherForecastDataStore.OverrideWeatherForecastDateSet(records);
+    var dataBroker = new ServerDataBroker(weatherForecastDataStore: weatherForecastDataStore);
+    var testRecordIndex = (page - 1) * pageSize;
+
+    // test
+    var retrievedRecords = await dataBroker.SelectPagedRecordsAsync&lt;WeatherForecast&gt;(pagingData);
+
+    // assert
+    Assert.IsType&lt;List&lt;WeatherForecast&gt;&gt;(retrievedRecords);
+    Assert.Equal(retrievedRecords.Count, expectedCount);
+    if (expectedCount &gt; 0)
+        Assert.Equal(retrievedRecords[0].ID, records[testRecordIndex].ID);
+}
+
+[Theory]
+[InlineData(55, 55)]
+[InlineData(1000, 1000)]
+[InlineData(0, 0)]
+public async void DataBrokerShouldGetXWeatherForecastsAsync(int noOfRecords, int expectedCount)
+{
+    // define
+    var records = WeatherForecastHelper.CreateRandomWeatherForecastList(noOfRecords);
+    var weatherForecastDataStore = new WeatherDataStore();
+    weatherForecastDataStore.OverrideWeatherForecastDateSet(records);
+    var dataBroker = new ServerDataBroker(weatherForecastDataStore: weatherForecastDataStore);
+
+    // test
+    var retrievedRecordCount = await dataBroker.SelectRecordListCountAsync&lt;WeatherForecast&gt;();
+
+    // assert
+    Assert.Equal(expectedCount, retrievedRecordCount);
+}
+</code></pre>
+<p>The Tests:</p>
+<ol>
+<li>Assert we have the right type of list.</li>
+<li>Assert we have the correct number of records.</li>
+<li>Assert we have the correct first record by ID if we are expecting to retrieving any records.</li>
+</ol>
+<h2 id="connector-updates">Connector Updates</h2>
+<p>Add a method definition to <code>IDataConnector</code></p>
+<pre><code class="language-csharp">// File: BlazorDb.Core/Interfaces/IDataConnector.cs
+public ValueTask&lt;List&lt;TRecord&gt;&gt; GetPagedRecordsAsync&lt;TRecord&gt;(RecordPagingData pagingData) where TRecord : class, IRecord, new();
+public ValueTask&lt;List&lt;TRecord&gt;&gt; GetPagedRecordsAsync&lt;TRecord&gt;(RecordPagingData pagingData) where TRecord : class, IRecord, new();
+public ValueTask&lt;int&gt; GetRecordCountAsync&lt;TRecord&gt;() where TRecord : class, IRecord, new();
+</code></pre>
+<p>Add an implementation to <code>DataBroker</code>.</p>
+<pre><code class="language-csharp">// File: BlazorDb.Core/Connectors/DataConnector.cs
+public ValueTask&lt;List&lt;TRecord&gt;&gt; GetPagedRecordsAsync&lt;TRecord&gt;(RecordPagingData pagingData) where TRecord : class, IRecord, new()
+    =&gt; dataBroker.SelectPagedRecordsAsync&lt;TRecord&gt;(pagingData);
+
+public ValueTask&lt;List&lt;TRecord&gt;&gt; GetPagedRecordsAsync&lt;TRecord&gt;(RecordPagingData pagingData) where TRecord : class, IRecord, new()
+    =&gt; dataBroker.SelectPagedRecordsAsync&lt;TRecord&gt;(pagingData);
+
+public ValueTask&lt;int&gt; GetRecordCountAsync&lt;TRecord&gt;() where TRecord : class, IRecord, new()
+    =&gt; dataBroker.SelectRecordListCountAsync&lt;TRecord&gt;();
+</code></pre>
+<h3 id="testing-1">Testing</h3>
+<p>Add a <code>Theory</code> method to <code>DataConnectorTests</code>.  We use a <code>Theory</code> so we can test various normal and boundary conditions, such as requesting a page that doesn't exist.</p>
+<pre><code class="language-csharp">// File: BlazorDb.Test/Unit/DataConnectorTests.cs
+[Theory]
+[InlineData(55, 2, 10, 10)]
+[InlineData(15, 2, 10, 5)]
+[InlineData(5, 2, 10, 0)]
+[InlineData(0, -1, 10, 0)]
+public async void DataConnectorShouldGetPagedWeatherForecastsAsync(int noOfRecords, int page, int pageSize, int expectedCount)
+{
+    // define
+    var pagingData = new RecordPagingData
+    {
+        Page = page,
+        PageSize = pageSize,
+        Sort = false,
+        SortColumn = &quot;ID&quot;,
+        SortDescending = false
+    };
+
+    var dataBrokerMock = new Mock&lt;IDataBroker&gt;();
+    var dataConnector = new DataConnector(dataBroker: dataBrokerMock.Object);
+    var records = WeatherForcastUtils.CreateRandomWeatherForecastList(noOfRecords);
+    dataBrokerMock.Setup(broker =&gt;
+        broker.SelectPagedRecordsAsync&lt;WeatherForecast&gt;(pagingData))
+        .Returns(WeatherForcastUtils.GetPagedWeatherForecastListAsync(records, pagingData));
+
+    var testRecordIndex = (page - 1) * pageSize;
+    // test
+    var retrievedRecords = await dataConnector.GetPagedRecordsAsync&lt;WeatherForecast&gt;(pagingData);
+
+    // assert
+    Assert.IsType&lt;List&lt;WeatherForecast&gt;&gt;(retrievedRecords);
+    Assert.Equal(retrievedRecords.Count, expectedCount);
+    if (expectedCount &gt; 0)
+        Assert.Equal(retrievedRecords[0].ID, records[testRecordIndex].ID);
+    dataBrokerMock.Verify(broker =&gt; broker.SelectPagedRecordsAsync&lt;WeatherForecast&gt;(pagingData), Times.Once);
+    dataBrokerMock.VerifyNoOtherCalls();
+}
+
+[Theory]
+[InlineData(55, 55)]
+[InlineData(1000, 1000)]
+[InlineData(0, 0)]
+public async void DataBrokerShouldGetXWeatherForecastsAsync(int noOfRecords, int expectedCount)
+{
+    // define
+    var dataBrokerMock = new Mock&lt;IDataBroker&gt;();
+    var dataConnector = new DataConnector(dataBroker: dataBrokerMock.Object);
+    var records = WeatherForecastHelper.CreateRandomWeatherForecastList(noOfRecords);
+    dataBrokerMock.Setup(broker =&gt;
+        broker.SelectRecordListCountAsync&lt;WeatherForecast&gt;())
+        .Returns(WeatherForecastHelper.GetWeatherForecastListCountAsync(records));
+
+    // test
+    var retrievedRecordCount = await dataConnector.GetRecordCountAsync&lt;WeatherForecast&gt;();
+
+    // assert
+    Assert.Equal(expectedCount, retrievedRecordCount);
+}
+</code></pre>
+<p>Update <code>WeatherForecastHelper</code></p>
+<pre><code class="language-csharp">....
+public static ValueTask&lt;List&lt;WeatherForecast&gt;&gt; GetPagedWeatherForecastListAsync(List&lt;WeatherForecast&gt; list, RecordPagingData pagingData)
+    =&gt; ValueTask.FromResult(list
+        .Skip(pagingData.StartRecord)
+        .Take(pagingData.PageSize)
+        .ToList());
+</code></pre>
+<p>The Tests:</p>
+<ol>
+<li>Assert we have the right type of list.</li>
+<li>Assert we have the correct number of records.</li>
+<li>Assert we have the correct first record by ID if we are expecting to retrieving any records.</li>
+<li>Verify we only called <code>SelectPagedRecordsAsync</code> once.</li>
+<li>Verifies no other calls were made to <code>IDataBroker</code>.</li>
+</ol>
+<h2 id="recordpager">RecordPager</h2>
+<p>At this point we need to define the <code>RecordPager</code> class.  This class is responsible for managing paging operations.</p>
+<ol>
+<li>The Pager indexing is zero based which works with the calls into the data layers, but requires a set of &quot;Display&quot; properties to use in the <code>PagingControl</code>.</li>
+<li>Most of the code is self evident.</li>
+<li>There's an event <code>PageChanged</code> which is raised whenever the page changes.  This is what the ViewService hooks up to.</li>
+</ol>
+<pre><code class="language-csharp">using System;
+
+namespace BlazorDB.Core.Data
+{
+    public class RecordPager
+    {
+        public int DisplayPage =&gt; this.Page + 1;
+        public int DisplayLastPage =&gt; this.LastPage + 1;
+        public int DisplayLastBlock =&gt; this.LastBlock + 1;
+        public int DisplayStartBlockPage =&gt; this.StartBlockPage + 1;
+        public int DisplayEndBlockPage =&gt; this.EndBlockPage + 1;
+
+        public bool Enabled { get; set; } = true;
+        public int Page { get; private set; } = 0;
+        public int RecordCount { get; set; } = 0;
+        public int PageSize { get; set; } = 10;
+        public int BlockSize { get; set; } = 5;
+
+        public string DefaultSortColumn { get; set; } = &quot;ID&quot;;
+        public bool Sort { get; set; }
+        public bool SortDescending { get; set; }
+
+        public int Block
+        {
+            get
+            {
+                var block = (int)Math.Floor((Decimal)(this.Page / this.BlockSize));
+                return block &lt; this.LastBlock ? block : LastBlock;
+            }
+        }
+
+        public int LastPage =&gt; (int)Math.Floor((Decimal)((RecordCount - 1) / PageSize));
+        public int LastBlock =&gt; (int)Math.Floor((Decimal)(this.LastPage / this.BlockSize));
+        public int StartBlockPage =&gt; (Block * BlockSize);
+        public int EndBlockPage =&gt; (StartBlockPage + (BlockSize - 1)) &gt; LastPage ? LastPage : StartBlockPage + (BlockSize - 1);
+        public bool HasBlocks =&gt; this.LastPage &gt; BlockSize;
+        public bool HasPagination =&gt; this.RecordCount &gt; PageSize;
+
+        public string SortColumn
+        {
+            get =&gt; (!string.IsNullOrWhiteSpace(_sortColumn)) ? _sortColumn : DefaultSortColumn;
+            set =&gt; _sortColumn = value;
+        }
+
+        private string _sortColumn = string.Empty;
+
+        public RecordPagingData PagingData =&gt; new RecordPagingData()
+        {
+            Page = this.Page,
+            PageSize = this.PageSize,
+            Sort = this.Sort,
+            SortColumn = this.SortColumn,
+            SortDescending = this.SortDescending
+        };
+
+        public event EventHandler PageChanged;
+
+        public bool ToPage(int page, bool forceUpdate = false)
+        {
+            var move = (forceUpdate | !this.Page.Equals(page)) &amp;&amp; page &gt;= 0;
+            if (move)
+            {
+                this.Page = page;
+                this.PageChanged?.Invoke(this, EventArgs.Empty);
+            }
+            return move;
+        }
+
+        public bool PageMove(int pages)
+        {
+            var move = this.Page + pages &lt;= this.LastPage &amp;&amp; this.Page + pages &gt;= 0;
+            if (move)
+                this.ToPage(this.Page + pages);
+            return move;
+        }
+
+        public bool BlockMove(int blocks)
+        {
+            var move = this.Block + blocks &lt;= this.LastBlock &amp;&amp; this.Block + blocks &gt;= 0;
+            if (move)
+                this.ToPage((this.Block + blocks) * BlockSize);
+            return move;
+        }
+
+        public void NotifySortingChanged()
+           =&gt; this.ToPage(0, true);
+    }
+}
+</code></pre>
+<h2 id="new-ui-components">New UI Components</h2>
+<p>We need some new UI components for the revised <code>WeatherForecastListForm</code>.  All of these are in <em>Blazor.Primer.UI</em></p>
+<p><em>Components/Base</em></p>
+<p>Add <code>UIComponent</code>.  This is a base component that builds an Html element.</p>
+<pre><code class="language-csharp">using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Rendering;
+using Microsoft.AspNetCore.Components.Web;
+using System.Collections.Generic;
+
+namespace Blazr.Primer.UI.Components
+{
+    public class UIComponent : UIComponentBase
+    {
+
+        [Parameter] public bool Disabled { get; set; } = false;
+
+        [Parameter] public string Tag { get; set; } = null;
+
+        [Parameter] public EventCallback&lt;MouseEventArgs&gt; ClickEvent { get; set; }
+
+        protected virtual List&lt;string&gt; CssClasses { get; private set; } = new List&lt;string&gt;();
+
+        protected virtual string HtmlTag =&gt; this.Tag ?? &quot;div&quot;;
+
+        protected override List&lt;string&gt; UnwantedAttributes { get; set; } = new List&lt;string&gt;() { &quot;class&quot; };
+
+        protected string CssClass
+            =&gt; CSSBuilder.Class()
+                .AddClass(CssClasses)
+                .AddClassFromAttributes(this.UserAttributes)
+                .Build();
+
+        protected override void BuildRenderTree(RenderTreeBuilder builder)
+        {
+            if (this.Show)
+            {
+                builder.OpenElement(0, this.HtmlTag);
+                builder.AddMultipleAttributes(1, this.SplatterAttributes);
+                if (!string.IsNullOrWhiteSpace(this.CssClass))
+                    builder.AddAttribute(2, &quot;class&quot;, this.CssClass);
+
+                if (Disabled)
+                    builder.AddAttribute(3, &quot;disabled&quot;);
+
+                if (ClickEvent.HasDelegate)
+                    builder.AddAttribute(4, &quot;onclick&quot;, EventCallback.Factory.Create&lt;MouseEventArgs&gt;(this, ClickEvent));
+
+                builder.AddContent(5, ChildContent);
+                builder.CloseElement();
+            }
+        }
+    }
+}
+</code></pre>
+<p><em>Components/GridControls</em></p>
+<p>The components build out the standard Bootstrap grid components.</p>
+<p><code>UIContainer</code></p>
+<pre><code class="language-csharp">using Microsoft.AspNetCore.Components;
+
+namespace Blazr.Primer.UI.Components
+{
+    public enum BootstrapSize { ExtraSmall, Small, Medium, Large, XLarge, XXLarge, Fluid }
+
+    public class UIContainer : UIComponent
+    {
+        [Parameter] public BootstrapSize Size { get; set; } = BootstrapSize.Fluid;
+
+        private string Css =&gt; Size switch 
+        {
+            BootstrapSize.Small =&gt; &quot;container-sm&quot;,
+            BootstrapSize.Medium =&gt; &quot;container-md&quot;,
+            BootstrapSize.Large =&gt; &quot;container-lg&quot;,
+            BootstrapSize.XLarge =&gt; &quot;container-xl&quot;,
+            BootstrapSize.XXLarge =&gt; &quot;container-xxl&quot;,
+            _ =&gt; &quot;container-fluid&quot;
+        };
+
+        protected override void OnInitialized()
+            =&gt; CssClasses.Add(Css);
+    }
+}
+</code></pre>
+<p><code>UIRow</code></p>
+<pre><code class="language-csharp">namespace Blazr.Primer.UI.Components
+{
+    class UIRow : UIComponent
+    {
+        public UIRow()
+            =&gt; CssClasses.Add(&quot;row&quot;);
+    }
+}
+</code></pre>
+<p><code>UIColumn</code></p>
+<pre><code class="language-csharp">using Microsoft.AspNetCore.Components;
+
+namespace Blazr.Primer.UI.Components
+{
+    public class UIColumn : UIComponent
+    {
+        [Parameter] public virtual int Columns { get; set; } = 0;
+
+        [Parameter] public virtual int SmallColumns { get; set; } = 0;
+
+        [Parameter] public virtual int MediumColumns { get; set; } = 0;
+
+        [Parameter] public virtual int LargeColumns { get; set; } = 0;
+
+        [Parameter] public virtual int XLargeColumns { get; set; } = 0;
+
+        [Parameter] public virtual int XXLargeColumns { get; set; } = 0;
+
+        protected override void OnInitialized()
+        {
+            CssClasses.Add($&quot;col&quot;);
+            if (Columns &gt; 0) 
+            CssClasses.Add($&quot;col-{this.Columns}&quot;);
+            if (SmallColumns &gt; 0)
+                CssClasses.Add($&quot;col-sm-{this.SmallColumns}&quot;);
+            if (MediumColumns &gt; 0)
+                CssClasses.Add($&quot;col-md-{this.MediumColumns}&quot;);
+            if (LargeColumns &gt; 0)
+                CssClasses.Add($&quot;col-lg-{this.LargeColumns}&quot;);
+            if (XLargeColumns &gt; 0)
+                CssClasses.Add($&quot;col-xl-{this.XLargeColumns}&quot;);
+            if (XXLargeColumns &gt; 0)
+                CssClasses.Add($&quot;col-xxl-{this.XXLargeColumns}&quot;);
+        }
+    }
+}
+</code></pre>
+<p><code>UIButtonColumn</code></p>
+<pre><code class="language-csharp">namespace Blazr.Primer.UI.Components
+{
+    public class UIButtonColumn : UIColumn
+    {
+        public UIButtonColumn()
+        {
+            CssClasses.Add(&quot;text-right&quot;);
+        }
+    }
+}
+</code></pre>
+<p><em>Components/HtmlControls</em></p>
+<p>The components build out standard html elements.</p>
+<p><code>UIButton</code></p>
+<pre><code class="language-csharp">using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Rendering;
+using Microsoft.AspNetCore.Components.Web;
+
+namespace Blazr.Primer.UI.Components
+{
+    public class UIButton : UIComponent
+    {
+        public UIButton()
+            =&gt; this.CssClasses.Add(&quot;btn mr-1&quot;);
+
+        protected override string HtmlTag =&gt; &quot;button&quot;;
+
+        protected override void BuildRenderTree(RenderTreeBuilder builder)
+        {
+            if (this.Show)
+            {
+                builder.OpenElement(0, this.HtmlTag);
+                builder.AddAttribute(1, &quot;class&quot;, this.CssClass);
+                builder.AddMultipleAttributes(2, this.SplatterAttributes);
+
+                if (!UserAttributes.ContainsKey(&quot;type&quot;))
+                    builder.AddAttribute(3, &quot;type&quot;, &quot;button&quot;);
+
+                if (Disabled)
+                    builder.AddAttribute(4, &quot;disabled&quot;);
+
+                if (ClickEvent.HasDelegate)
+                    builder.AddAttribute(5, &quot;onclick&quot;, EventCallback.Factory.Create&lt;MouseEventArgs&gt;(this, ClickEvent));
+
+                builder.AddContent(6, ChildContent);
+                builder.CloseElement();
+            }
+        }
+    }
+}
+</code></pre>
+<p><em>Components/FormControls</em></p>
+<p>The components build out standard html elements.</p>
+<p><code>UIFormRow</code></p>
+<pre><code class="language-csharp">namespace Blazr.Primer.UI.Components
+{
+    public class UIFormRow : UIComponent
+    {
+        public UIFormRow()
+        {
+            CssClasses.Add(&quot;row form-group&quot;);
+        }
+    }
+}
+</code></pre>
+<h2 id="viewservice-updates">ViewService Updates</h2>
+<p>We're now ready to update the <code>ViewService</code>.</p>
+<p>The changes are documented as comments in the code.</p>
+<pre><code class="language-csharp">using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+
+namespace Blazr.Primer.Core
+{
+    // Class is now IDisposable
+    public class ViewService&lt;TRecord&gt; :
+        IViewService&lt;TRecord&gt;,
+        IDisposable
+        where TRecord : class, IRecord, new()
+    {
+        //....
+        // New RecordPager 
+        public RecordPager RecordPager { get; private set; } = new RecordPager();
+
+        public event EventHandler RecordListHasChanged;
+
+        public ViewService(IDataConnector dataConnector)
+        {
+            this.dataConnector = dataConnector;
+            //  Hookup to the RecordPager PageChanged event
+            this.RecordPager.PageChanged += OnPageChanged;
+        }
+
+        // Changes to handle recording paging, calling the different DataCopnnector methods to get the paged data
+        public async ValueTask GetRecordsAsync()
+        {
+            if (RecordPager.Enabled)
+            {
+                this.Records = await dataConnector.GetPagedRecordsAsync&lt;TRecord&gt;(this.RecordPager.PagingData);
+                this.RecordPager.RecordCount = await dataConnector.GetRecordCountAsync&lt;TRecord&gt;();
+            }
+            else
+                this.Records = await dataConnector.GetRecordsAsync&lt;TRecord&gt;();
+            this.RecordListHasChanged?.Invoke(null, EventArgs.Empty);
+        }
+
+        //  Event handler for a page change calling GetRecordsAsync
+        protected async void OnPageChanged(object sender, EventArgs e)
+            =&gt; await this.GetRecordsAsync();
+
+        public void Dispose()
+        {
+            // Disposing of the event hookup correctly
+            this.RecordPager.PageChanged -= OnPageChanged;
+        }
+    }
+}
+</code></pre>
+<h2 id="sort-control">Sort Control</h2>
+<p>The <code>SortControl</code> provides a set of methods to manage Sorting and header display.  Most of the code is self evident.  It plugs into the <code>RecordPager</code> in the <code>ViewService</code> to trigger sorting requests.</p>
+<pre><code class="language-html">@namespace Blazr.Primer.UI.Components
+
+&lt;CascadingValue Value=&quot;this&quot;&gt;
+    @ChildContent
+&lt;/CascadingValue&gt;
+
+</code></pre>
+<pre><code class="language-csharp">@code {
+
+    [Parameter] public RenderFragment ChildContent { get; set; }
+
+    [Parameter] public string NotSortedClass { get; set; } = &quot;sort-column oi oi-resize-height&quot;;
+    [Parameter] public string AscendingClass { get; set; } = &quot;sort-column oi oi-sort-ascending&quot;;
+    [Parameter] public string DescendingClass { get; set; } = &quot;sort-column oi oi-sort-descending&quot;;
+
+    [Parameter] public EventCallback&lt;SortingEventArgs&gt; Sort { get; set; }
+
+    [Parameter] public RecordPager RecordPager { get; set; }
+
+    public string SortColumm { get; private set; } = string.Empty;
+
+    public bool Descending { get; private set; } = false;
+
+    public string GetIcon(string columnName)
+        =&gt; !this.SortColumm.Equals(columnName)
+        ? this.NotSortedClass
+        : this.Descending
+            ? this.AscendingClass
+            : this.DescendingClass;
+
+    public void NotifySortingChanged(string sortColumn, bool descending = false)
+    {
+        this.SortColumm = sortColumn;
+        this.Descending = descending;
+        this.Notify();
+    }
+
+    public void NotifySortingDirectionChanged()
+    {
+        this.Descending = !this.Descending;
+        this.Notify();
+    }
+
+    private void Notify()
+    {
+        if (RecordPager != null)
+        {
+            RecordPager.SortDescending = this.Descending;
+            RecordPager.SortColumn = this.SortColumm;
+            RecordPager.NotifySortingChanged();
+        }
+        var args = SortingEventArgs.Get(this.SortColumm, this.Descending);
+        if (Sort.HasDelegate) this.Sort.InvokeAsync(args);
+    }
+}
+</code></pre>
+<h2 id="listcontext">ListContext</h2>
+<p><code>ListContext</code> is a component class that groups up the sort and paging classes used in a list form</p>
+<pre><code class="language-html">@namespace Blazr.Primer.UI
+
+&lt;CascadingValue Value=&quot;RecordPager&quot;&gt;
+    &lt;SortControl RecordPager=&quot;RecordPager&quot;&gt;
+        @ChildContent
+    &lt;/SortControl&gt;
+&lt;/CascadingValue&gt;
+</code></pre>
+<pre><code class="language-csharp">@code {
+
+    [Parameter] public RecordPager RecordPager { get; set; }
+
+    [Parameter] public RenderFragment ChildContent { get; set; }
+
+    protected override void OnInitialized()
+    {
+        if (this.RecordPager is null)
+            throw new InvalidOperationException(&quot;No RecordPager has been set on the component&quot;);
+        base.OnInitialized();
+    }
+}
+</code></pre>
+<h2 id="weatherforecastlistform">WeatherForecastListForm</h2>
+<p>We're now finally ready to update the <code>WeatherForecastListForm</code>.  Changes:</p>
+<ol>
+<li>Added in the Paging and Exit section using the new UI controls.</li>
+<li>Configuring the <code>RecordPager</code> for this form.</li>
+</ol>
+<pre><code class="language-csharp">@namespace Blazr.Primer.UI.Forms
+@inherits ListFormBase&lt;WeatherForecast&gt;
+
+&lt;ListContext RecordPager=&quot;ViewService.RecordPager&quot;&gt;
+    &lt;UIListControl TRecord=&quot;WeatherForecast&quot; Records=&quot;this.ViewService.Records&quot; IsLoaded=&quot;this.ViewService.HasRecordList&quot; HasRecords=&quot;this.ViewService.HasRecords&quot; class=&quot;table&quot;&gt;
+        &lt;RowTemplate&gt;
+            &lt;UIListColumn SortField=&quot;Date&quot; HeaderTitle=&quot;Date&quot;&gt;@context.Date.ToShortDateString()&lt;/UIListColumn&gt;
+            &lt;UIListColumn SortField=&quot;=TemperatureC&quot; HeaderTitle=&quot;Temp &amp;deg; C&quot;&gt;@context.TemperatureC&lt;/UIListColumn&gt;
+            &lt;UIListColumn HeaderTitle=&quot;Temp &amp;deg; F&quot;&gt;@context.TemperatureF&lt;/UIListColumn&gt;
+            &lt;UIListColumn SortField=&quot;Summary&quot; HeaderTitle=&quot;Summary&quot;&gt;@context.Summary&lt;/UIListColumn&gt;
+            &lt;UIListColumn HeaderTitle=&quot;Detail&quot; IsMaxColumn=&quot;true&quot;&gt;@context.Name&lt;/UIListColumn&gt;
+        &lt;/RowTemplate&gt;
+    &lt;/UIListControl&gt;
+    &lt;UIContainer&gt;
+        &lt;UIFormRow&gt;
+            &lt;UIColumn Cols=&quot;8&quot;&gt;
+                &lt;DataPagingControl&gt;&lt;/DataPagingControl&gt;
+            &lt;/UIColumn&gt;
+            &lt;UIButtonColumn Cols=&quot;4&quot;&gt;
+                &lt;UIButton type=&quot;button&quot; class=&quot;btn-secondary&quot; ClickEvent=&quot;this.Exit&quot;&gt;Exit&lt;/UIButton&gt;
+            &lt;/UIButtonColumn&gt;
+        &lt;/UIFormRow&gt;
+    &lt;/UIContainer&gt;
+&lt;/ListContext&gt;
+
+@code {
+
+    protected override void OnInitialized()
+    {
+        ViewService.RecordPager.DefaultSortColumn = &quot;Date&quot;;
+        ViewService.RecordPager.Sort = true;
+        base.OnInitialized();
+    }
+}
+</code></pre>
+</div></div></div></body></html>
+
+
+
+
+

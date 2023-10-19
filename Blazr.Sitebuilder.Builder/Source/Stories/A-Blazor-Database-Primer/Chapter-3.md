@@ -1,4 +1,3 @@
-# Chapter 3 - The Business and Application Code
 
 Before writing **Core Domain** code, it's important to understand one overriding principle - Core code has no dependancies on the other project domains.  If you need a dependancy:
 1. Your code doesn't belong in the core.

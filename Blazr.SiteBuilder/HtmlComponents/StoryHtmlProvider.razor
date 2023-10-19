@@ -17,7 +17,7 @@
             </div>
         };
 
-    public static RenderFragment<ContentRenderer> StoryArticlesListHtml => (provider) => (__builder) =>
+    public static RenderFragment<ContentRenderer> StoryArticlesListGroupHtml => (provider) => (__builder) =>
         {
             <div class="list-group">
 
@@ -27,4 +27,18 @@
                 }
             </div>
         };
+
+    public static RenderFragment<ContentRenderer> StoryArticlesListHtml => (provider) => (__builder) =>
+        {
+            <ul>
+
+                @foreach (var route in provider.StoryProvider.GetStoryArticles(provider.CurrentRoute.PageData.Story))
+                {
+                    <li>
+                        <a href="@($"{route.Route}.html")">@route.PageData.Title</a>
+                    </li>
+                }
+            </ul>
+        };
+
 }

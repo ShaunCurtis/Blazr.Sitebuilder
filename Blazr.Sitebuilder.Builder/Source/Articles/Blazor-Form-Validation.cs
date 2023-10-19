@@ -15,6 +15,6 @@ public class Blazor_Form_Validation : ArticlesFolderBase
         Category = "Articles",
         Tags = "#Blazor;",
         Description = "A Blazor validation control to manage and monitor validation state in a form.",
-        MarkdownFile = $@".\Source\Articles\Blazor-Form-Validation.md",
+        MarkdownFile = "Blazor-Form-Validation.md",
     };
 }

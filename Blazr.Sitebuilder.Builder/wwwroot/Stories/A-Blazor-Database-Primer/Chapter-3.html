@@ -23,13 +23,13 @@
 	
 	<link rel="icon" href="/assets/images/favicon.png">
 
-	<title>A Blazor Database Primer - Chapter 3 - The Business and Application Code</title>
+	<title>Chapter 3 - The Business and Application Code</title>
         <meta property="author" content="Shaun Curtis" />
-        <meta property="description" content="The Business and Application Code." />
+        <meta property="description" content="This chapter looks at structuring the business logic and application code." />
     <meta property="og:site_name" content="Cold Elm Coders" />
         <meta property="og:site" content="https://shauncurtis.github.io/" />
-        <meta property="og:title" content="A Blazor Database Primer - Chapter 3 - The Business and Application Code" />
-        <meta property="og:description" content="The Business and Application Code." /></head>
+        <meta property="og:title" content="Chapter 3 - The Business and Application Code" />
+        <meta property="og:description" content="This chapter looks at structuring the business logic and application code." /></head>
 <body><header class="navbar bg-dark p-2 text-large text-light"><section class="navbar-section  text-light"><a href="/" class="navbar-brand mr-2 text-large text-light p-2">Cold Elm Coders</a>
 			<a href="/Posts" class="btn btn-link text-light">Posts</a>
 			<a href="/Rants" class="btn btn-link text-light">Rants</a>
@@ -46,25 +46,15 @@
 <a class="TOC-link" href="#">Top</a>
 <ul class="TOC TOC-0" >
 <li class="TOC-item TOC-item-1" >
-<a class="TOC-link" href="#chapter-2-the-data-store-and-data-classes">Chapter 2 - The Data Store and Data Classes</a>
 <ul class="TOC TOC-1" >
 <li class="TOC-item TOC-item-2" >
-<a class="TOC-link" href="#irecord">IRecord</a>
+<a class="TOC-link" href="#data-connectors">Data Connectors</a>
 </li>
 <li class="TOC-item TOC-item-2" >
-<a class="TOC-link" href="#the-weatherforecast-data-classes">The WeatherForecast Data Classes</a>
+<a class="TOC-link" href="#view-services">View Services</a>
 </li>
 <li class="TOC-item TOC-item-2" >
-<a class="TOC-link" href="#the-data-store">The Data Store</a>
-</li>
-<li class="TOC-item TOC-item-2" >
-<a class="TOC-link" href="#data-brokers">Data Brokers</a>
-</li>
-<li class="TOC-item TOC-item-2" >
-<a class="TOC-link" href="#testing">Testing</a>
-</li>
-<li class="TOC-item TOC-item-2" >
-<a class="TOC-link" href="#summary">Summary</a>
+<a class="TOC-link" href="#system-testing">System Testing</a>
 </li>
 </ul>
 </li>
@@ -73,336 +63,282 @@
 </ul>
 </div>
 			
-			<div class="col-12 col-sm-9 col-lg-10 p-2"><div class="pt-2 pb-2 border-bottom mb-4 text-primary"><h1>A Blazor Database Primer - Chapter 3 - The Business and Application Code</h1>
-            <div><small>The Business and Application Code.</small></div></div>
-    <h1 id="chapter-2-the-data-store-and-data-classes">Chapter 2 - The Data Store and Data Classes</h1>
-<p>Data is retrieved from data stores into data classes.  We apply some rules to our data classes so we can write a lot of boilerplate code for data handling:</p>
+			<div class="col-12 col-sm-9 col-lg-10 p-2"><div class="pt-2 pb-2 border-bottom mb-4 text-primary"><h1>Chapter 3 - The Business and Application Code</h1>
+            <div><small>This chapter looks at structuring the business logic and application code.</small></div></div>
+    <div class="mb-2"><h3>Document List</h3>
+        <ul><li><a href="/Stories/A-Blazor-Database-Primer/Index.html">A Blazor Database Primer</a></li><li><a href="/Stories/A-Blazor-Database-Primer/Chapter-1.html">Chapter 1 - Project Design and Structure</a></li><li><a href="/Stories/A-Blazor-Database-Primer/Chapter-2.html">Chapter 2 - The Data Store and Data Classes</a></li><li><a href="/Stories/A-Blazor-Database-Primer/Chapter-3.html">Chapter 3 - The Business and Application Code</a></li><li><a href="/Stories/A-Blazor-Database-Primer/Chapter-4.html">Chapter 4 - Setting up the Solution to Run</a></li><li><a href="/Stories/A-Blazor-Database-Primer/Chapter-5.html">Chapter 5 - Adding a WASM SPA to the Solution</a></li><li><a href="/Stories/A-Blazor-Database-Primer/Chapter-6.html">Chapter 6 -  Rebuilding FetchData</a></li><li><a href="/Stories/A-Blazor-Database-Primer/Chapter-7.html">Chapter 7 - Adding Sorting and Paging to the List Form</a></li></ul></div>
+    <p>Before writing <strong>Core Domain</strong> code, it's important to understand one overriding principle - Core code has no dependancies on the other project domains.  If you need a dependancy:</p>
 <ol>
-<li>All data classes implement a <code>IRecord</code> interface.  This defines properties all data classes must implement.</li>
-<li>All Data classes must be immutable and there implemented as <code>records</code>.  Specific edit classes will be used in edit operations.</li>
-<li>All data classes and their data store datasets use the same names.</li>
+<li>Your code doesn't belong in the core.</li>
+<li>The dependancy needs to move into the core.</li>
+<li>You need to re-design your functionality implementation.</li>
 </ol>
-<p>In which domain do data classes belong?</p>
-<p>The initial answer is Data Domain.  However, application logic code uses the data classes.  As core code can't depend on Data, data classes belong in the Core Domain.  I'll discuss more complex examples in a later chapter where we have multiple data classes representing the same data set and where those live.</p>
-<h2 id="irecord">IRecord</h2>
-<p>Add a <code>IRecord</code> public interface to <em>Blazr.Primer.Core/Interfaces</em>.</p>
-<pre><code class="language-csharp">using System;
-namespace Blazr.Primer.Core
-{
-    public interface IRecord
-    {
-        public Guid ID { get; }
-        public string Name { get; }
-    }
-}
-</code></pre>
-<p>All dataclasses implement this interface.  They must have:</p>
-<ol>
-<li>An <code>ID</code> field of type <code>Guid</code>.</li>
-<li>A <code>Name</code> field of type <code>string</code>.</li>
-</ol>
-<h2 id="the-weatherforecast-data-classes">The WeatherForecast Data Classes</h2>
-<p>Move <code>WeatherForecast</code> from <em>Blazr.Primer/data</em> to <em>Blazr.Primer.Core/DataClasses</em>.</p>
-<p>Modify <code>WeatherForecast</code> to:</p>
-<pre><code class="language-csharp">using System;
-
-namespace Blazr.Primer.Core
-{
-    public record WeatherForecast : IRecord
-    {
-        public Guid ID { get; init; } = Guid.Empty;
-        public DateTime Date { get; init; }
-        public int TemperatureC { get; init; }
-        public string Summary { get; init; }
-        public int TemperatureF =&gt; 32 + (int)(TemperatureC / 0.5556);
-        public string Name =&gt; $&quot;Weather Forecast for {Date.ToShortDateString()}&quot;;
-    }
-}
-</code></pre>
-<p>We've:</p>
-<ol>
-<li>Added the <code>IRecord</code> interface.</li>
-<li>Implemented <code>ID</code> and <code>Name</code>.</li>
-<li>Changed from a <code>class</code> to a <code>record</code>.</li>
-<li>Changed the setters to <code>init</code>.</li>
-</ol>
-<h2 id="the-data-store">The Data Store</h2>
-<p>To get started, We're building an in-memory data store that &quot;mimics&quot; a Entity Framework context.  We'll look at a real SQL implementation using Entity Framework in a later chapter.</p>
-<p>Add a <code>DB</code> folder to <em>BlazorDB.Data</em>, and add a <code>WeatherDataStore</code> class.</p>
-<pre><code class="language-csharp">using Blazr.Primer.Core;
-using System;
+<p>The &quot;No dependancy&quot; rule is sacrosanct!</p>
+<h2 id="data-connectors">Data Connectors</h2>
+<p>Data Connectors are the data facing interface of the <strong>Core Domain</strong> black box.  Data connectors talk to data brokers.</p>
+<h3 id="idataconnector">IDataConnector</h3>
+<p>All data connectors implement  the <code>IDataConnector</code> interface.</p>
+<pre><code class="language-csharp">\\ directory: Blazr.Primer.Core\Interfaces
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Threading.Tasks;
-
-namespace Blazr.Primer.Data
-{
-    public class WeatherDataStore
-    {
-        // field holding the internal &quot;table&quot; of weatherforecast records
-        private List&lt;_WeatherForecast&gt; _weatherForecastRecords = new List&lt;_WeatherForecast&gt;();
-
-        public WeatherDataStore()
-            =&gt; _weatherForecastRecords = _getForecasts();
-
-        // The Dataset for WeatherForecasts
-        public IEnumerable&lt;WeatherForecast&gt; WeatherForecast
-        {
-            get
-            {
-                var list = new List&lt;WeatherForecast&gt;();
-                _weatherForecastRecords.ForEach(item =&gt; list.Add(new WeatherForecast { ID = item.ID, Date = item.Date, TemperatureC = item.TemperatureC, Summary = item.Summary }));
-                return list.AsEnumerable&lt;WeatherForecast&gt;();
-            }
-        }
-
-        // Generics method to get the correct dataset for TRecord
-        public ValueTask&lt;List&lt;TRecord&gt;&gt; GetDataSet&lt;TRecord&gt;() where TRecord : class, IRecord, new()
-        {
-
-            var dbSetName = new TRecord().GetType().Name;
-            // Get the property info object for the DbSet 
-            var pinfo = this.GetType().GetProperty(dbSetName);
-            List&lt;TRecord&gt; dbSet = null;
-            Debug.Assert(pinfo != null);
-            // Get the property DbSet
-            try
-            {
-                dbSet = (List&lt;TRecord&gt;)pinfo.GetValue(this);
-            }
-            catch
-            {
-                throw new InvalidOperationException($&quot;{dbSetName} does not have a matching DBset &quot;);
-            }
-            Debug.Assert(dbSet != null);
-            Task.Delay(100);
-            return ValueTask.FromResult(dbSet);
-        }
-
-        //  Internal Read/Write class for a WeatherForecast
-        private struct _WeatherForecast
-        {
-            public Guid ID;
-            public DateTime Date;
-            public int TemperatureC;
-            public string Summary;
-        }
-
-        // method to build the internal WeatherForecast &quot;table&quot;
-        private List&lt;_WeatherForecast&gt; _getForecasts()
-        {
-            var rng = new Random();
-            var summaries = new[]  {
-                &quot;Freezing&quot;, &quot;Bracing&quot;, &quot;Chilly&quot;, &quot;Cool&quot;, &quot;Mild&quot;, &quot;Warm&quot;, &quot;Balmy&quot;, &quot;Hot&quot;, &quot;Sweltering&quot;, &quot;Scorching&quot;
-            };
-            return Enumerable.Range(1, 50).
-                    Select(index =&gt; new _WeatherForecast
-                    {
-                        ID = Guid.NewGuid(),
-                        Date = DateTime.Now.AddDays(index),
-                        TemperatureC = rng.Next(-20, 55),
-                        Summary = summaries[rng.Next(summaries.Length)]
-                    }).ToList();
-        }
-
-        // method to seed the Data Store WesatherForecast dataset with a known dataset
-        public void OverrideWeatherForecastDateSet(List&lt;WeatherForecast&gt; list)
-        {
-            this._weatherForecastRecords.Clear();
-            list.ForEach(item =&gt; this._weatherForecastRecords.Add(new _WeatherForecast { ID = item.ID, Date = item.Date, TemperatureC = item.TemperatureC, Summary = item.Summary }));
-        }
-    }
-}
-</code></pre>
-<p>The class builds an internal list of records on initialisation.  See the inline comments for details.  The public <code>WeatherForcast</code> property provides an <code>IEnumerable</code> list of <code>WeatherForecast</code> records from the internal store.  By convention the data store <em>dataset</em> is always named the same as the record class.  Using this convention, the generic method <code>List&lt;TRecord&gt; GetDataSet&lt;TRecord&gt;()</code> gets the correct <code>IEnumerable&lt;TRecord&gt;</code> property for <code>TRecord</code>.  In our case we only have one, but we're building the logic to make this scaleable.</p>
-<p>Most of the code is self evident, but <code>GetDataSet</code> uses some advanced programming techniques using <code>Reflection</code> so we'll look at it in detail:</p>
-<pre><code class="language-csharp">public ValueTask&lt;List&lt;TRecord&gt;&gt; GetDataSet&lt;TRecord&gt;() where TRecord : class, IRecord, new()
-</code></pre>
-<p>The declaration uses generics.  We define that <code>TRecord</code> must:</p>
-<ol>
-<li>Be a class (or record).</li>
-<li>Must implement <code>IRecord</code>.</li>
-<li>Must implement and empty constructor.</li>
-</ol>
-<p>Normal database operations as asynchronous, so we wrap the code in a <code>ValueTask</code> and we return a &quot;dataset&quot;, which in this case is a  <code>List</code> of <code>TRecords</code>.</p>
-<p>Let's look at a real call into the data store:</p>
-<pre><code class="language-csharp">var dbset = await dataStore.GetDataSet&lt;WeatherForecast&gt;();
-</code></pre>
-<p><code>new TRecord()</code> constructs a new copy of <code>WeatherForecast</code>. <code>.GetType().Name</code> gets the class name.  In our case <code>WeatherForecast</code>.</p>
-<pre><code class="language-csharp">var dbSetName = new TRecord().GetType().Name;
-</code></pre>
-<p><code>this.GetType().GetProperty(dbSetName)</code> gets the datastore <code>Type</code> and then gets the <code>PropertyInfo</code> object with the name we retrieved above, in our case <code>WeatherForecast</code>.</p>
-<pre><code class="language-csharp">var pinfo = this.GetType().GetProperty(dbSetName);
-</code></pre>
-<p>Finally we get the value of <code>pinfo</code> for this instance of the data store.  <code>GetValue</code> returns an <code>object</code>, so we cast it to what we know it is a <code>List</code> of <code>TRecord</code>.</p>
-<pre><code class="language-csharp">dbSet = (List&lt;TRecord&gt;)pinfo.GetValue(this);
-</code></pre>
-<h2 id="data-brokers">Data Brokers</h2>
-<p>Data Brokers are the external interface for the <strong>Data Domain</strong> black box.  The <strong>Core Domain</strong> uses brokers to make calls into the <strong>Data Domain</strong>.  They're often known as <em>shims</em>, skinny one line method classes.  While the data brokers themselves reside in the <strong>Data Domain</strong>, the interface is used by the <strong>Core Domain</strong> and thus resides there.</p>
-<h3 id="idatabroker">IDataBroker</h3>
-<p>Add <code>IDataBroker</code> interface to <em>Blazr.Primer.Core/Interfaces</em>.</p>
-<pre><code class="language-csharp">using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace Blazr.Primer.Core
 {
-    public interface IDataBroker
+    public interface IDataConnector
     {
-        public ValueTask&lt;List&lt;TRecord&gt;&gt; SelectAllRecordsAsync&lt;TRecord&gt;() where TRecord : class, IRecord, new();
+        public ValueTask&lt;List&lt;TRecord&gt;&gt; GetRecordsAsync&lt;TRecord&gt;() where TRecord : class, IRecord, new();
     }
 }
 </code></pre>
-<p>Normally this would implement a full set of CRUD methods, but at the moment we're only doing the List operation, so define a single method <code>SelectAllRecordsAsync</code>.</p>
-<p>It's:</p>
-<ol>
-<li>Generic using <code>TRecord</code> which has constraints - it must be a class (or record), implement <code>IRecord</code> and have an empty constructor.</li>
-<li>Returns a <code>ValueTask</code>, so can be async.  Almost all database operations are async, so we start out implementing the broker using Task based methods.</li>
-<li>Returns a <code>List</code> of <code>TRecord</code>s.</li>
-</ol>
-<h3 id="databroker">DataBroker</h3>
-<p>This is the base interface definition.  It resides in the <strong>Data Domain</strong>.</p>
-<p>Add a <em>Broker</em> folder to <em>BlazorDB.Core</em>, and add a <code>DataBroker</code> class.</p>
-<pre><code class="language-csharp">using Blazr.Primer.Core;
-using System;
+<h3 id="dataconnector">DataConnector</h3>
+<p><code>DataConnector</code> implements <code>IDataConnector</code>.  It takes an <code>IDataBroker</code> and calls methods on <code>IDataBroker</code> to get/post it's data.</p>
+<pre><code class="language-csharp">\\ directory: Blazr.Primer.Core\Connectors
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace Blazr.Primer.Data
+namespace Blazr.Primer.Core
 {
-    public abstract class DataBroker : IDataBroker
+    public class DataConnector : IDataConnector
     {
-        public virtual ValueTask&lt;List&lt;TRecord&gt;&gt; SelectAllRecordsAsync&lt;TRecord&gt;() where TRecord : class, IRecord, new()
-            =&gt; throw new InvalidOperationException($&quot;The SelectAllRecordsAsync method is not implemented for this Broker.&quot;);
+
+        private IDataBroker dataBroker;
+
+        public DataConnector(IDataBroker dataBroker)
+            =&gt; this.dataBroker = dataBroker;
+
+        public ValueTask&lt;List&lt;TRecord&gt;&gt; GetRecordsAsync&lt;TRecord&gt;() where TRecord: class, IRecord, new() 
+            =&gt; dataBroker.SelectAllRecordsAsync&lt;TRecord&gt;();
     }
 }
 </code></pre>
-<p>It doesn't do a great deal, just returns an exception.  In full Crud operations it implements all the CRUD methods.  Specific implementations then only need to override relevant methods, and rely on the base implement to return &quot;Not Implemented&quot; exceptions.</p>
-<h3 id="serverdatabroker">ServerDataBroker</h3>
-<p>Finally a real implementation.</p>
-<p>Add a <em>Broker</em> folder to <em>BlazorDB.Core</em>, and add a <code>ServerDataBroker</code> class.</p>
-<pre><code class="language-csharp">using Blazr.Primer.Core;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-
-namespace Blazr.Primer.Data
-{
-    public class ServerDataBroker : DataBroker, IDataBroker
-    {
-        // internal field for the data store
-        private WeatherDataStore dataStore;
-
-        // Initialization - get passed the weatherForecastDataStore
-        //  As a service we will get this passed to us by the Service Container
-        public ServerDataBroker(WeatherDataStore weatherForecastDataStore)
-        {
-            this.dataStore = weatherForecastDataStore;
-        }
-
-        // Concrete implementation getting all the records from the data store
-        public async override ValueTask&lt;List&lt;TRecord&gt;&gt; SelectAllRecordsAsync&lt;TRecord&gt;()
-        {
-            var dbset = await dataStore.GetDataSet&lt;TRecord&gt;();
-            return dbset;
-        }
-    }
-}
+<p>Each method uses generics, so there is no need for specific data connectors for each data class.  To get the <code>WeatherForecast</code> record dataset call:</p>
+<pre><code class="language-csharp">var records = GetRecordsAsync&lt;WeatherForecast&gt;();
 </code></pre>
-<p>This uses generics and the naming conventions to get the correct DataSet for <code>TRecord</code>.</p>
-<h2 id="testing">Testing</h2>
-<p>At this point we can set up our first test.</p>
-<p>First we need a WeatherForecast utility class to build test <code>WeatherForecast</code> data sets.</p>
-<pre><code class="language-csharp">// Directory: BlazorDb.Test/Base
+<h3 id="testing">Testing</h3>
+<p>Add a <code>DataConnectorTests</code> class.</p>
+<pre><code class="language-csharp">// Directory: Blazr.Primer.Test/Unit
 using Blazr.Primer.Core;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-
-namespace Blazr.Primer.Test
-{
-    internal static class WeatherForcastHelper
-    {
-        public static ValueTask&lt;List&lt;WeatherForecast&gt;&gt; CreateRandomWeatherForecastListAsync(int number)
-            =&gt; ValueTask.FromResult(CreateRandomWeatherForecastList(number));
-
-        public static ValueTask&lt;List&lt;WeatherForecast&gt;&gt; CreateWeatherForecastListAsync(List&lt;WeatherForecast&gt; list)
-            =&gt; ValueTask.FromResult&lt;List&lt;WeatherForecast&gt;&gt;(list);
-
-        public static List&lt;WeatherForecast&gt; CreateFixedWeatherForecastList(int number)
-            =&gt; Enumerable.Range(1, number).
-                 Select(index =&gt; FixedWeatherForcast).ToList();
-
-        public static WeatherForecast FixedWeatherForcast
-            =&gt; new WeatherForecast
-            {
-                ID = Guid.NewGuid(),
-                Date = DateTime.Now,
-                TemperatureC = 20,
-                Summary = &quot;Hot&quot;
-            };
-
-        public static List&lt;WeatherForecast&gt; CreateRandomWeatherForecastList(int number)
-        {
-            var rng = new Random();
-            var summaries = new[]  {
-                    &quot;Freezing&quot;, &quot;Bracing&quot;, &quot;Chilly&quot;, &quot;Cool&quot;, &quot;Mild&quot;, &quot;Warm&quot;, &quot;Balmy&quot;, &quot;Hot&quot;, &quot;Sweltering&quot;, &quot;Scorching&quot;
-                };
-            var list = Enumerable.Range(1, number).
-                 Select(index =&gt; new WeatherForecast
-                 {
-                     ID = Guid.NewGuid(),
-                     Date = DateTime.Now.AddDays(index),
-                     TemperatureC = rng.Next(-20, 55),
-                     Summary = summaries[rng.Next(summaries.Length)]
-                 }).ToList();
-            return list;
-        }
-    }
-}
-</code></pre>
-<p>Add a <code>DataBrokerTests</code> class.</p>
-<pre><code class="language-csharp">// Directory: BlazorDb.Test/Unit
-using Blazr.Primer.Test;
-using Blazr.Primer.Core;
-using Blazr.Primer.Data;
+using Moq;
 using System.Collections.Generic;
 using Xunit;
 
-namespace Blazr.Primer.Tests
+namespace Blazr.Primer.Test
 {
-    public class DataBrokerTests
+    public partial class DataConnectorTests
     {
+
         [Fact]
-        public async void DataBrokerShouldGetDataStoreWeatherForecastsAsync()
+        public async void DataConnectorShouldGet25WeatherForecastsAsync()
         {
             // define
-            int DataStoreRecords = 50;
-            var records = WeatherForcastUtils.CreateRandomWeatherForecastList(DataStoreRecords);
-            var weatherForecastDataStore = new WeatherDataStore();
-            weatherForecastDataStore.OverrideWeatherForecastDateSet(records);
-            var dataBroker = new ServerDataBroker(weatherForecastDataStore: weatherForecastDataStore);
+            var noOfRecords = 25;
+
+            var dataBrokerMock = new Mock&lt;IDataBroker&gt;();
+            var dataConnector = new DataConnector(dataBroker: dataBrokerMock.Object);
+            dataBrokerMock.Setup(broker =&gt;
+                broker.SelectAllRecordsAsync&lt;WeatherForecast&gt;())
+               .Returns(WeatherForecastHelper.CreateRandomWeatherForecastListAsync(noOfRecords)
+               );
 
             // test
-            var retrievedRecords = await dataBroker.SelectAllRecordsAsync&lt;WeatherForecast&gt;();
+            var retrievedRecords = await dataConnector.GetRecordsAsync&lt;WeatherForecast&gt;();
 
             // assert
             Assert.IsType&lt;List&lt;WeatherForecast&gt;&gt;(retrievedRecords);
-            Assert.Equal(DataStoreRecords, retrievedRecords.Count);
+            Assert.Equal(noOfRecords, retrievedRecords.Count);
+            dataBrokerMock.Verify(broker =&gt; broker.SelectAllRecordsAsync&lt;WeatherForecast&gt;(), Times.Once);
+            dataBrokerMock.VerifyNoOtherCalls();
         }
     }
 }
 </code></pre>
-<p>Our data store builds a 50 record dataset, so we can test if:</p>
+<p>This test uses <code>Mock</code> to mock the IDataBroker so we can monitor calls into the interface.  The test:</p>
 <ol>
-<li>We get a <code>List&lt;WeatherForecast&gt;</code> as our return object - we get a list of the correct records type.</li>
-<li>We get 50 rows.</li>
+<li>Checks the type of the return is <code>List&lt;WeatherForecast&gt;</code>.</li>
+<li>Checks we have 25 records - what was created in the mock.</li>
+<li>Verifies the <code>IDataBroker</code> method <code>SelectAllRecordsAsync</code> was called only once.</li>
+<li>Verifies no other method was called on <code>IDataBroker</code>.</li>
 </ol>
-<p>On the project you can now run the test and make sure it passes.  Check the errors and debug if you have problems.</p>
-<p><img src="/siteimages/articles/DB-Primer/Chapter-2-UnitTests.png" alt="Unit Testing" /></p>
-<h2 id="summary">Summary</h2>
-<p>We have built our <em>Data Domain</em> code and used <em>xUnit</em> to test the code.  We don't need a fully functional Blazor application to test our unit test our services.</p>
-<p>The current Blazor solution uses the code we built in Chapter 1.  None of the above code will be used.</p>
+<h2 id="view-services">View Services</h2>
+<p>View Services are the basic building blocks for the Application/Business logic.</p>
+<h3 id="iviewservice">IViewService</h3>
+<p>Add an <code>IViewService</code> interface to <em>Blazr.Primer.Core/Interfaces</em></p>
+<pre><code class="language-csharp">using Blazorr.Primer.Core;
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+
+namespace Blazr.Primer.Core
+{
+    public interface IViewService&lt;TRecord&gt;
+        where TRecord : class, IRecord, new()
+    {
+        public List&lt;TRecord&gt; Records { get; }
+        public bool HasRecords { get; }
+        public int RecordCount { get; }
+        public event EventHandler RecordListHasChanged;
+        public ValueTask GetRecordsAsync();
+    }
+}
+</code></pre>
+<h3 id="viewservice">ViewService</h3>
+<p>Add a <code>ViewService</code> class to <em>Blazr.Primer.Core/ViewServices</em>.  This is the base implementation.</p>
+<p>The code is self evident.  <code>RecordListHasChanged</code> is triggered when the <code>Records</code> property is updated.</p>
+<pre><code class="language-csharp">using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+
+namespace Blazr.Primer.Core
+{
+    public class ViewService&lt;TRecord&gt; :
+        IViewService&lt;TRecord&gt;,
+        IDisposable
+        where TRecord : class, IRecord, new()
+    {
+        private IDataConnector dataConnector;
+
+        public List&lt;TRecord&gt; Records
+        {
+            get =&gt; _records;
+
+            protected set
+            {
+                _records = value;
+                this.RecordListHasChanged?.Invoke(value, EventArgs.Empty);
+            }
+        }
+
+        public bool HasRecordList =&gt; Records is not null;
+
+        public bool HasRecords =&gt; this.RecordCount &gt; 0;
+
+        public int RecordCount =&gt; this.Records?.Count ?? 0;
+
+        private List&lt;TRecord&gt; _records;
+
+        public event EventHandler RecordListHasChanged;
+
+        public ViewService(IDataConnector dataConnector)
+            =&gt;  this.dataConnector = dataConnector;
+
+        public async ValueTask GetRecordsAsync()
+            =&gt;  Records = await dataConnector.GetRecordsAsync&lt;TRecord&gt;();
+
+        public void Dispose() { }
+    }
+}
+</code></pre>
+<h3 id="weatherforecastviewservice">WeatherForecastViewService</h3>
+<p>Finally we add a concrete implementation of the View Service for the <code>WeatherForecast</code> record.</p>
+<pre><code class="language-csharp">namespace Blazr.Primer.Core
+{
+    public class WeatherForecastViewService : ViewService&lt;WeatherForecast&gt;
+    {
+        public WeatherForecastViewService(IDataConnector dataConnector) : base(dataConnector) { }
+    }
+}
+</code></pre>
+<p>This is minimlistic, just setting <code>IRecord</code> as <code>WeatherForecast</code>.</p>
+<h3 id="testing-1">Testing</h3>
+<p>Add a <code>ViewServiceTests</code> class</p>
+<pre><code class="language-csharp">// Directory: Blazr.Primer.Test/Unit
+using Blazr.Primer.Core;
+using Moq;
+using System;
+using System.Collections.Generic;
+using Xunit;
+
+namespace Blazr.Primer.Test
+{
+    public class ViewServiceTests
+    {
+        [Fact]
+        public async void ViewShouldGetWeatherForecastsAsync()
+        {
+            // define
+            var rand = new Random();
+            var noOfRecords = rand.Next(25, 250);
+            var dataConnectorMock = new Mock&lt;IDataConnector&gt;();
+            var weatherForecastViewService = new WeatherForecastViewService(dataConnector: dataConnectorMock.Object);
+            //TODO - need to add paging and count returns
+            dataConnectorMock.Setup(item =&gt;
+                item.GetRecordsAsync&lt;WeatherForecast&gt;())
+               .Returns(WeatherForecastHelper.CreateRandomWeatherForecastListAsync(noOfRecords)
+               );
+            object eventSender = null;
+            weatherForecastViewService.RecordListHasChanged += (sender, e) =&gt; { eventSender = sender; };
+
+            // test
+            await weatherForecastViewService.GetRecordsAsync();
+
+            // assert
+            Assert.IsType&lt;List&lt;WeatherForecast&gt;&gt;(weatherForecastViewService.Records);
+            Assert.Equal(noOfRecords, weatherForecastViewService.RecordCount);
+            Assert.IsType&lt;List&lt;WeatherForecast&gt;&gt;(eventSender);
+            dataConnectorMock.Verify(item =&gt; item.GetRecordsAsync&lt;WeatherForecast&gt;(), Times.Once);
+            dataConnectorMock.VerifyNoOtherCalls();
+        }
+
+    }
+}
+</code></pre>
+<p>This test uses <code>Mock</code> to mock the IDataConnector so we can monitor calls into the interface.  The test:</p>
+<ol>
+<li>Checks the type of the return is <code>List&lt;WeatherForecast&gt;</code>.</li>
+<li>Checks we have 25 records - what was created in the mock.</li>
+<li>Checks the event returns a <code>List&lt;WeatherForecast&gt;</code>.</li>
+<li>Verifies the <code>IDataConnector</code> method <code>GetRecordsAsync</code> was called only once.</li>
+<li>Verifies no other method was called on <code>IDataConnector</code>.</li>
+</ol>
+<h2 id="system-testing">System Testing</h2>
+<p>We can now do an end to end test on our data stream.</p>
+<p>Add a <code>SystemTests</code> class</p>
+<pre><code class="language-csharp">// Directory: Blazr.Primer.Test/System
+using Blazr.Primer.Core;
+using Blazr.Primer.Data;
+using System;
+using System.Collections.Generic;
+using Xunit;
+
+namespace Blazr.Primer.Test
+{
+    public class SystemTests
+    {
+        [Fact]
+        public async void ViewShouldGet50WeatherForecastsAsync()
+        {
+            // define
+            var rand = new Random();
+            var noOfRecords = rand.Next(25, 250);
+            var records = await WeatherForecastHelper.CreateRandomWeatherForecastListAsync(noOfRecords);
+            var weatherForecastDataStore = new WeatherDataStore();
+            weatherForecastDataStore.OverrideWeatherForecastDateSet(records);
+            var dataBroker = new ServerDataBroker(weatherForecastDataStore: weatherForecastDataStore);
+            var dataConnector = new DataConnector(dataBroker: dataBroker);
+            var weatherForecastViewService = new WeatherForecastViewService(dataConnector: dataConnector);
+            object eventSender = null;
+            weatherForecastViewService.RecordListHasChanged += (sender, e) =&gt; { eventSender = sender; };
+
+            // test
+            await weatherForecastViewService.GetRecordsAsync();
+
+            // assert
+            Assert.IsType&lt;List&lt;WeatherForecast&gt;&gt;(weatherForecastViewService.Records);
+            Assert.Equal(noOfRecords, weatherForecastViewService.RecordCount);
+            Assert.IsType&lt;List&lt;WeatherForecast&gt;&gt;(eventSender);
+        }
+    }
+}
+</code></pre>
+<p>The test:</p>
+<ol>
+<li>Builds a random data set.</li>
+<li>Checks the type of the return is <code>List&lt;WeatherForecast&gt;</code>.</li>
+<li>Checks we have <code>noOfRecords</code> records - what was created.</li>
+<li>Checks the event returns a <code>List&lt;WeatherForecast&gt;</code>.</li>
+<li>Verifies We have the correct number of records.</li>
+<li>Verifies RecordListHasChanged was called and returned a <code>List&lt;WeatherForecast&gt;</code>.</li>
+</ol>
 </div></div></div></body></html>
 
 

@@ -1,0 +1,593 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<base href="/">
+
+	
+
+	
+
+	
+	<link href="/assets/vendor/fontawesome-free/css/all.min.css" rel="stylesheet" type="text/css">
+	<link href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i" rel="stylesheet">
+
+	
+	<link href="/assets/css/sb-admin-2.css" rel="stylesheet" type="text/css">
+	<link href="/assets/css/site.css" rel="stylesheet" type="text/css">
+
+	
+	<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/Microsoft/vscode/extensions/markdown-language-features/media/highlight.css">
+	<link rel="stylesheet" href="/assets/css/article.css" type="text/css">
+
+	
+	<link rel="icon" href="/assets/images/favicon.png">
+
+	<title>Chapter 6 -  Rebuilding FetchData</title>
+        <meta property="author" content="Shaun Curtis" />
+        <meta property="description" content="This chapter focuses on rebuilding the FetchData page." />
+    <meta property="og:site_name" content="Cold Elm Coders" />
+        <meta property="og:site" content="https://shauncurtis.github.io/" />
+        <meta property="og:title" content="Chapter 6 -  Rebuilding FetchData" />
+        <meta property="og:description" content="This chapter focuses on rebuilding the FetchData page." /></head>
+<body><header class="navbar bg-dark p-2 text-large text-light"><section class="navbar-section  text-light"><a href="/" class="navbar-brand mr-2 text-large text-light p-2">Cold Elm Coders</a>
+			<a href="/Posts" class="btn btn-link text-light">Posts</a>
+			<a href="/Rants" class="btn btn-link text-light">Rants</a>
+			<a href="/Articles" class="btn btn-link text-light">Articles</a>
+			<a href="/Stories" class="btn btn-link text-light">Stories</a>
+			<a href="/Tags" class="btn btn-link text-light">Tags</a></section></header>
+
+	<div class="container-fluid"><div class="row"><div class="col-12 col-sm-3 col-lg-2 bg-light pt-2"><div class="article-info p-2"><div class="mb-2">Published: 13-Aug-2021</div>
+                <div class="mb-2">Updated: 13-Aug-2021</div>
+                <div class="mb-2">Author: Shaun Curtis</div></div>
+    <h4 class="p-2">Table of Contents</h4>
+<ul class="TOC" >
+<li class="TOC-item TOC-item-0" >
+<a class="TOC-link" href="#">Top</a>
+<ul class="TOC TOC-0" >
+<li class="TOC-item TOC-item-1" >
+<ul class="TOC TOC-1" >
+<li class="TOC-item TOC-item-2" >
+<a class="TOC-link" href="#nomenclature">Nomenclature</a>
+</li>
+<li class="TOC-item TOC-item-2" >
+<a class="TOC-link" href="#blazr.primer.ui">Blazr.Primer.UI</a>
+</li>
+<li class="TOC-item TOC-item-2" >
+<a class="TOC-link" href="#navigation-update">Navigation Update</a>
+</li>
+<li class="TOC-item TOC-item-2" >
+<a class="TOC-link" href="#testing">Testing</a>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+			
+			<div class="col-12 col-sm-9 col-lg-10 p-2"><div class="pt-2 pb-2 border-bottom mb-4 text-primary"><h1>Chapter 6 -  Rebuilding FetchData</h1>
+            <div><small>This chapter focuses on rebuilding the FetchData page.</small></div></div>
+    <div class="mb-2"><h3>Document List</h3>
+        <ul><li><a href="/Stories/A-Blazor-Database-Primer/Index.html">A Blazor Database Primer</a></li><li><a href="/Stories/A-Blazor-Database-Primer/Chapter-1.html">Chapter 1 - Project Design and Structure</a></li><li><a href="/Stories/A-Blazor-Database-Primer/Chapter-2.html">Chapter 2 - The Data Store and Data Classes</a></li><li><a href="/Stories/A-Blazor-Database-Primer/Chapter-3.html">Chapter 3 - The Business and Application Code</a></li><li><a href="/Stories/A-Blazor-Database-Primer/Chapter-4.html">Chapter 4 - Setting up the Solution to Run</a></li><li><a href="/Stories/A-Blazor-Database-Primer/Chapter-5.html">Chapter 5 - Adding a WASM SPA to the Solution</a></li><li><a href="/Stories/A-Blazor-Database-Primer/Chapter-6.html">Chapter 6 -  Rebuilding FetchData</a></li><li><a href="/Stories/A-Blazor-Database-Primer/Chapter-7.html">Chapter 7 - Adding Sorting and Paging to the List Form</a></li></ul></div>
+    <p>The original page looks like this:</p>
+<pre><code class="language-csharp">@page &quot;/fetchdata&quot;
+
+@using WeatherTesting.Data
+@inject WeatherForecastService ForecastService
+
+&lt;h1&gt;Weather forecast&lt;/h1&gt;
+
+&lt;p&gt;This component demonstrates fetching data from a service.&lt;/p&gt;
+
+@if (forecasts == null)
+{
+    &lt;p&gt;&lt;em&gt;Loading...&lt;/em&gt;&lt;/p&gt;
+}
+else
+{
+    &lt;table class=&quot;table&quot;&gt;
+        &lt;thead&gt;
+            &lt;tr&gt;
+                &lt;th&gt;Date&lt;/th&gt;
+                &lt;th&gt;Temp. (C)&lt;/th&gt;
+                &lt;th&gt;Temp. (F)&lt;/th&gt;
+                &lt;th&gt;Summary&lt;/th&gt;
+            &lt;/tr&gt;
+        &lt;/thead&gt;
+        &lt;tbody&gt;
+            @foreach (var forecast in forecasts)
+            {
+                &lt;tr&gt;
+                    &lt;td&gt;@forecast.Date.ToShortDateString()&lt;/td&gt;
+                    &lt;td&gt;@forecast.TemperatureC&lt;/td&gt;
+                    &lt;td&gt;@forecast.TemperatureF&lt;/td&gt;
+                    &lt;td&gt;@forecast.Summary&lt;/td&gt;
+                &lt;/tr&gt;
+            }
+        &lt;/tbody&gt;
+    &lt;/table&gt;
+}
+
+@code {
+    private WeatherForecast[] forecasts;
+
+    protected override async Task OnInitializedAsync()
+    {
+        forecasts = await ForecastService.GetForecastAsync(DateTime.Now);
+    }
+}
+</code></pre>
+<p>Why change it?</p>
+<ol>
+<li>There's no separation of concerns.  The component both gets, manages and holds the data and displays it.</li>
+<li>We're mixing high level functionality - this is a RouteView - with the nitty gritty of building raw Html.</li>
+<li>How do we embed this as a form into another page?</li>
+</ol>
+<p>Our goal is a &quot;page&quot; that looks like this:</p>
+<pre><code class="language-html">@page &quot;/WeatherForecasts&quot;
+
+&lt;WeatherForecastListForm/&gt;
+</code></pre>
+<p>It's a single form.  <code>WeatherForecastListForm</code> looks like this:</p>
+<pre><code class="language-html">@namespace BlazorDB.UI.Forms
+
+&lt;UIListControl TRecord=&quot;WeatherForecast&quot; Records=&quot;this.ViewService.Records&quot; IsLoaded=&quot;this.ViewService.HasRecords&quot; class=&quot;table&quot;&gt;
+    &lt;RowTemplate&gt;
+        &lt;UIListColumn HeaderTitle=&quot;Date&quot;&gt;@context.Date.ToShortDateString()&lt;/UIListColumn&gt;
+        &lt;UIListColumn HeaderTitle=&quot;Temp &amp;deg; C&quot;&gt;@context.TemperatureC&lt;/UIListColumn&gt;
+        &lt;UIListColumn HeaderTitle=&quot;Temp &amp;deg; F&quot;&gt;@context.TemperatureF&lt;/UIListColumn&gt;
+        &lt;UIListColumn HeaderTitle=&quot;Summary&quot;&gt;@context.Summary&lt;/UIListColumn&gt;
+        &lt;UIListColumn HeaderTitle=&quot;Detail&quot;&gt;@context.Name&lt;/UIListColumn&gt;
+    &lt;/RowTemplate&gt;
+&lt;/UIListControl&gt;
+</code></pre>
+<pre><code class="language-csharp">@code {
+    [Inject] BlazorDB.Core.WeatherForecastViewService ViewService { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await ViewService.GetRecordsAsync();
+    }
+}
+</code></pre>
+<h2 id="nomenclature">Nomenclature</h2>
+<p>The word &quot;Page&quot; creates serious confusion word in Blazor and all SPA frameworks.  It's used to describe different things in different contexts.  Look at the code above - <code>@page &quot;/fetchdata&quot; </code>.  Is <code>FetchData</code> really a web page?  In my book, no.  There's only one (Web) Page in a SPA - the startup page.  From then on the SPA changes out and manipulates the DOM in that page.  The browser doesn't reload anything.</p>
+<p>Throughout this set of articles the following nomenclature is used:</p>
+<ol>
+<li><strong>Page</strong> is a web page that the browser loads.  There's one page per SPA.</li>
+<li><strong>RouteView</strong> is the component that gets loaded when the &quot;route&quot; changes.  <code>RouteView</code> is the name of the component that's responsible in <code>App</code> for changing out the component associated with a specific route. <code>Index</code>, <code>Counter</code>, <code>FetchData</code> are RouteViews.</li>
+<li><strong>Form</strong> is a high level component that does a &quot;unit of work&quot; - display a list of records, edit a record, enter out user information.  Forms are built from controls, not markup.  The WeatherForecast list is a form.</li>
+<li><strong>Control</strong> is a low level component that builds out the html markup.  Controls can contains controls.  A row component in the WeatherForecast list is a control.</li>
+</ol>
+<h2 id="blazr.primer.ui">Blazr.Primer.UI</h2>
+<h3 id="imports">Imports</h3>
+<p>Update `Imports.razor</p>
+<pre><code>@using System.Net.Http
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Forms
+@using Microsoft.AspNetCore.Components.Routing
+@using Microsoft.AspNetCore.Components.Web
+@using Microsoft.AspNetCore.Components.Web.Virtualization
+@using Microsoft.JSInterop
+@using Blazr.Primer.UI.Components
+@using Blazr.Primer.Core
+@using Blazr.Primer.UI.Components
+@using Blazr.Primer.UI.Forms
+</code></pre>
+<h3 id="base-controls-and-utilities">Base Controls and Utilities</h3>
+<p>We need a base UI class to implement some common functionality:</p>
+<pre><code class="language-csharp">using Microsoft.AspNetCore.Components;
+using System.Collections.Generic;
+using System.Linq;
+
+namespace Blazr.Primer.UI.Components
+{
+    public abstract class UIComponentBase : ComponentBase
+    {
+        [Parameter] public bool Show { get; set; } = true;
+        [Parameter] public RenderFragment ChildContent { get; set; }
+        [Parameter(CaptureUnmatchedValues = true)] public IDictionary&lt;string, object&gt; UserAttributes { get; set; } = new Dictionary&lt;string, object&gt;();
+        protected virtual List&lt;string&gt; UnwantedAttributes { get; set; } = new List&lt;string&gt;();
+
+        protected Dictionary&lt;string, object&gt; SplatterAttributes
+        {
+            get
+            {
+                var list = new Dictionary&lt;string, object&gt;();
+                foreach (var item in UserAttributes)
+                {
+                    if (!UnwantedAttributes.Any(item1 =&gt; item1.Equals(item.Key)))
+                        list.Add(item.Key, item.Value);
+                }
+                return list;
+            }
+        }
+    }
+}
+</code></pre>
+<ol>
+<li><code>Show</code> can be used to show or hide the components in markup.</li>
+<li><code>ChildContent</code> is the content betwween the opening and closing tags for the component. In <code>&lt;MyComponent&gt;&lt;span&gt;Hello&lt;/span&gt;&lt;/MyComponent&gt;</code>, <code>&lt;span&gt;Hello&lt;/span&gt;</code> is the ChildContent.</li>
+<li><code>UserAttributes</code> are all the attributes added to the component that are not <code>Parameters</code>. In <code>&lt;MyComponent class=&quot;my-class&quot;&gt;&lt;span&gt;Hello&lt;/span&gt;&lt;/MyComponent&gt;</code>, <code>class=&quot;my-class&quot;</code> is an unmatched attribute.</li>
+<li><code>UnwantedAttributes</code> lets you define a list of attributes you want to remove from the attribute list.  If you define your own <code>class</code> and want to discard any <code>class</code> component specified <code>class</code>, add <code>class</code> to the <code>UnwantedAttributes</code> list.</li>
+<li><code>SplatterAttributes</code> are the <code>UserAttributes</code> minus the <code>UnwantedAttributes</code>.  We'll see it in use later.</li>
+</ol>
+<h4 id="cssbuilder">CSSBuilder</h4>
+<p>A common task in a UI component is building the Css class.</p>
+<p><code>CSSBuilder</code> uses the builder pattern to collect and then output a class string.</p>
+<pre><code class="language-csharp">// File: Blazr.Primer.UI.Components/Component/Base/CSSBuilder.cs
+using System.Collections.Generic;
+using System.Text;
+using System.Linq;
+
+namespace Blazr.Primer.UI.Components
+{
+    public class CSSBuilder
+    {
+        private Queue&lt;string&gt; _cssQueue = new Queue&lt;string&gt;();
+
+        public static CSSBuilder Class(string cssFragment = null)
+        {
+            var builder = new CSSBuilder(cssFragment);
+            return builder.AddClass(cssFragment);
+        }
+
+        public CSSBuilder(string cssFragment)
+            =&gt; AddClass(cssFragment);
+
+        public CSSBuilder AddClass(string cssFragment)
+        {
+            if (!string.IsNullOrWhiteSpace(cssFragment)) _cssQueue.Enqueue(cssFragment);
+            return this;
+        }
+
+        public CSSBuilder AddClass(IEnumerable&lt;string&gt; cssFragments)
+        {
+            if (cssFragments != null)
+                cssFragments.ToList().ForEach(item =&gt; _cssQueue.Enqueue(item));
+            return this;
+        }
+
+        public CSSBuilder AddClass(string cssFragment, bool WhenTrue)
+            =&gt; WhenTrue ? this.AddClass(cssFragment) : this;
+
+        public CSSBuilder AddClass(string trueCssFragment, string falseCssFragment, bool WhenTrue)
+            =&gt; WhenTrue ? this.AddClass(trueCssFragment) : this.AddClass(falseCssFragment);
+
+        public CSSBuilder AddClassFromAttributes(IReadOnlyDictionary&lt;string, object&gt; additionalAttributes)
+        {
+            if (additionalAttributes != null &amp;&amp; additionalAttributes.TryGetValue(&quot;class&quot;, out var val))
+                _cssQueue.Enqueue(val.ToString());
+            return this;
+        }
+
+        public CSSBuilder AddClassFromAttributes(IDictionary&lt;string, object&gt; additionalAttributes)
+        {
+            if (additionalAttributes != null &amp;&amp; additionalAttributes.TryGetValue(&quot;class&quot;, out var val))
+                _cssQueue.Enqueue(val.ToString());
+            return this;
+        }
+
+        public string Build(string CssFragment = null)
+        {
+            if (!string.IsNullOrWhiteSpace(CssFragment)) _cssQueue.Enqueue(CssFragment);
+            if (_cssQueue.Count == 0)
+                return string.Empty;
+            var sb = new StringBuilder();
+            foreach (var str in _cssQueue)
+            {
+                if (!string.IsNullOrWhiteSpace(str)) sb.Append($&quot; {str}&quot;);
+            }
+            return sb.ToString().Trim();
+        }
+    }
+}
+</code></pre>
+<h3 id="list-components">List Components</h3>
+<h4 id="uilistcolumn">UIListColumn</h4>
+<p><code>UIListColumn</code> builds out the header and data rows.</p>
+<ol>
+<li>If <code>IsHeader</code> is cascaded and <code>true</code> it builds the header row.</li>
+<li>If <code>IsMaxColumn</code> is set it builds out a column with overflow control.</li>
+<li>With no overrides, it builds out a standard <code>td</code> Column.</li>
+</ol>
+<pre><code class="language-csharp">// File: Blazr.Primer.UI.Components/Components/ListControls/UIListColumn.razor.cs
+using Microsoft.AspNetCore.Components;
+using System.Collections.Generic;
+
+namespace Blazr.Primer.UI.Components
+{
+    public partial class UIListColumn : UIComponentBase
+    {
+        [CascadingParameter(Name = &quot;IsHeader&quot;)] public bool IsHeader { get; set; }
+        [Parameter] public bool IsMaxColumn { get; set; }
+        [Parameter] public string HeaderTitle { get; set; }
+        [Parameter] public bool IsHeaderNoWrap { get; set; }
+
+        private bool isMaxRowColumn =&gt; IsMaxColumn &amp;&amp; !this.IsHeader;
+        private bool isNormalRowColumn =&gt; !IsMaxColumn &amp;&amp; !this.IsHeader;
+        protected override List&lt;string&gt; UnwantedAttributes { get; set; } = new List&lt;string&gt;() { &quot;class&quot; };
+
+        private string HeaderCSS
+            =&gt; CSSBuilder.Class()
+                .AddClass(&quot;header-column-nowrap&quot;, &quot;header-column&quot;, IsHeaderNoWrap)
+                .AddClass(&quot;align-baseline&quot;)
+                .Build();
+    }
+}
+</code></pre>
+<pre><code class="language-html">// File: Blazr.Primer.UI.Components/Components/ListControls/UIistColumn.razor
+@namespace Blazr.Primer.UI.Components
+@inherits UIComponentBase
+
+@if (this.IsHeader)
+{
+    &lt;th class=&quot;@this.HeaderCSS&quot;&gt;
+        @((MarkupString)this.HeaderTitle)
+    &lt;/th&gt;
+}
+else if (this.isMaxRowColumn)
+{
+    &lt;td class=&quot;max-column&quot; @attributes=&quot;this.SplatterAttributes&quot;&gt;
+        &lt;div class=&quot;grid-overflow&quot;&gt;
+            &lt;div class=&quot;grid-overflowinner&quot;&gt;
+                @ChildContent
+            &lt;/div&gt;
+        &lt;/div&gt;
+    &lt;/td&gt;
+}
+else
+{
+    &lt;td class=&quot;data-column&quot; @attributes=&quot;this.SplatterAttributes&quot;&gt;
+        @this.ChildContent
+    &lt;/td&gt;
+}
+</code></pre>
+<pre><code class="language-css">// File: Blazr.Primer.UI.Components/Components/ListControls/UIistColumn.razor.css
+.data-column {
+    max-width: 30%;
+}
+
+.max-column {
+    width:50%;
+}
+
+.grid-overflow {
+    display: flex;
+}
+
+.grid-overflowinner {
+    flex: 1;
+    width: 1px;
+    overflow-x: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.header-column-nowrap {
+    white-space: nowrap;
+}
+</code></pre>
+<h4 id="uilistcontrol">UIListControl</h4>
+<p><code>UIListControl</code> builds out the table framework.</p>
+<ol>
+<li>The <code>RowTemplate</code> has a <code>TRecord</code> context.</li>
+<li>The builder uses the <code>RowTemplate</code> to build out the header by cascading <code>IsHeader</code> to the template.  It passes the <code>RowTemplate</code> a default instance of <code>TRecord</code>.</li>
+<li>Data is only displayed when <code>IsLoaded</code> is true.</li>
+</ol>
+<pre><code class="language-html">// File: Blazr.Primer.UI.Components/Components/ListControls/UIListControl.razor
+@namespace Blazr.Primer.UI.Components
+@inherits UIComponentBase
+@typeparam TRecord
+
+@if (this.IsLoaded &amp;&amp; this.HasRecords )
+{
+    &lt;table @attributes=&quot;this.SplatterAttributes&quot;&gt;
+        &lt;thead&gt;
+            &lt;CascadingValue Name=&quot;IsHeader&quot; Value=&quot;true&quot;&gt;
+                &lt;tr&gt;
+                    @RowTemplate(default(TRecord))
+                &lt;/tr&gt;
+            &lt;/CascadingValue&gt;
+        &lt;/thead&gt;
+        &lt;tbody&gt;
+            @foreach (var item in this.Records)
+            {
+                &lt;tr&gt;
+                    @RowTemplate(item)
+                &lt;/tr&gt;
+            }
+        &lt;/tbody&gt;
+    &lt;/table&gt;
+}
+else if (this.IsLoaded)
+{
+    &lt;div class=&quot;alert alert-warning&quot;&gt;
+        No Records to Display
+    &lt;/div&gt;
+}
+else
+{
+    &lt;div class=&quot;m-2 p-2&quot;&gt;Loading...&lt;/div&gt;
+}
+@code {
+    [Parameter] public bool IsLoaded { get; set; }
+    [Parameter] public bool HasRecords { get; set; }
+    [Parameter] public RenderFragment&lt;TRecord&gt; RowTemplate { get; set; }
+    [Parameter] public IEnumerable&lt;TRecord&gt; Records { get; set; }
+}
+</code></pre>
+<h3 id="form-and-routeview-components">Form and RouteView Components</h3>
+<h4 id="weatherforecastlistform">WeatherForecastListForm</h4>
+<p><code>WeatherForecastListForm</code> is the form for displaying <code>WeatherForecasts</code>.</p>
+<p>The form:</p>
+<ol>
+<li>Injects the <code>WeatherForecastViewService</code> and call <code>GetRecordsAsync</code> to get the records.</li>
+<li>Uses the <code>UIListControl</code> and <code>UIListColumn</code> components to define the list.</li>
+</ol>
+<pre><code class="language-html">\\ File: Blazr.Primer.UI/Forms/WeatherForecast/WeatherForecastListForm.razor
+@namespace Blazr.Primer.UI.Forms
+
+&lt;UIListControl TRecord=&quot;WeatherForecast&quot; Records=&quot;this.ViewService.Records&quot; IsLoaded=&quot;this.ViewService.HasRecordList&quot; HasRecords=&quot;this.ViewService.HasRecords&quot; class=&quot;table&quot;&gt;
+    &lt;RowTemplate&gt;
+        &lt;UIListColumn HeaderTitle=&quot;Date&quot;&gt;@context.Date.ToShortDateString()&lt;/UIListColumn&gt;
+        &lt;UIListColumn HeaderTitle=&quot;Temp &amp;deg; C&quot;&gt;@context.TemperatureC&lt;/UIListColumn&gt;
+        &lt;UIListColumn HeaderTitle=&quot;Temp &amp;deg; F&quot;&gt;@context.TemperatureF&lt;/UIListColumn&gt;
+        &lt;UIListColumn HeaderTitle=&quot;Summary&quot;&gt;@context.Summary&lt;/UIListColumn&gt;
+        &lt;UIListColumn HeaderTitle=&quot;Detail&quot; IsMaxColumn=&quot;true&quot;&gt;@context.Name&lt;/UIListColumn&gt;
+    &lt;/RowTemplate&gt;
+&lt;/UIListControl&gt;
+
+@code {
+    [Inject] WeatherForecastViewService ViewService { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await ViewService.GetRecordsAsync();
+    }
+}
+</code></pre>
+<h3 id="weatherforcasts">WeatherForcasts</h3>
+<p><code>WeatherForcasts</code> is the RouteView.</p>
+<pre><code class="language-html">// File: BlazorDB.UI.RouteViews/WeatherForecasts.razor
+@page &quot;/WeatherForecasts&quot;
+@page &quot;/wasm/WeatherForecasts&quot;
+&lt;WeatherForecastListForm/&gt;
+</code></pre>
+<h2 id="navigation-update">Navigation Update</h2>
+<p>Add a link to NavMenu</p>
+<pre><code class="language-html">&lt;div class=&quot;@NavMenuCssClass&quot; @onclick=&quot;ToggleNavMenu&quot;&gt;
+    &lt;ul class=&quot;nav flex-column&quot;&gt;
+        ....
+        &lt;li class=&quot;nav-item px-3&quot;&gt;
+            &lt;NavLink class=&quot;nav-link&quot; href=&quot;weatherforecasts&quot;&gt;
+                &lt;span class=&quot;oi oi-list-rich&quot; aria-hidden=&quot;true&quot;&gt;&lt;/span&gt; WeatherForecasts
+            &lt;/NavLink&gt;
+        &lt;/li&gt;
+    &lt;/ul&gt;
+&lt;/div&gt;
+</code></pre>
+<h2 id="testing">Testing</h2>
+<p>We use <strong>bUnit</strong> to test components.  It runs the component in a Renderer environment and gives us access to interact with it, and examine the rendered DOM.</p>
+<p>Add folder <em>Components</em> to <em>BlazorDB.Test</em> and add a <code>WeatherForcastFormTests</code> class.</p>
+<p>See the inline comments for details.</p>
+<pre><code class="language-csharp">sing AngleSharp.Html.Dom;
+using Blazr.Primer.Core;
+using Blazr.Primer.Test;
+using Blazr.Primer.UI.Forms;
+using Bunit;
+using Microsoft.Extensions.DependencyInjection;
+using Moq;
+using Xunit;
+
+namespace Blazr.Primer.Component.Tests
+{
+    public class WeatherForecastFormTests
+    {
+
+        [Fact]
+        public void WeatherForcastListFormShouldDisplayDataRows()
+        {
+            // define : Set up a fixed size record table
+            var rowsToTest = 10;
+            // Gets a List of WeatherForecasts
+            var dataRows = WeatherForecastHelper.CreateRandomWeatherForecastList(rowsToTest);
+            // Mocks a IDataConnector
+            var dataConnectorMock = new Mock&lt;IDataConnector&gt;();
+            // Sets up the Mock to reply to GetRecordsAsync with out datarows
+            dataConnectorMock.Setup(item =&gt;
+                item.GetRecordsAsync&lt;WeatherForecast&gt;())
+               .Returns(WeatherForecastHelper.CreateWeatherForecastListAsync(dataRows));
+
+            // Sets up Test Context to run our component in
+            using var ctx = new TestContext();
+            // Adds the Mock IDataConnector
+            ctx.Services.AddSingleton&lt;IDataConnector&gt;(dataConnectorMock.Object);
+            // Adds a WeatherForecatViewService - this will get the mock IDataConnector injected when it get instanciated.
+            ctx.Services.AddSingleton&lt;WeatherForecastViewService&gt;();
+
+
+            // Act: 
+            // Renders the WeatherForecastListForm component and gets the html DOM
+            var cut = ctx.RenderComponent&lt;WeatherForecastListForm&gt;();
+
+            // Assert:
+            // Get the root node 
+            var content = cut.Nodes[0];
+            // And check it is a Html Table
+            Assert.True(content is IHtmlTableElement);
+            // Get the Table
+            var table = (IHtmlTableElement)content;
+            // Check it has 1 header row
+            Assert.True(table.Head.Rows.Length == 1);
+            // And 5 columns in the header
+            Assert.True(table.Head.Rows[0].Cells.Length == 5);
+            // Check it has rowsToTest rows in the body
+            Assert.True(table.Bodies[0].Rows.Length == rowsToTest);
+            // Get the body rows collection
+            var rows = table.Bodies[0].Rows;
+            for (var row = 0; row &lt; rows.Length; row++)
+            {
+                // Check the row has 5 cells
+                Assert.True(rows[row].Cells.Length == 5);
+                // Check the row Id is the record ID
+                Assert.True(rows[row].Id.Equals(dataRows[row].ID.ToString()));
+                // Check the first cell contains the datarow date value
+                Assert.True(this.GetCellContent(rows[row].Cells[0]).Equals(dataRows[row].Date.ToShortDateString()));
+                // Check the second cell contains the datarow TemperatureC value
+                Assert.True(this.GetCellContent(rows[row].Cells[1]).Equals(dataRows[row].TemperatureC.ToString()));
+                // Check the third cell contains the datarow TemperatureF value
+                Assert.True(this.GetCellContent(rows[row].Cells[2]).Equals(dataRows[row].TemperatureF.ToString()));
+                // Check the fourth cell contains the datarow Summary value
+                Assert.True(this.GetCellContent(rows[row].Cells[3]).Equals(dataRows[row].Summary));
+                // Check the fifth cell contains the datarow Name value
+                Assert.True(this.GetCellContent(rows[row].Cells[4]).Equals(dataRows[row].Name));
+            }
+        }
+
+        [Fact]
+        public void WeatherForcastListFormShouldDisplayNoDataRows()
+        {
+            // define : Set up a fixed size record table
+            var rowsToTest = 0;
+            // Gets a List of WeatherForecasts
+            var dataRows = WeatherForecastHelper.CreateRandomWeatherForecastList(rowsToTest);
+            // Mocks a IDataConnector
+            var dataConnectorMock = new Mock&lt;IDataConnector&gt;();
+            // Sets up the Mock to reply to GetRecordsAsync with out datarows
+            dataConnectorMock.Setup(item =&gt;
+                item.GetRecordsAsync&lt;WeatherForecast&gt;())
+               .Returns(WeatherForecastHelper.CreateWeatherForecastListAsync(dataRows));
+
+            // Sets up Test Context to run our component in
+            using var ctx = new TestContext();
+            // Adds the Mock IDataConnector
+            ctx.Services.AddSingleton&lt;IDataConnector&gt;(dataConnectorMock.Object);
+            // Adds a WeatherForecatViewService - this will get the mock IDataConnector injected when it get instanciated.
+            ctx.Services.AddSingleton&lt;WeatherForecastViewService&gt;();
+
+
+            // Act: 
+            // Renders the WeatherForecastListForm component and gets the html DOM
+            var cut = ctx.RenderComponent&lt;WeatherForecastListForm&gt;();
+
+            // Assert:
+            // Get the root node 
+            var content = cut.Nodes[0];
+            Assert.Contains(&quot;No Records to Display&quot;, content.TextContent.ToString());
+        }
+
+        private string GetCellContent(IHtmlTableCellElement cell)
+            =&gt; cell.ClassName.Contains(&quot;max-column&quot;)
+            ? cell.Children[0].Children[0].InnerHtml
+            : cell.InnerHtml;
+    }
+}
+</code></pre>
+</div></div></div></body></html>
+
+
+
+
+

@@ -15,6 +15,6 @@ public class Inline_Dialog : ArticlesFolderBase
         Category = "Articles",
         Tags = "#Blazor;",
         Description = "A Blazor inline dialog control to lock all page controls except those within the form.",
-        MarkdownFile = $@"Inline-Dialog.md",
+        MarkdownFile = "Inline-Dialog.md",
     };
 }

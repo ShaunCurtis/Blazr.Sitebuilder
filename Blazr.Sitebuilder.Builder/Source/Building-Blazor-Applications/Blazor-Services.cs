@@ -15,7 +15,7 @@ public class Blazor_Services : BuildingBlazorApplicationsFolderBase
         Category = "Posts",
         Tags = "#Blazor;",
         Description = "An examination of Blazor DI and Services.",
-        MarkdownFile = $@"Blazor-Services.md",
+        MarkdownFile = "Blazor-Services.md",
         HideInNavigationLists = false,
     };
 }

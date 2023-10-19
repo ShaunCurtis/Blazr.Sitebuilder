@@ -15,6 +15,6 @@ public class Policy_Based_Authorization : ArticlesFolderBase
         Category = "Articles",
         Tags = "#Blazor;#Auth;",
         Description = "This article describes how to implement policy based authentication in blazor Applications.",
-        MarkdownFile = $@"Policy-Based-Authorization.md",
+        MarkdownFile = "Policy-Based-Authorization.md",
     };
 }

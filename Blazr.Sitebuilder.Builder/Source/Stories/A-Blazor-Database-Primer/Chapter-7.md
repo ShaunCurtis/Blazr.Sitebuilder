@@ -1,14 +1,3 @@
----
-title: Chapter 7 - Adding Sorting and Paging to the List Form
-oneliner: Adding Sorting and Paging to the List Form
-precis: Adding Sorting and Paging to the List Form
-date: 2021-08-13
-published: 2021-08-13
----
-
-# Chapter 7 - Adding Sorting and Paging to the List Form
-
-In this chapter we will add sorting and paging to the WeatherForecast list form.
 
 ## Refactoring the Form
 

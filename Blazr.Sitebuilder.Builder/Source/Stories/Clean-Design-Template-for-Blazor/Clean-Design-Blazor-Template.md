@@ -6,14 +6,6 @@ There are two repositories:
  - [Blazor.Demo](https://github.com/ShaunCurtis/Blazr.Demo) contains the buildable code from which the template is extracted.
  - [Blazor.Demo.Template](https://github.com/ShaunCurtis/Blazr.Demo.Template) contains the template configuration and Template Zip file.
 
-## Project Documents
-
- - [Solution Structure](./stories/Clean-Design-Template-for-Blazor/Clean-Design-Blazor-Template-Solution-Structure.html)
- - [Data Services](./stories/Clean-Design-Template-for-Blazor/Clean-Design-Blazor-Template-DataServices.html)
- - [UI](./stories/Clean-Design-Template-for-Blazor/Clean-Design-Blazor-Template-UI.html)
- - [Solution Setup](./stories/Clean-Design-Template-for-Blazor/Clean-Design-Blazor-Template-Solution-Setup.html)
- - [Testing](./stories/Clean-Design-Template-for-Blazor/Clean-Design-Blazor-Template-Testing.html)
-
 The template demonstrates:
 
 1. A Structured Data/UI design using *Separation Of Concern* principles.

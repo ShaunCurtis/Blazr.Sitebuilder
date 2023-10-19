@@ -10,6 +10,7 @@
 pre {
     padding: .5rem;
     color: white;
+    background-color: rgb(240,240,240);
     background-color: rgb(32,32,32);
     border-radius: 7px;
 }
@@ -59,5 +60,15 @@ blockquote {
     height: 100%;
     width: 100%;
 }
+
+.md-danger {
+    color: #842029;
+    background-color: #f8d7da;
+    border-color: #f5c2c7;
+    padding: 1em;
+    margin: 1em;
+}
+
+
 
   

@@ -15,7 +15,7 @@ public class Blazor_Async_UI_Events : BuildingBlazorApplicationsFolderBase
         Category = "Posts",
         Tags = "#Blazor;",
         Description = "What Async patterns to use for UI events in Blazor.",
-        MarkdownFile = $@"Blazor-Async-UI-Events.md",
+        MarkdownFile = "Blazor-Async-UI-Events.md",
         HideInNavigationLists = false,
     };
 }

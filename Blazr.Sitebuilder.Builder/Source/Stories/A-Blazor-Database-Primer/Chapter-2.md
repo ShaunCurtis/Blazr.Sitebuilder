@@ -1,4 +1,3 @@
-# Chapter 2 - The Data Store and Data Classes
 
 Data is retrieved from data stores into data classes.  We apply some rules to our data classes so we can write a lot of boilerplate code for data handling:
 

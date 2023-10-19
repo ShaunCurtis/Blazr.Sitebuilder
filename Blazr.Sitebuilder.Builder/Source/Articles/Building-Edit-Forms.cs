@@ -15,6 +15,6 @@ public class Building_Edit_Forms : ArticlesFolderBase
         Category = "Articles",
         Tags = "#Blazor;",
         Description = "How to build Blazor Edit Forms that manage state.",
-        MarkdownFile = $@"Building-Edit-Forms.md",
+        MarkdownFile = "Building-Edit-Forms.md",
     };
 }

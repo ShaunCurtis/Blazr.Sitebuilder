@@ -15,6 +15,6 @@ public class Hydra : ArticlesFolderBase
         Category = "Articles",
         Tags = "#Blazor;",
         Description = "How to build a ASPNetCore site that hosts Multiple Blazor Server and WASM SPA sites.",
-        MarkdownFile = $@"Hydra.md",
+        MarkdownFile = "Hydra.md",
     };
 }

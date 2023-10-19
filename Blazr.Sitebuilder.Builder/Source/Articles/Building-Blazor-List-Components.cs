@@ -15,6 +15,6 @@ public class Building_Blazor_List_Components : ArticlesFolderBase
         Category = "Articles",
         Tags = "#Blazor;#Components;",
         Description = "This article looks at how to handle large lists in Blazor, decouple the data from the UI, and use the Notification Pattern to trigger updates in components.",
-        MarkdownFile = $@"Building-Blazor-List-Components.md",
+        MarkdownFile = "Building-Blazor-List-Components.md",
     };
 }

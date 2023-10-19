@@ -4,11 +4,11 @@ using Blazr.SiteBuilder;
 namespace Blazr.Sitebuilder.Builder;
 
 [Route("/stories/Clean-Design-Template-for-Blazor/Clean-Design-Blazor-Template-DataServices")]
-public class Clean_Design_Blazor_Template_DataServices : ArticleBase
+public class Clean_Design_Blazor_Template_DataServices : StoryBase
 {
     public override PageData PageData { get; } = new()
     {
-        Title = "Data Services in the Clean Design Blazor Template",
+        Title = "Data Services",
         PublishDate = new DateOnly(2021, 11, 28),
         LastUpdated = new(2021, 11, 28),
         Author = "Shaun Curtis",

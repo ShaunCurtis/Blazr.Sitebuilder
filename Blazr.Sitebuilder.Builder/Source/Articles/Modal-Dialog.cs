@@ -1,5 +1,4 @@
-﻿using Blazr.Sitebuilder.Builder.Templates;
-using Blazr.SiteBuilder;
+﻿using Blazr.SiteBuilder;
 
 namespace Blazr.Sitebuilder.Builder;
 
@@ -15,6 +14,6 @@ public class Modal_Dialog : ArticlesFolderBase
         Category = "Articles",
         Tags = "#Blazor;#Components;",
         Description = "This article describes how to build a modal dialog for Blazor that you can use with any form.",
-        MarkdownFile = $@"Articles\Modal-Dialog.md",
+        MarkdownFile = "Modal-Dialog.md",
     };
 }

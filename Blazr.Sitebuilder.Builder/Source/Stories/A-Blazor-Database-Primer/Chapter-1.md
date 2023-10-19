@@ -1,4 +1,7 @@
-# Chapter 1 - Project Design and Structure
+
+::: md-danger
+This set of articles and code base is out of date. They don't reflect my current framework. Use them at your risk.
+:::
 
 You've built the out-of-the-box template and played around a little with the code.  You're now ready to start your first application.
 

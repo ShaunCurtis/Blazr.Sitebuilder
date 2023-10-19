@@ -4,7 +4,7 @@ using Blazr.SiteBuilder;
 namespace Blazr.Sitebuilder.Builder;
 
 [Route("/stories/Clean-Design-Template-for-Blazor/Index")]
-public class Clean_Design_Blazor_Template : ArticleBase
+public class Clean_Design_Blazor_Template : StoryBase
 {
     public override PageData PageData { get; } = new()
     {
