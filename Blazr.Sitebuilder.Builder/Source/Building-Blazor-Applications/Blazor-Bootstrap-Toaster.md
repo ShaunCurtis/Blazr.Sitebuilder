@@ -1,4 +1,3 @@
-## Introduction
 
 This article shows how to build a simple Bootstrap Toaster in Blazor.
 

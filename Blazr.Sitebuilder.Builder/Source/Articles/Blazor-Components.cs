@@ -15,6 +15,6 @@ public class Blazor_Components : ArticlesFolderBase
         Category = "Articles",
         Tags = "#Blazor;",
         Description = "This article take a detailed look at the anatomy of a component and how it interacts with the rendering process.",
-        MarkdownFile = $@"Hydra.md",
+        MarkdownFile = $@"Blazor-Components.md",
     };
 }

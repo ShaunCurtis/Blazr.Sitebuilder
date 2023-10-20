@@ -35,7 +35,7 @@
 			<a href="/Rants" class="btn btn-link text-light">Rants</a>
 			<a href="/Articles" class="btn btn-link text-light">Articles</a>
 			<a href="/Stories" class="btn btn-link text-light">Stories</a>
-			<a href="/Tags" class="btn btn-link text-light">Tags</a></section></header>
+			<a href="/about.html" class="btn btn-link text-light">About</a></section></header>
 
 	<div class="container-fluid"><div class="row"><div class="col-12 col-sm-3 col-lg-2 bg-light pt-2"><div class="article-info p-2"><div class="mb-2">Published: 11-Nov-2020</div>
                 <div class="mb-2">Updated: 16-Feb-2021</div>
@@ -48,43 +48,34 @@
 <li class="TOC-item TOC-item-1" >
 <ul class="TOC TOC-1" >
 <li class="TOC-item TOC-item-2" >
-<a class="TOC-link" href="#code-repository">Code Repository</a>
+<a class="TOC-link" href="#what-is-a-component">What is a Component?</a>
 </li>
 <li class="TOC-item TOC-item-2" >
-<a class="TOC-link" href="#misconceptions">Misconceptions</a>
+<a class="TOC-link" href="#the-renderer-and-the-render-tree">The Renderer and the Render Tree</a>
 </li>
 <li class="TOC-item TOC-item-2" >
-<a class="TOC-link" href="#the-web-server">The Web Server</a>
+<a class="TOC-link" href="#the-client-application">The Client Application</a>
 </li>
 <li class="TOC-item TOC-item-2" >
-<a class="TOC-link" href="#blazor-wasm">Blazor WASM</a>
+<a class="TOC-link" href="#components">Components</a>
 </li>
 <li class="TOC-item TOC-item-2" >
-<a class="TOC-link" href="#blazor-server">Blazor Server</a>
+<a class="TOC-link" href="#componentbase">ComponentBase</a>
 </li>
 <li class="TOC-item TOC-item-2" >
-<a class="TOC-link" href="#building-the-hydra-site">Building the Hydra Site</a>
+<a class="TOC-link" href="#the-render-process">The Render Process</a>
 </li>
 <li class="TOC-item TOC-item-2" >
-<a class="TOC-link" href="#hydra.red">Hydra.Red</a>
+<a class="TOC-link" href="#component-events">Component Events</a>
 </li>
 <li class="TOC-item TOC-item-2" >
-<a class="TOC-link" href="#hydra.steel">Hydra.Steel</a>
+<a class="TOC-link" href="#some-important-less-documented-information-and-lessons-learned">Some Important Less Documented Information and Lessons Learned</a>
 </li>
 <li class="TOC-item TOC-item-2" >
-<a class="TOC-link" href="#hydra.web">Hydra.Web</a>
+<a class="TOC-link" href="#building-components">Building Components</a>
 </li>
 <li class="TOC-item TOC-item-2" >
-<a class="TOC-link" href="#hydra.blue">Hydra.Blue</a>
-</li>
-<li class="TOC-item TOC-item-2" >
-<a class="TOC-link" href="#hydra.grey">Hydra.Grey</a>
-</li>
-<li class="TOC-item TOC-item-2" >
-<a class="TOC-link" href="#hydra.web-1">Hydra.Web</a>
-</li>
-<li class="TOC-item TOC-item-2" >
-<a class="TOC-link" href="#wrap-up">Wrap Up</a>
+<a class="TOC-link" href="#some-observations">Some Observations</a>
 </li>
 </ul>
 </li>
@@ -95,616 +86,52 @@
 			
 			<div class="col-12 col-sm-9 col-lg-10 p-2"><div class="pt-2 pb-2 border-bottom mb-4 text-primary"><h1>A Deep Dive into Components</h1>
             <div><small>This article take a detailed look at the anatomy of a component and how it interacts with the rendering process.</small></div></div>
-    <p>Building a green field site with a new framework is great, but we don't all get that luxury. What about those with a classic Razor/Server Page ASPNetCore site wanting to migrate where the Big Bang isn't feasible.  You want to run most of your site in classic mode and migrate sections over in bite sized chunks.  Maybe run a pilot on a small section first.</p>
-<p>This article shows you how to do just that.  I'll describe how Blazor Server, WASM and Razor sites/applications interact, and how you can run them together on a single AspNetCore web site.</p>
-<p>The first half of this article examines the technical challenges, looking in depth at how some key bits of Blazor work.  In the second half we'll look at a simple practical deployment using the out-of-the-box project templates.</p>
-<p><img src="https://shauncurtis.github.io/articles/assets/Hydra/Hydra.png" alt="Hydra" /></p>
-<h2 id="code-repository">Code Repository</h2>
-<p><strong>Hydra</strong> is an implementation of the concepts discussed here and the code will be used extensively in the discussions.</p>
-<p>The code is in two repositories</p>
-<ul>
-<li><a href="https://github.com/ShaunCurtis/Examples">CEC.Blazor.Examples</a> is the main repository.  It contains the code for several articles including this one and is the source code repo for the <a href="https://cec-blazor-examples.azurewebsites.net/">Demo Site on Azure</a>.  It uses the methods discussed in this article to host multiple WASM and Server SPAs on one web site.  Mongrel is the specific site for this article.</li>
-<li><a href="https://github.com/ShaunCurtis/Hydra">Hydra</a> contains the code for the second half of this article.  A version of Hydra runs on the Demo Site.</li>
-</ul>
-<h2 id="misconceptions">Misconceptions</h2>
-<p>Before we start, we need to get one key concept straight.  Blazor Server and Blazor WASM are <strong>APPLICATIONS</strong>: they are not web sites.  Throughout this articles I'll refer to the as SPAs [Single Page Applications].  The Razor site is the only conventional <strong>Web Site</strong>.</p>
-<p>The only true web page in a Blazor SPA is the startup page.  Once started it's an application.  It doesn't do posts and gets for pages.</p>
-<p><strong>Blazor Pages</strong> aren't web pages, they're components.</p>
-<h2 id="the-web-server">The Web Server</h2>
-<p>If you look at the code repository and the test site you'll see a project call <em>Hydra</em>.  This is the host web site.  It's an out-of-the-box AspNetCore Pages template web site.</p>
-<p>Lets look at <em>Startup.cs</em>.</p>
-<p>AspNetCore has an Inversion Of Control/Dependancy Injection <em>Services</em> container defined by <code>IServiceCollection</code>.  If you are unsure what an IOC/DI container is, then do some background reading.  We configure this in <code>ConfigureServices</code>.</p>
-<pre><code class="language-csharp">    // This method gets called by the runtime. Use this method to add services to the container.
-    public void ConfigureServices(IServiceCollection services)
-    {
-        services.AddRazorPages();
-        services.AddControllersWithViews();
-        services.AddServerSideBlazor();
-        services.AddServerSideHttpClient();
-        services.AddSingleton&lt;IWeatherForecastService, WeatherForecastService&gt;();
-        services.AddCECRouting();
-    }
+    <h2 id="what-is-a-component">What is a Component?</h2>
+<p>Microsoft defines:</p>
+<p><em>A component is a self-contained portion of user interface (UI) with processing logic to enable dynamic behavior. Components can be nested, reused, shared among projects, and used in MVC and Razor Pages apps.</em></p>
+<p><em>Components are implemented using a combination of C# and HTML markup in Razor component files with the .razor file extension.</em></p>
+<p>What is does rather than what it is, and not all strictly true.</p>
+<p>From a programming perspective, a component is a simply a class that implements the <code>IComponent</code> interface.  Nothing more.  It comes to life when it's attached to a <code>RenderTree</code>, the component tree used by a <code>Renderer</code> to build and update.  The <code>IComponent</code> interface proves the <code>Renderer</code>s  interface to communicate with and receive communication from a component.</p>
+<p>Before we dive into components we need to look at the <code>Renderer</code> and <code>RenderTree</code>, and the application setting.</p>
+<h2 id="the-renderer-and-the-render-tree">The Renderer and the Render Tree</h2>
+<p>A detailed description of how the <code>Renderer</code> and <code>RenderTree</code> work is beyond the scope of this article, but you need a basic grasp of the concepts to understand the rendering process.</p>
+<p>The <code>Renderer</code> and <code>RenderTree</code> reside in the Client Application in WASM and in the SignalR Hub Session in Server, i.e. one per connected Client Application.</p>
+<p>The UI - defined by html code in the DOM [Document Object Model] - is represented in the application as a <code>RenderTree</code> and managed by a <code>Renderer</code>. Think of the <code>RenderTree</code> as a tree with one or more components attached to each branch. Each component is a C# class that implements the <code>IComponent</code> interface.  The <code>Renderer</code> has a <code>RenderQueue</code> which runs code to update the UI.  Components submit <code>RenderFragments</code> for the <code>Renderer</code> to run to update the <code>RenderTree</code> and the UI.  The <code>Renderer</code> uses a diffing process to detect changes in the DOM caused by <code>RenderTree</code> updates, and passes these to the client code to implement in the Browser DOM and update the displayed page.</p>
+<p>The diagram below is a visual representation of the render tree for the out-of-the-box Blazor template.</p>
+<p><img src="https://shauncurtis.github.io/articles/assets/Blazor-Components/Root-Render-Tree.png" alt="Root Render Tree" /></p>
+<h2 id="the-client-application">The Client Application</h2>
+<h3 id="blazor-server">Blazor Server</h3>
+<p>Blazor Server defines the <code>&lt;app&gt;</code> component in the initial server/html page.  This looks like this:</p>
+<pre><code class="language-html">&lt;app&gt;
+    &lt;component type=&quot;typeof(App)&quot; render-mode=&quot;ServerPrerendered&quot; /&gt;
+&lt;/app&gt;
 </code></pre>
-<p>What you see are a set of services configured directly - such as the <code>WeatherForecastService</code> and calls to a set of ServiceCollectionExtensions like <code>AddServerSideBlazor</code> and <code>AddCECRouting</code>.</p>
-<p>To de-mystify these, the code for <code>AddCECRouting</code> is shown below.</p>
-<pre><code class="language-csharp">public static class ServiceCollectionExtensions
-{
-    public static IServiceCollection AddCECRouting(this IServiceCollection services)
-    {
-        services.AddScoped&lt;RouterSessionService&gt;();
-        return services;
-    }
-}
+<p><code>type</code> defines the route component class - in this case <code>App</code> and <code>render-mode</code> defines how the initial server-side render process runs.  You can read about that elsewhere.  The only important bit to understand is that if it pre-renders, the page is rendered twice on the initial load - once by the server to build a static version of the page, and then a second time by the browser client code to build the live version of the page.</p>
+<p>The browser client code gets loaded by:</p>
+<pre><code class="language-html">&lt;script src=&quot;_framework/blazor.server.js&quot;&gt;&lt;/script&gt;
 </code></pre>
-<p>ServiceCollectionExtensions are just ways to configure all the services for a specific function under one roof.  They are Extension methods for <code>IServiceCollection</code>.  <code>AddServerSideBlazor</code> just adds all the necessary services for Blazor Server, such as <code>NavigationManager</code> and <code>IJSRuntime</code>.</p>
-<p><code>AddServerSideHttpClient</code> is defined in CEC.Blazor.Hydra/Extensions if you want to see a ServiceCollectionExtension implementation.</p>
-<p><code>Configure</code> sets up the <em>Middleware</em> run by the web server.  We'll break this down into sections.</p>
-<p>The first section is ASPNetCore web server standard implementation.</p>
-<pre><code class="language-csharp">public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
-{
-    if (env.IsDevelopment())
-    {
-        app.UseDeveloperExceptionPage();
-    }
-    else
-    {
-        app.UseExceptionHandler(&quot;/Error&quot;);
-        // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
-        app.UseHsts();
-    }
-    app.UseHttpsRedirection();
-    app.UseStaticFiles();
-
-</code></pre>
-<p>Next we define a <code>IApplicationBuilder.MapWhen</code> for each WASM SPA.  I've shown the one for <em>red</em> here.  These define the middleware to run for specific site segments - defined by the Url.  This is for the Red WASM.  Note:</p>
-<ol>
-<li>We configure <code>UseBlazorFrameworkFiles</code> to a specific Url segment- we'll look at the significance of this in the WASM section below. It means the frameworks file path will be <em>wwwroot/red/_framework/</em>, providing a unique path for this WASM SPA.</li>
-<li>The fallback Page for the segment is <code>/_Red.cshtml</code>.</li>
-</ol>
-<pre><code class="language-csharp">
-    app.MapWhen(ctx =&gt; ctx.Request.Path.StartsWithSegments(&quot;/red&quot;), app1 =&gt;
-    {
-        app1.UseBlazorFrameworkFiles(&quot;/red&quot;);
-        app1.UseRouting();
-        app1.UseEndpoints(endpoints =&gt;
-        {
-            endpoints.MapFallbackToPage(&quot;/red/{*path:nonfile}&quot;, &quot;/_Red&quot;);
-        });
-    });
-
-</code></pre>
-<p>Finally we define the default segment middleware.  Note:</p>
-<ol>
-<li>We define <code>MapBlazorHub</code> to map all SignalR traffic to the Blazor Hub.</li>
-<li>We define a set of segment specific fallback pages for each Blazor Server SPA with the specific startup page for the SPA.</li>
-</ol>
-<pre><code class="language-csharp">    app.UseRouting();
-    app.UseBlazorFrameworkFiles();
-    app.UseEndpoints(endpoints =&gt;
-    {
-        endpoints.MapBlazorHub();
-        endpoints.MapRazorPages();
-        endpoints.MapFallbackToPage(&quot;/examplesserver/{*path:nonfile}&quot;, &quot;/_ExamplesServer&quot;);
-        endpoints.MapFallbackToPage(&quot;/grey/{*path:nonfile}&quot;, &quot;/_Grey&quot;);
-        endpoints.MapFallbackToPage(&quot;/blue/{*path:nonfile}&quot;, &quot;/_Blue&quot;);
-        endpoints.MapFallbackToPage(&quot;/routing/{*path:nonfile}&quot;, &quot;/_Routing&quot;);
-        endpoints.MapFallbackToPage(&quot;/Index&quot;);
-    });
-}
-</code></pre>
-<h2 id="blazor-wasm">Blazor WASM</h2>
-<p>Each WASM SPA must have a separate project. <code>&lt;Project Sdk=&quot;Microsoft.NET.Sdk.BlazorWebAssembly&quot;&gt;</code>
-declares the project as a WASM SPA and instructs the compiler to build the project as a WASM SPA.  There's a single <code>RootComponent</code> defined in <code>Program</code>.</p>
-<pre><code class="language-csharp">public class Program
-{
-    public static async Task Main(string[] args)
-    {
-        var builder = WebAssemblyHostBuilder.CreateDefault(args);
-        builder.RootComponents.Add&lt;WASMRedApp&gt;(&quot;#app&quot;);
-
-        builder.Services.AddScoped(sp =&gt; new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
-
-        await builder.Build().RunAsync();
-    }
-}
-</code></pre>
-<p>You don't need to stick with <code>app</code>.  This declaration defines a different class to <code>App</code>.  It basically says render the component of <code>TComponent</code> in the HTML tag with <code>id</code> of <code>app</code>.  Don't be misled by <code>RootComponents</code> and <code>Add</code>.  Declare one.  You can declare more than one, but they must all be present on the rendered page, so it's fairly pointless: Layouts achieve the same result with far more flexibility.</p>
-<p>The key to multi SPA hosting is specifying a unique <code>StaticWebAssetBasePath</code> in the project definition file.</p>
-<pre><code class="language-xml">  &lt;PropertyGroup&gt;
-    &lt;StaticWebAssetBasePath&gt;red&lt;/StaticWebAssetBasePath&gt;
-  &lt;/PropertyGroup&gt;
-</code></pre>
-<p>Remember we used <code>UseBlazorFrameworkFiles(&quot;/red&quot;)</code> in the middleware map in <code>Startup,cs</code>.  This is where things tie together.  This is case sensitive!</p>
-<p><img src="https://shauncurtis.github.io/articles/assets/Hydra/Mongrel-Red-Project.png" alt="Mongrel Red Project" /></p>
-<p>The project view above shows all the files in the project.</p>
-<ol>
-<li>The Layout and navigation are common to all the Mongrel projects so have moved up to the shared library.</li>
-<li><code>App.razor</code> has moved into <em>Components</em> and been renamed to make it unique.  I don't like <code>Apps</code> all over the place.</li>
-<li><em>wwwroot</em> has gone as the startup <code>index.html</code> has moved up to Hydra, as has the CSS.</li>
-</ol>
-<p>Once compiled the <em>bin</em> looks like this:</p>
-<p><img src="https://shauncurtis.github.io/articles/assets/Hydra/Mongrel-Red-bin.png" alt="Mongrel Red Project" /></p>
-<p>Note the <em>_framework</em> directory containing <code>blazor.webaseembly.js</code> and <code>blazor.boot.json</code>.  When this project is referenced by Hydra this directory will be available as <em>red/_framework</em>.  Without unique <code>StaticWebAssetBasePath</code>s all SPA's would be mappsed to <em>_framework</em>.</p>
-<p>The &quot;Startup&quot; page for the SPA is on Hydra. <em>_Red.cshtml</em></p>
-<pre><code class="language-html">@page &quot;/spared&quot;
-@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
-@{
-    Layout = null;
-}
-
-&lt;!DOCTYPE html&gt;
-&lt;html&gt;
-&lt;head&gt;
-    &lt;meta charset=&quot;utf-8&quot; /&gt;
-    &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no&quot; /&gt;
-    &lt;title&gt;Mongrel.WASM.RED&lt;/title&gt;
-    &lt;base href=&quot;/red/&quot; /&gt;
-    &lt;link href=&quot;/css/site.css&quot; rel=&quot;stylesheet&quot; /&gt;
-    &lt;link href=&quot;/CEC.Blazor.Hydra.styles.css&quot; rel=&quot;stylesheet&quot; /&gt;
-&lt;/head&gt;
-&lt;body&gt;
-    &lt;div id=&quot;app&quot;&gt;
-        &lt;div class=&quot;mt-4&quot; style=&quot;margin-right:auto; margin-left:auto; width:100%;&quot;&gt;
-            &lt;div class=&quot;loader&quot;&gt;&lt;/div&gt;
-            &lt;div style=&quot;width:100%; text-align:center;&quot;&gt;&lt;h4&gt;Web Application Loading&lt;/h4&gt;&lt;/div&gt;
-        &lt;/div&gt;
-    &lt;/div&gt;
-
-    &lt;script src=&quot;/red/_framework/blazor.webassembly.js&quot;&gt;&lt;/script&gt;
-&lt;/body&gt;
-&lt;/html&gt;
-</code></pre>
-<p>Note:</p>
-<ol>
-<li>The <code>base</code> is set to <code>&quot;/red/&quot;</code>.  <strong>Important</strong> - You need to leading and trailing slashes.</li>
-<li><code>site.css</code> is a SASS built CSS file.</li>
-<li><code>CEC.Blazor.Hydra.styles.css</code> is the system SASS built CSS incorporating all the reference projects component styles.</li>
-<li>We define the specific webassembly script <code>src=&quot;/red/_framework/blazor.webassembly.js&quot;</code>.  It looks for it's configuration file in <em>{base}/_framework/blazor.boot.json</em>, where <em>{base}</em> is defined in <code>&lt;base href=&quot;&quot;&gt;</code>. <em>./blazor.boot.json</em> is the configuration file for loading the WASM executables.  It's important to realise that <em>base</em> needs to have a trailing &quot;/&quot; for this to work.</li>
-</ol>
-<p>The final bit of the jigsaw is the mapping in Hydra's <code>Startup.cs</code>.  The middleware is configured with the correct <em>BlazorFrameworkFiles</em> and any get requests to <em>/red/</em> are directed to <em>/_Red.cshtml</em>.</p>
-<p>Once the SPA starts, any navigation to known Urls within the application are routed by the SPA.  Any external Urls are Http gets.  In Hydra and Urls to <em>/red/</em>* are directed to <em>/_Red.cshtml</em>.  So <em>/red/counter</em> will start the SPA on the counter page, while  <em>/red/nopage</em> will load the SPA but you will see the &quot;Nothing at this Address&quot; message.</p>
-<p>You need to be a little careful with the route &quot;/&quot;.  I prefer to set the SPA home page up with a route &quot;/index&quot; and always reference it that way.</p>
-<h2 id="blazor-server">Blazor Server</h2>
-<p>A Blazor Server SPA is configured a little differently.  We don't need a <code>Program.cs</code> with a single entry point.  We configure the startup page to load any class implementing <code>IComponent</code>, so our entry point can come from anywhere.  For code and route management define a Razor Library project per SPA: keep everything compartmentalized.</p>
-<p>We've already seen the configuration of the main site's <code>Startup.cs</code>, I included the Blazor bit in the discussion above.  It:</p>
-<ol>
-<li>Adds the specific Blazor Services by calling <code>services.AddServerSideBlazor()</code> in <code>ConfigureServices</code>.</li>
-<li>Adds the Blazor Hub Middleware by calling <code>endpoints.MapBlazorHub()</code> in <code>Configure</code>.</li>
-</ol>
-<p>The key bot to understand here is there's one Blazor hub for all the SPAs.  Load all the services for each SPA in <code>ConfigureServices</code>.  This does place some restrictions and controls on what you can and can't run together, but for most instances this won't be an issue.  Remember Services are only loaded as needed, and cleaned up as they are disposed.  Make sure you get the scope of your service right.</p>
-<p>Each Server SPA has an <em>endpoint</em>.  You don't need to configure these with <code>MapWhen</code> as they all use the same middleware train.Thet're all defined in the default <code>UseEndpoints</code>.  You've seen these already in <code>Startup.cs</code>.</p>
-<p>The client side of the Server SPA is again defined as a single page.  Unlike the WASM page, which is static Html wrapped in a Razor page, the Server SPA page is a razor page.  It has a <code>Component</code> entry point that is read by the TagHelper and processed by the server.  What Razor does with the page is dictated by <code>rendermode</code>.</p>
-<pre><code class="language-html">@page &quot;/spagrey&quot;
-@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
-@{
-    Layout = null;
-}
-&lt;!DOCTYPE html&gt;
-&lt;html&gt;
-&lt;head&gt;
-    &lt;meta charset=&quot;utf-8&quot; /&gt;
-    &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no&quot; /&gt;
-    &lt;title&gt;Mongrel.Server.GREY&lt;/title&gt;
-    &lt;base href=&quot;/grey&quot; /&gt;
-    &lt;link href=&quot;/css/site.css&quot; rel=&quot;stylesheet&quot; /&gt;
-    &lt;link href=&quot;/CEC.Blazor.Hydra.styles.css&quot; rel=&quot;stylesheet&quot; /&gt;
-&lt;/head&gt;
-&lt;body&gt;
-    &lt;component type=&quot;typeof(Mongrel.Server.Grey.Components.ServerGreyApp)&quot; render-mode=&quot;ServerPrerendered&quot; /&gt;
-
-    &lt;script src=&quot;_framework/blazor.server.js&quot;&gt;&lt;/script&gt;
-&lt;/body&gt;
-&lt;/html&gt;
-</code></pre>
-<p>Once the browser receives what got produced by the server, it renders the initial static DOM provided and then calls the loaded Javascript.  This where the magic starts.  <code>blazor.server.js</code> loads, reads configuration data incorporated in the page and establishes a session with the BlazorHub over SignalR and requests the root <code>IComponent</code> defined on the page by <code>&lt;component&gt;</code> - normally <code>App</code> defined by <code>App.Razor</code>.  The Blazor middleware, configured on the server by <code>endpoints.MapBlazorHub()</code> receives the request and establishes the session.  The Blazor Hub renders the requested <code>IComponent</code> component tree and passes the changes back over SignalR to the client: on initial re-render this is the whole DOM.  The SPA is now live.  Events happen on the page, get passed back to the Hub Session.  It handles the events and passes any DOM changes back to the client.  Navigation events to known routes get handled by the SPA router: the SPA session persists.  A URL outside known routes causes the SPA Router to submit a full http get for the URL: the SPA session ends.  I watch the page tab in the browser to see if a request is routed or causes a page refresh.</p>
-<p>So what's going on in the SignalR session.  The AspNetCore compiled code library for the website contains all the Blazor component code - they're just standard classes.  The Service container runs the services, again standard classes within the compiled code library.  The heart of the signalR session is the Renderer for the specific SPA session.  It builds and rebuilds the DOM from the ComponentTree.  Consider a Blazor Server SPA as two entities: one running in the Blazor Hub on the Server doing most of the work; the other bit on the client, intercepting events and passing them back to the server, then re-rendering the page with the DOM changes returned. Events client-to-Server, DOM changes Server-to-Client.</p>
-<h2 id="building-the-hydra-site">Building the Hydra Site</h2>
-<p>I've tried to keep this as simple as possible, basing the sites on the out-of-the-box templates.  I've made no attempt to consolidate code into shared libraries.</p>
-<p>Build the starting solution as follows (all are built from the standard VS 2019 templates):</p>
-<ol>
-<li><strong>Hydra.Web</strong> - A Razor MVC project.  This is the start up project.</li>
-<li><strong>Hydra.Grey</strong> - A Razor library project</li>
-<li><strong>Hydra.Blue</strong> - Another Razor library project</li>
-<li><strong>Hydra.Steel</strong> - A Blazor WASM project (standalone - not NetCore hosted)</li>
-<li><strong>Hydra.Red</strong> - A Blazor WASM project (standalone - not NetCore hosted)</li>
-</ol>
-<p><img src="https://shauncurtis.github.io/articles/assets/Hydra/Hydra-Solution.png" alt="Initial Project View" /></p>
-<p>Set <em>Hydra.Web</em> as the startup project.  If you're working along with me run the project to check the Razor project compiles and runs.</p>
-<h4 id="clear-out-the-two-libraries">Clear Out the Two Libraries</h4>
-<p>Clear the following files from the two libraries</p>
-<ul>
-<li><em>wwwroot</em> and contents</li>
-<li><em>Component1.razor</em></li>
-<li><em>ExampleJsInterop.cs</em></li>
-</ul>
-<p>Start with the WASM Projects</p>
-<h2 id="hydra.red">Hydra.Red</h2>
-<p><img src="https://shauncurtis.github.io/articles/assets/Hydra/Hydra-Red.png" alt="Initial Project View" /></p>
-<p>Update the project file.  Note <code>StaticWebAssetBasePath</code> is set to <em>red</em>.</p>
-<pre><code class="language-xml">&lt;Project Sdk=&quot;Microsoft.NET.Sdk.BlazorWebAssembly&quot;&gt;
-
-  &lt;PropertyGroup&gt;
-    &lt;TargetFramework&gt;net5.0&lt;/TargetFramework&gt;
-    &lt;StaticWebAssetBasePath&gt;red&lt;/StaticWebAssetBasePath&gt;
-  &lt;/PropertyGroup&gt;
-
-  &lt;ItemGroup&gt;
-    &lt;PackageReference Include=&quot;Microsoft.AspNetCore.Components.WebAssembly&quot; Version=&quot;5.0.3&quot; /&gt;
-    &lt;PackageReference Include=&quot;Microsoft.AspNetCore.Components.WebAssembly.DevServer&quot; Version=&quot;5.0.3&quot; PrivateAssets=&quot;all&quot; /&gt;
-    &lt;PackageReference Include=&quot;System.Net.Http.Json&quot; Version=&quot;5.0.0&quot; /&gt;
-  &lt;/ItemGroup&gt;
-
-&lt;/Project&gt;
-</code></pre>
-<p>Update <em>NavMenu.razor</em> by adding the following link at the top of the links.</p>
-<pre><code class="language-html">&lt;div class=&quot;@NavMenuCssClass&quot; @onclick=&quot;ToggleNavMenu&quot;&gt;
-    &lt;ul class=&quot;nav flex-column&quot;&gt;
-        &lt;li class=&quot;nav-item px-3&quot;&gt;
-            &lt;NavLink class=&quot;nav-link&quot; href=&quot;/Hydra&quot; Match=&quot;NavLinkMatch.All&quot;&gt;
-                &lt;span class=&quot;oi oi-home&quot; aria-hidden=&quot;true&quot;&gt;&lt;/span&gt; Hydra
-            &lt;/NavLink&gt;
-        &lt;/li&gt;
-......
-</code></pre>
-<p>Update <em>MainLayout.razor.css</em> by changing the <code>.sidebar</code> background.</p>
-<pre><code class="language-css">.sidebar {
-    background-image: linear-gradient(180deg, #400 0%, #800 70%);
-}
-</code></pre>
-<h2 id="hydra.steel">Hydra.Steel</h2>
-<p><img src="https://shauncurtis.github.io/articles/assets/Hydra/Hydra-Steel.png" alt="Initial Project View" /></p>
-<p>Update the project file.  Note the added <code>StaticWebAssetBasePath</code> set to <em>steel</em>.</p>
-<pre><code class="language-xml">&lt;Project Sdk=&quot;Microsoft.NET.Sdk.BlazorWebAssembly&quot;&gt;
-
-  &lt;PropertyGroup&gt;
-    &lt;TargetFramework&gt;net5.0&lt;/TargetFramework&gt;
-    &lt;StaticWebAssetBasePath&gt;steel&lt;/StaticWebAssetBasePath&gt;
-  &lt;/PropertyGroup&gt;
-
-  &lt;ItemGroup&gt;
-    &lt;PackageReference Include=&quot;Microsoft.AspNetCore.Components.WebAssembly&quot; Version=&quot;5.0.3&quot; /&gt;
-    &lt;PackageReference Include=&quot;Microsoft.AspNetCore.Components.WebAssembly.DevServer&quot; Version=&quot;5.0.3&quot; PrivateAssets=&quot;all&quot; /&gt;
-    &lt;PackageReference Include=&quot;System.Net.Http.Json&quot; Version=&quot;5.0.0&quot; /&gt;
-  &lt;/ItemGroup&gt;
-
-&lt;/Project&gt;
-</code></pre>
-<p>Update <code>NavMenu.razor</code> by adding the following link at the top of the links.</p>
-<pre><code class="language-html">&lt;div class=&quot;@NavMenuCssClass&quot; @onclick=&quot;ToggleNavMenu&quot;&gt;
-    &lt;ul class=&quot;nav flex-column&quot;&gt;
-        &lt;li class=&quot;nav-item px-3&quot;&gt;
-            &lt;NavLink class=&quot;nav-link&quot; href=&quot;/Hydra&quot; Match=&quot;NavLinkMatch.All&quot;&gt;
-                &lt;span class=&quot;oi oi-home&quot; aria-hidden=&quot;true&quot;&gt;&lt;/span&gt; Hydra
-            &lt;/NavLink&gt;
-        &lt;/li&gt;
-......
-</code></pre>
-<p>Update the <em>sidebar</em> in <code>MainLayout</code>.</p>
-<pre><code class="language-html">    &lt;div class=&quot;sidebar sidebar-steel&quot;&gt;
-        &lt;NavMenu /&gt;
-    &lt;/div&gt;
-</code></pre>
-<pre><code class="language-html">// Hydra.Steel/Pages/FetchData.razor
-....
-
-    protected override async Task OnInitializedAsync()
-    {
-// Note /sample-data
-        forecasts = await Http.GetFromJsonAsync&lt;WeatherForecast[]&gt;(&quot;/sample-data/weather.json&quot;);
-    }
-....
-</code></pre>
-<p>We will use CSS from <em>Hydra.Web</em> for this SPA.</p>
-<p>Delete:</p>
-<ol>
-<li>The <em>wwwroot</em> folder structure</li>
-<li><em>/Shared/MainLayout.razor.css</em></li>
-<li><em>/Shared/NavMenu.razor.css</em></li>
-</ol>
-<h2 id="hydra.web">Hydra.Web</h2>
-<p><img src="https://shauncurtis.github.io/articles/assets/Hydra/Hydra-Web.png" alt="Initial Project View" /></p>
-<p>Update the project file.  We add in all projects and a package reference to the Blazor WASM Server library.</p>
-<pre><code class="language-xml">&lt;Project Sdk=&quot;Microsoft.NET.Sdk.Web&quot;&gt;
-
-  &lt;PropertyGroup&gt;
-    &lt;TargetFramework&gt;net5.0&lt;/TargetFramework&gt;
-  &lt;/PropertyGroup&gt;
-
-  &lt;ItemGroup&gt;
-    &lt;PackageReference Include=&quot;Microsoft.AspNetCore.Components.WebAssembly.Server&quot; Version=&quot;5.0.3&quot; /&gt;
-  &lt;/ItemGroup&gt;
-
-  &lt;ItemGroup&gt;
-    &lt;ProjectReference Include=&quot;..\Hydra.Blue\Hydra.Blue.csproj&quot; /&gt;
-    &lt;ProjectReference Include=&quot;..\Hydra.Red\Hydra.Red.csproj&quot; /&gt;
-    &lt;ProjectReference Include=&quot;..\Hydra.Steel\Hydra.Steel.csproj&quot; /&gt;
-    &lt;ProjectReference Include=&quot;..\Razor.Grey\Hydra.Grey.csproj&quot; /&gt;
-  &lt;/ItemGroup&gt;
-
-&lt;/Project&gt;
-</code></pre>
-<p>Pull the following folders with files from the Repo:</p>
-<ol>
-<li><em>wwwroot/css</em></li>
-<li><em>wwwroot/sample-data</em></li>
-</ol>
-<p><em>wwwroot/css/app.css</em> is a custom built BootStrap distribution.</p>
-<p>Add two Razor Pages to the Pages folder:</p>
-<ol>
-<li><em>_Blue.cshtml</em></li>
-<li><em>_Red.cshtml</em></li>
-<li><em>_Steel.cshtml</em></li>
-<li><em>_Grey.cshtml</em></li>
-</ol>
-<p>Delete the associated model cs files assocated with these.</p>
-<pre><code class="language-html">// Hydra.Web/Pages/_Red.cshtml
-@page &quot;/spared&quot;
-@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
-@{
-    Layout = null;
-}
-
-&lt;!DOCTYPE html&gt;
-&lt;html&gt;
-
-&lt;head&gt;
-    &lt;meta charset=&quot;utf-8&quot; /&gt;
-    &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no&quot; /&gt;
-    &lt;title&gt;Hydra.RED&lt;/title&gt;
-    &lt;base href=&quot;/red/&quot; /&gt;
-    &lt;link href=&quot;/red/css/bootstrap/bootstrap.min.css&quot; rel=&quot;stylesheet&quot; /&gt;
-    &lt;link href=&quot;/red/css/app.css&quot; rel=&quot;stylesheet&quot; /&gt;
-    &lt;link href=&quot;/red/Hydra.Red.styles.css&quot; rel=&quot;stylesheet&quot; /&gt;
-&lt;/head&gt;
-
-&lt;body&gt;
-    &lt;div id=&quot;app&quot;&gt;
-        &lt;div class=&quot;mt-4&quot; style=&quot;margin-right:auto; margin-left:auto; width:100%;&quot;&gt;
-            &lt;div class=&quot;loader&quot;&gt;&lt;/div&gt;
-            &lt;div style=&quot;width:100%; text-align:center;&quot;&gt;&lt;h4&gt;Web Application Loading&lt;/h4&gt;&lt;/div&gt;
-        &lt;/div&gt;
-    &lt;/div&gt;
-
-    &lt;script src=&quot;/red/_framework/blazor.webassembly.js&quot;&gt;&lt;/script&gt;
-&lt;/body&gt;
-
-&lt;/html&gt;
-</code></pre>
-<pre><code class="language-html">// Hydra.Web/Pages/_Steel.cshtml
-@page &quot;/spasteel&quot;
-@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
-@{
-    Layout = null;
-}
-
-&lt;!DOCTYPE html&gt;
-&lt;html&gt;
-
-&lt;head&gt;
-    &lt;meta charset=&quot;utf-8&quot; /&gt;
-    &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no&quot; /&gt;
-    &lt;title&gt;Hydra.Steel&lt;/title&gt;
-    &lt;base href=&quot;/steel/&quot; /&gt;
-    &lt;link href=&quot;/css/app.css&quot; rel=&quot;stylesheet&quot; /&gt;
-    &lt;link href=&quot;Hydra.Web.styles.css&quot; rel=&quot;stylesheet&quot; /&gt;
-&lt;/head&gt;
-
-&lt;body&gt;
-    &lt;div id=&quot;app&quot;&gt;
-        &lt;div class=&quot;mt-4&quot; style=&quot;margin-right:auto; margin-left:auto; width:100%;&quot;&gt;
-            &lt;div class=&quot;loader&quot;&gt;&lt;/div&gt;
-            &lt;div style=&quot;width:100%; text-align:center;&quot;&gt;&lt;h4&gt;Web Application Loading&lt;/h4&gt;&lt;/div&gt;
-        &lt;/div&gt;
-    &lt;/div&gt;
-
-    &lt;script src=&quot;/steel/_framework/blazor.webassembly.js&quot;&gt;&lt;/script&gt;
-&lt;/body&gt;
-
-&lt;/html&gt;
-</code></pre>
-<pre><code class="language-html">// Hydra.Web/Pages/_Grey.cshtml &amp; _Blue.cshtml_
-@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
-@{
-    Layout = null;
-}
-&lt;!DOCTYPE html&gt;
-&lt;html&gt;
-&lt;head&gt;
-&lt;/head&gt;
-&lt;body&gt;
-Holding page
-&lt;/body&gt;
-&lt;/html&gt;
-</code></pre>
-<h4 id="startup.cs">Startup.cs</h4>
-<p>We're:</p>
-<ol>
-<li>Adding in Support for Razor Pages to the Services.</li>
-<li>Add a specific <code>Endpoint</code> configuration for the Red and Steel SPAs.
-<ol type="i">
-<li>Mounts the <em>_framework</em> files associated with the SPA <code>&lt;StaticWebAssetBasePath&gt;</code>.</li>
-<li>Sets a Fallback to <em>_Colour.cshtml</em> for all /purple/* URLs</li>
-</ol>
-</li>
-<li>Add Blazor Support at the same time.
-<ol type="i">
-<li>Add the Blazor Services.</li>
-<li>Add the Blazor Hub.</li>
-<li>Add the Endpoints for the Blazor Server SPAs.</li>
-</ol>
-</li>
-</ol>
-<pre><code class="language-csharp">// Hydra.Web/StartUp.cs
-public void ConfigureServices(IServiceCollection services)
-{
-    services.AddRazorPages();
-    services.AddServerSideBlazor();
-    // Server Side Blazor doesn't register HttpClient by default
-    // Thanks to Robin Sue - Suchiman https://github.com/Suchiman/BlazorDualMode
-    if (!services.Any(x =&gt; x.ServiceType == typeof(HttpClient)))
-    {
-        // Setup HttpClient for server side in a client side compatible fashion
-        services.AddScoped&lt;HttpClient&gt;(s =&gt;
-        {
-            // Creating the URI helper needs to wait until the JS Runtime is initialized, so defer it.
-            var uriHelper = s.GetRequiredService&lt;NavigationManager&gt;();
-            return new HttpClient
-            {
-                BaseAddress = new Uri(uriHelper.BaseUri)
-            };
-        });
-    }
-}
-
-public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
-{
+<p>Once <em>blazor.server.js</em> loads, the client application runs in the browser page and a SignalR connection estabished with the server.  To complete the initial load, the Client Application calls the Blazor Hub Session and requests a complete server render of the <code>App</code> component.  It then applies the resultant DOM changes to the Client Application DOM - this will principly be the event wiring.</p>
+<p>The diagram below shows how a render request is passed to the displayed page.</p>
+<p><img src="https://shauncurtis.github.io/articles/assets/Blazor-Components/Server-Render.png" alt="Server Rendering" /></p>
+<h3 id="blazor-web-assembly">Blazor Web Assembly</h3>
+<p>In Blazor WebAssembly the browser receives an Html page with a defined <code>div</code> placeholder where the root component should be loaded:</p>
+<pre><code class="language-html">&lt;div id=&quot;app&quot;&gt;
     ....
-    app.UseStaticFiles();
-
-    app.MapWhen(ctx =&gt; ctx.Request.Path.StartsWithSegments(&quot;/red&quot;), app1 =&gt;
-    {
-        app1.UseBlazorFrameworkFiles(&quot;/red&quot;);
-        app1.UseRouting();
-        app1.UseEndpoints(endpoints =&gt;
-        {
-            endpoints.MapFallbackToPage(&quot;/red/{*path:nonfile}&quot;, &quot;/_Red&quot;);
-        });
-
-    });
-
-    app.MapWhen(ctx =&gt; ctx.Request.Path.StartsWithSegments(&quot;/steel&quot;), app1 =&gt;
-    {
-        app1.UseBlazorFrameworkFiles(&quot;/steel&quot;);
-        app1.UseRouting();
-        app1.UseEndpoints(endpoints =&gt;
-        {
-            endpoints.MapFallbackToPage(&quot;/steel/{*path:nonfile}&quot;, &quot;/_Steel&quot;);
-        });
-
-    });
-
-    app.UseRouting();
-
-    // default EndPoint Configuration
-    app.UseEndpoints(endpoints =&gt;
-    {
-        endpoints.MapBlazorHub();
-        endpoints.MapRazorPages();
-        endpoints.MapFallbackToPage(&quot;/grey/{*path:nonfile}&quot;, &quot;/_Grey&quot;);
-        endpoints.MapFallbackToPage(&quot;/blue/{*path:nonfile}&quot;, &quot;/_Blue&quot;);
-        endpoints.MapFallbackToPage(&quot;/Index&quot;);
-    });
-}
-</code></pre>
-<h4 id="index.cshtml">Index.cshtml</h4>
-<p>Update the <code>@page</code> directive and add some buttons for navigation.</p>
-<pre><code class="language-html">@page &quot;/&quot;
-....
-&lt;div class=&quot;text-center&quot;&gt;
-    &lt;h1 class=&quot;display-4&quot;&gt;Welcome&lt;/h1&gt;
-    &lt;p&gt;Learn about &lt;a href=&quot;https://docs.microsoft.com/aspnet/core&quot;&gt;building Web apps with ASP.NET Core&lt;/a&gt;.&lt;/p&gt;
-    &lt;div class=&quot;container&quot;&gt;
-        &lt;a class=&quot;btn btn-danger&quot; href=&quot;/red&quot;&gt;Hydra Red&lt;/a&gt;
-        &lt;a class=&quot;btn btn-dark&quot; href=&quot;/steel&quot;&gt;Hydra Steel&lt;/a&gt;
-        &lt;a class=&quot;btn btn-primary&quot; href=&quot;/blue&quot;&gt;Hydra Blue&lt;/a&gt;
-        &lt;a class=&quot;btn btn-secondary&quot; href=&quot;/grey&quot;&gt;Hydra Grey&lt;/a&gt;
-    &lt;/div&gt;
 &lt;/div&gt;
 </code></pre>
-<p>This should all now compile and run.</p>
-<h2 id="hydra.blue">Hydra.Blue</h2>
-<p><img src="https://shauncurtis.github.io/articles/assets/Hydra/Hydra-Blue.png" alt="Initial Project View" /></p>
-<p>This is the library were we'll use to build one of the Blazor Server SPAs.</p>
-<h4 id="project-file">Project File</h4>
-<p>Include the following Packages and projects.</p>
-<pre><code class="language-xml">&lt;Project Sdk=&quot;Microsoft.NET.Sdk.Razor&quot;&gt;
-
-  &lt;PropertyGroup&gt;
-    &lt;TargetFramework&gt;net5.0&lt;/TargetFramework&gt;
-  &lt;/PropertyGroup&gt;
-
-  &lt;ItemGroup&gt;
-    &lt;PackageReference Include=&quot;Microsoft.AspNetCore.Components.Web&quot; Version=&quot;5.0.3&quot; /&gt;
-  &lt;/ItemGroup&gt;
-
-&lt;/Project&gt;
+<p>The Client Application gets loaded by:</p>
+<pre><code class="language-html">&lt;script src=&quot;_framework/blazor.webassembly.js&quot;&gt;&lt;/script&gt;
 </code></pre>
-<h4 id="file-moves-and-renames">File Moves and Renames</h4>
-<p>Copy the <em>Pages</em> and <em>Shared</em> folders from <em>Hydra.Red</em>.</p>
-<ol>
-<li><em>Pages</em> folder.</li>
-<li><em>Shared</em> folder.</li>
-<li><em>App.razor</em>.</li>
-<li><em>_Imports.razor</em>.</li>
-</ol>
-<h4 id="imports.razor">_Imports.razor</h4>
-<pre><code class="language-html">@using System.Net.Http
-@using System.Net.Http.Json
-@using Microsoft.AspNetCore.Components.Forms
-@using Microsoft.AspNetCore.Components.Routing
-@using Microsoft.AspNetCore.Components.Web
-@using Microsoft.AspNetCore.Components.Web.Virtualization
-@using Microsoft.JSInterop
-@using Hydra.Blue
-@using Hydra.Blue.Shared
+<p>Once the WASM code is loaded, it runs <code>program</code>.</p>
+<pre><code class="language-csharp">builder.RootComponents.Add&lt;App&gt;(&quot;#app&quot;);
 </code></pre>
-<pre><code class="language-html">// Hydra.Blue/Pages/Index.razor
-@page &quot;/&quot;
-@page &quot;/blue&quot;
-@page &quot;/blue/index&quot;
-....
-</code></pre>
-<pre><code class="language-html">// Hydra.Blue/Pages/Counter.razor
-@page &quot;/counter&quot;
-@page &quot;/blue/counter&quot;
-....
-</code></pre>
-<pre><code class="language-html">// Hydra.Blue/Pages/FetchData.razor
-@page &quot;/fetchdata&quot;
-@page &quot;/blue/fetchdata&quot;
-....
-
-    protected override async Task OnInitializedAsync()
-    {
-// Note /sample-data
-        forecasts = await Http.GetFromJsonAsync&lt;WeatherForecast[]&gt;(&quot;/sample-data/weather.json&quot;);
-    }
-....
-</code></pre>
-<p>Update the <em>sidebar</em> in <code>MainLayout</code>.</p>
-<pre><code class="language-html">    &lt;div class=&quot;sidebar sidebar-blue&quot;&gt;
-        &lt;NavMenu /&gt;
-    &lt;/div&gt;
-</code></pre>
-<p>Update <code>NavMenu.razor</code></p>
-<pre><code class="language-html">&lt;div class=&quot;@NavMenuCssClass&quot; @onclick=&quot;ToggleNavMenu&quot;&gt;
-    &lt;ul class=&quot;nav flex-column&quot;&gt;
-        &lt;li class=&quot;nav-item px-3&quot;&gt;
-            &lt;NavLink class=&quot;nav-link&quot; href=&quot;/Hydra&quot; Match=&quot;NavLinkMatch.All&quot;&gt;
-                &lt;span class=&quot;oi oi-home&quot; aria-hidden=&quot;true&quot;&gt;&lt;/span&gt; Hydra
-            &lt;/NavLink&gt;
-        &lt;/li&gt;
-        &lt;li class=&quot;nav-item px-3&quot;&gt;
-            &lt;NavLink class=&quot;nav-link&quot; href=&quot;blue/index&quot; Match=&quot;NavLinkMatch.All&quot;&gt;
-                &lt;span class=&quot;oi oi-home&quot; aria-hidden=&quot;true&quot;&gt;&lt;/span&gt; Home
-            &lt;/NavLink&gt;
-        &lt;/li&gt;
-        &lt;li class=&quot;nav-item px-3&quot;&gt;
-            &lt;NavLink class=&quot;nav-link&quot; href=&quot;blue/counter&quot;&gt;
-                &lt;span class=&quot;oi oi-plus&quot; aria-hidden=&quot;true&quot;&gt;&lt;/span&gt; Counter
-            &lt;/NavLink&gt;
-        &lt;/li&gt;
-        &lt;li class=&quot;nav-item px-3&quot;&gt;
-            &lt;NavLink class=&quot;nav-link&quot; href=&quot;blue/fetchdata&quot;&gt;
-                &lt;span class=&quot;oi oi-list-rich&quot; aria-hidden=&quot;true&quot;&gt;&lt;/span&gt; Fetch data
-            &lt;/NavLink&gt;
-        &lt;/li&gt;
-    &lt;/ul&gt;
-&lt;/div&gt;
-</code></pre>
-<p>Update <em>App.razor</em>, changing <code>AppAssembly</code>, which is set to <em>Hydra.Blue.App</em>, so it finds the routes in this assembly.</p>
-<pre><code class="language-html">// Hydra.Blue/App.razor
-&lt;Router AppAssembly=&quot;@typeof(Hydra.Blue.App).Assembly&quot; PreferExactMatches=&quot;@true&quot;&gt;
+<p>The code tells the Renderer that the <code>App</code> class component is the root component for the <code>RenderTree</code> and to load it's DOM into the <code>app</code> element in the browser DOM.</p>
+<p><img src="https://shauncurtis.github.io/articles/assets/Blazor-Components/Web-Assembly-Render.png" alt="Server Rendering" /></p>
+<p>The key point to take from this is that although the process by which the root component is defined and loaded is different, there's no difference between in a WebAssembly and Server root component or any sub-component.  You can use the same component.</p>
+<h4 id="app.razor">App.razor</h4>
+<p><em>App.razor</em> is the &quot;standard&quot; root component.  It can be any <code>IComponent</code> defined class.</p>
+<p><code>App</code> looks like this:</p>
+<pre><code class="language-html">&lt;Router AppAssembly=&quot;@typeof(Program).Assembly&quot;&gt;
     &lt;Found Context=&quot;routeData&quot;&gt;
         &lt;RouteView RouteData=&quot;@routeData&quot; DefaultLayout=&quot;@typeof(MainLayout)&quot; /&gt;
     &lt;/Found&gt;
@@ -715,178 +142,581 @@ public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
     &lt;/NotFound&gt;
 &lt;/Router&gt;
 </code></pre>
-<h2 id="hydra.grey">Hydra.Grey</h2>
-<p><img src="https://shauncurtis.github.io/articles/assets/Hydra/Hydra-Grey.png" alt="Initial Project View" /></p>
-<h4 id="project-file-1">Project File</h4>
-<p>Include the following Packages and projects.</p>
-<pre><code class="language-xml">&lt;Project Sdk=&quot;Microsoft.NET.Sdk.Razor&quot;&gt;
-
-  &lt;PropertyGroup&gt;
-    &lt;TargetFramework&gt;net5.0&lt;/TargetFramework&gt;
-  &lt;/PropertyGroup&gt;
-
-  &lt;ItemGroup&gt;
-    &lt;PackageReference Include=&quot;Microsoft.AspNetCore.Components.Web&quot; Version=&quot;5.0.3&quot; /&gt;
-  &lt;/ItemGroup&gt;
-
-&lt;/Project&gt;
+<p>It's a Razor component defining one child component, <code>Router</code>.  <code>Router</code> has two <code>RenderFragments</code>, <code>Found</code> and <code>NotFound</code>.  If <code>Router</code> finds a route, and therefore an <code>IComponent</code> class, it renders the <code>RouteView</code> component and passes it the route class type along with the default <code>Layout</code> class.   If no route is found it renders a <code>LayoutView</code> and renders the defined content in it's <code>Body</code>.</p>
+<p><code>RouteView</code> checks if the <code>RouteData</code> component has a specific layout class defined.  If so it uses it, otherwise it uses the default layout.  It renders the layout and passes it the type of the component to add to the <code>Body</code> RenderFragment.</p>
+<h2 id="components">Components</h2>
+<p>All components are normal DotNetCore classes that implement <code>IComponent</code>.</p>
+<p>The <code>IComponent</code> interface definition is:</p>
+<pre><code class="language-csharp">public interface IComponent
+{
+    void Attach(RenderHandle renderHandle);
+    Task SetParametersAsync(ParameterView parameters);
+}
 </code></pre>
-<h4 id="file-moves-and-renames-1">File Moves and Renames</h4>
-<p>Copy the <em>Pages</em> and <em>Shared</em> folders from <em>Hydra.Blue</em>.</p>
+<p>My first reaction on seeing this was &quot;What? Something missing here. Where's all those events and initialization methods?&quot; Every article you read talks about components and  <code>OnInitialized</code>, ...  Don't let them confuse you.   These are part of <code>ComponentBase</code> the out-of-the-box Blazor implementation of <code>IComponent</code>.  <code>ComponentBase</code> does not define of a component.  You will see a much simpler implementation below.</p>
+<p>Lets look at what is defined in more detail.  The Blazor Hub Session has a <code>Renderer</code> that runs the <code>RenderTree</code> for each root component.  Technically you can have more than one, but we'll ignore that for this discussion.  To quote the class documentation:</p>
+<p><code>Renderer</code> provides mechanisms:</p>
 <ol>
-<li><em>Pages</em> folder.</li>
-<li><em>Shared</em> folder.</li>
-<li><em>App.razor</em>.</li>
-<li><em>_Imports.razor</em>.</li>
+<li>For rendering hierarchies of <code>IComponent</code> instances;</li>
+<li>Dispatching events to them;</li>
+<li>Notifying when the user interface is being updated.</li>
 </ol>
-<h4 id="imports.razor-1">_Imports.razor</h4>
-<pre><code class="language-html">@using System.Net.Http
-@using System.Net.Http.Json
-@using Microsoft.AspNetCore.Components.Forms
-@using Microsoft.AspNetCore.Components.Routing
-@using Microsoft.AspNetCore.Components.Web
-@using Microsoft.AspNetCore.Components.Web.Virtualization
-@using Microsoft.JSInterop
-@using Hydra.Grey
-@using Hydra.Grey.Shared
-</code></pre>
-<pre><code class="language-html">// Hydra.Grey/Pages/Index.razor
-@page &quot;/&quot;
-@page &quot;/Grey&quot;
-@page &quot;/Grey/index&quot;
-....
-</code></pre>
-<pre><code class="language-html">// Hydra.Grey/Pages/Counter.razor
-@page &quot;/Grey/counter&quot;
-....
-</code></pre>
-<pre><code class="language-html">// Hydra.Grey/Pages/FetchData.razor
-@page &quot;/fetchdata&quot;
-@page &quot;/Grey/fetchdata&quot;
-....
-
-    protected override async Task OnInitializedAsync()
-    {
-// Note /sample-data
-        forecasts = await Http.GetFromJsonAsync&lt;WeatherForecast[]&gt;(&quot;/sample-data/weather.json&quot;);
-    }
-....
-</code></pre>
-<pre><code>Update the *sidebar* in `MainLayout`.
-```html
-    &lt;div class=&quot;sidebar sidebar-grey&quot;&gt;
-        &lt;NavMenu /&gt;
-    &lt;/div&gt;
-</code></pre>
-<p>Update <code>NavMenu.razor</code></p>
-<pre><code class="language-html">&lt;div class=&quot;top-row pl-4 navbar navbar-dark&quot;&gt;
-    &lt;a class=&quot;navbar-brand&quot; href=&quot;&quot;&gt;Hydra.Grey&lt;/a&gt;
-    &lt;button class=&quot;navbar-toggler&quot; @onclick=&quot;ToggleNavMenu&quot;&gt;
-        &lt;span class=&quot;navbar-toggler-icon&quot;&gt;&lt;/span&gt;
-    &lt;/button&gt;
-&lt;/div&gt;
-
-&lt;div class=&quot;@NavMenuCssClass&quot; @onclick=&quot;ToggleNavMenu&quot;&gt;
-    &lt;ul class=&quot;nav flex-column&quot;&gt;
-        &lt;li class=&quot;nav-item px-3&quot;&gt;
-            &lt;NavLink class=&quot;nav-link&quot; href=&quot;/Hydra&quot; Match=&quot;NavLinkMatch.All&quot;&gt;
-                &lt;span class=&quot;oi oi-home&quot; aria-hidden=&quot;true&quot;&gt;&lt;/span&gt; Hydra
-            &lt;/NavLink&gt;
-        &lt;/li&gt;
-        &lt;li class=&quot;nav-item px-3&quot;&gt;
-            &lt;NavLink class=&quot;nav-link&quot; href=&quot;grey/index&quot; Match=&quot;NavLinkMatch.All&quot;&gt;
-                &lt;span class=&quot;oi oi-home&quot; aria-hidden=&quot;true&quot;&gt;&lt;/span&gt; Home
-            &lt;/NavLink&gt;
-        &lt;/li&gt;
-        &lt;li class=&quot;nav-item px-3&quot;&gt;
-            &lt;NavLink class=&quot;nav-link&quot; href=&quot;grey/counter&quot;&gt;
-                &lt;span class=&quot;oi oi-plus&quot; aria-hidden=&quot;true&quot;&gt;&lt;/span&gt; Counter
-            &lt;/NavLink&gt;
-        &lt;/li&gt;
-        &lt;li class=&quot;nav-item px-3&quot;&gt;
-            &lt;NavLink class=&quot;nav-link&quot; href=&quot;grey/fetchdata&quot;&gt;
-                &lt;span class=&quot;oi oi-list-rich&quot; aria-hidden=&quot;true&quot;&gt;&lt;/span&gt; Fetch data
-            &lt;/NavLink&gt;
-        &lt;/li&gt;
-    &lt;/ul&gt;
-&lt;/div&gt;
-</code></pre>
-<p>Update <em>App.razor</em>, changing <code>AppAssembly</code>, which is set to <em>Hydra.Grey.App</em>, so it finds the routes in this assembly.</p>
-<pre><code class="language-html">// Hydra.Grey/App.razor
-&lt;Router AppAssembly=&quot;@typeof(Hydra.Grey.App).Assembly&quot; PreferExactMatches=&quot;@true&quot;&gt;
-    &lt;Found Context=&quot;routeData&quot;&gt;
-        &lt;RouteView RouteData=&quot;@routeData&quot; DefaultLayout=&quot;@typeof(MainLayout)&quot; /&gt;
-    &lt;/Found&gt;
-    &lt;NotFound&gt;
-        &lt;LayoutView Layout=&quot;@typeof(MainLayout)&quot;&gt;
-            &lt;p&gt;Sorry, there's nothing at this address.&lt;/p&gt;
-        &lt;/LayoutView&gt;
-    &lt;/NotFound&gt;
-&lt;/Router&gt;
-</code></pre>
-<h2 id="hydra.web-1">Hydra.Web</h2>
-<pre><code class="language-html">// Hydra.Web/Pages/_Blue.html
-@page &quot;/spablue&quot;
-@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
-@{
-    Layout = null;
-}
-
-&lt;!DOCTYPE html&gt;
-&lt;html&gt;
-
-&lt;head&gt;
-    &lt;meta charset=&quot;utf-8&quot; /&gt;
-    &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no&quot; /&gt;
-    &lt;title&gt;Hydra.Blue&lt;/title&gt;
-    &lt;base href=&quot;/blue&quot; /&gt;
-    &lt;link href=&quot;/css/app.css&quot; rel=&quot;stylesheet&quot; /&gt;
-    &lt;link href=&quot;/CEC.Blazor.Hydra.styles.css&quot; rel=&quot;stylesheet&quot; /&gt;
-&lt;/head&gt;
-
-&lt;body&gt;
-    &lt;component type=&quot;typeof(Hydra.Blue.App)&quot; render-mode=&quot;ServerPrerendered&quot; /&gt;
-
-    &lt;script src=&quot;_framework/blazor.server.js&quot;&gt;&lt;/script&gt;
-&lt;/body&gt;
-
-&lt;/html&gt;
-</code></pre>
-<pre><code class="language-html">// Hydra.Web/Pages/_Grey.html
-@page &quot;/spagrey&quot;
-@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
-@{
-    Layout = null;
-}
-
-&lt;!DOCTYPE html&gt;
-&lt;html&gt;
-
-&lt;head&gt;
-    &lt;meta charset=&quot;utf-8&quot; /&gt;
-    &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no&quot; /&gt;
-    &lt;title&gt;Hydra.Grey&lt;/title&gt;
-    &lt;base href=&quot;/grey&quot; /&gt;
-    &lt;link href=&quot;/css/app.css&quot; rel=&quot;stylesheet&quot; /&gt;
-    &lt;link href=&quot;/CEC.Blazor.Hydra.styles.css&quot; rel=&quot;stylesheet&quot; /&gt;
-&lt;/head&gt;
-
-&lt;body&gt;
-    &lt;component type=&quot;typeof(Hydra.Grey.App)&quot; render-mode=&quot;ServerPrerendered&quot; /&gt;
-
-    &lt;script src=&quot;_framework/blazor.server.js&quot;&gt;&lt;/script&gt;
-&lt;/body&gt;
-
-&lt;/html&gt;
-</code></pre>
-<p>This should all now compile and run.</p>
-<h2 id="wrap-up">Wrap Up</h2>
-<p>There's a lot to take in in this article.  It took me a while to pull this article together once I'd proven the concepts.  Som important concepts to understand:</p>
+<p>A RenderHandle structure:</p>
 <ol>
-<li>To write Blazor SPA's you need to get out of the &quot;Web&quot; paradigm.  Think old-school desktop application.  A bit retro!  If you don't, you SPA could be a bit of a dogs breakfast.  Version x will bear little resemblance to version 1.</li>
-<li>A WASM SPA is a compiled executable - just like a desktop application.  The startup page is a shortcut.</li>
-<li>A Server SPA is a pointer to a class in the library running on the web site.  The startup page is a server-side shortcut to get it up and running.  Once started, the SPA is a two part affair: one half is the browser SPA, the other a session on the Blazor Hub on the server, inexorably joined by a SignalR session.</li>
-<li>You need to be very careful in your Url referencing: a missing &quot;/&quot; or a capital letter can blow you out of the water!  Stick to the rule that all urls and things that define bits of Urls only used small letters.  It's pretty easy to start digging holes  I've been there!</li>
+<li>Allows a component to interact with its renderer.</li>
+</ol>
+<p>Going back to the <code>IComponent</code> interface:</p>
+<ol>
+<li><code>Attach</code> is called when the <code>Renderer</code> attaches an <code>IComponent</code> object to the <code>RenderTree</code>.  It passes the component a <code>RenderHandle</code> struct.  The component uses this render handle to queue <code>RenderFragments</code> onto the <code>Renderer</code>'s <code>RenderQueue</code>.  We'll look at <code>RenderFragement</code> in more detail soon.</li>
+<li><code>SetParametersAsync</code> is called by the <code>Renderer</code> on a component when it first attaches it to the <code>RenderTree</code> and whenever it deems one or more of the components <code>Parameters</code> has changed.</li>
+</ol>
+<p>Note that the <code>IComponent</code> has no concept of the <code>RenderTree</code>.  It gets triggered into action through a call to <code>SetParametersAsync</code> and it passes changes by calling a method on a <code>RenderHandle</code>.</p>
+<h3 id="the-helloworld-component">The HelloWorld Component</h3>
+<p>To demonstrate the <code>IComponent</code> interface We'll build a simple <code>HelloWorld</code> component.</p>
+<p>Our simplest Hello World Razor component looks like this:</p>
+<pre><code class="language-html">@page &quot;/helloworld&quot;
+&lt;div&gt;
+    Hello World
+&lt;/div&gt;
+</code></pre>
+<p>It's a Razor defined component.</p>
+<p>We can refactor it to look like this:</p>
+<pre><code class="language-csharp">@page &quot;/helloworld&quot;
+
+@HelloWorld
+
+@code {
+    protected RenderFragment HelloWorld =&gt; (RenderTreeBuilder builder) =&gt;
+    {
+        builder.OpenElement(0, &quot;div&quot;);
+        builder.AddContent(1, &quot;Hello World 2&quot;);
+        builder.CloseElement();
+    };
+}
+</code></pre>
+<p>This introduces the <code>RenderFragment</code>. To quote the official Microsoft documentation.</p>
+<p><em>A RenderFragement represents a segment of UI content, implemented as a delegate that writes the content to a RenderTreeBuilder.</em></p>
+<p>The <code>RenderTreeBuilder</code> is even more succinct:</p>
+<p><em>Provides methods for building a collection of RenderTreeFrame entries.</em></p>
+<p>So, a <code>RenderFragment</code> is a delegate - defined in <em>Microsoft.AspNetCore.Components</em> as follows:</p>
+<pre><code class="language-csharp">public delegate void RenderFragment(RenderTreeBuilder builder);
+</code></pre>
+<p>If you're new to delegates think of them as a pattern definition.  Any function that conforms to the pattern defined by <code>RenderFragment</code> delegate can passed as a <code>RenderFragment</code>.</p>
+<p>The pattern dictates your method must:</p>
+<ol>
+<li>Have one, and only one, parameter of type <code>RenderTreeBuilder</code>.</li>
+<li>Return a <code>void</code>.</li>
+</ol>
+<p>Looking back to the code above, we're defining a <code>RenderFragment</code> property and assigning an anonymous method to it that conforms to the <code>RenderFragment</code> pattern.  It takes a  <code>RenderTreeBuilder</code> and has no return so returns a void.  It uses the provided <code>RenderTreeBuilder</code> object to build the content: a simple hello world html div.  Each call to the builder adds what is called a <code>RenderTreeFrame</code>.  Note each frame is sequentially numbered.</p>
+<p>It's important to understand two points:</p>
+<ol>
+<li>The component itself never &quot;runs&quot; the <code>RenderFragement</code>.  It is passed to the Renderer which Invokes it.</li>
+<li>Even though the <code>Renderer</code> invokes the code, the code is run in the context of the component, and the state of the component when executing happens.</li>
+</ol>
+<h3 id="a-simple-icomponent-implementation">A Simple IComponent Implementation</h3>
+<p>The <code>HelloWorld</code> component above inherits from <code>ComponentBase</code>.  Razor components that don't explicitly define inheritance inherit by default from <code>ComponentBase</code>.</p>
+<p>We can now build our component as a simple C# class.</p>
+<pre><code class="language-csharp">using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Rendering;
+using Microsoft.AspNetCore.Components.Web;
+using System.Threading.Tasks;
+
+namespace Blazor.HelloWorld.Pages
+{
+    [RouteAttribute(&quot;/helloworld&quot;)]
+    public class RendererComponent : IComponent
+    {
+        private RenderHandle _renderHandle;
+
+        public void Attach(RenderHandle renderHandle)
+        {
+            _renderHandle = renderHandle;
+        }
+
+        public Task SetParametersAsync(ParameterView parameters)
+        {
+            parameters.SetParameterProperties(this);
+            this.Render();
+            return Task.CompletedTask;
+        }
+
+        public void Render()
+            =&gt; _renderHandle.Render(RenderComponent);
+
+        private void RenderComponent(RenderTreeBuilder builder)
+        {
+            builder.OpenElement(0, &quot;div&quot;);
+            builder.AddContent(1, &quot;Hello World 2&quot;);
+            builder.CloseElement();
+        }
+    }
+}
+</code></pre>
+<p>Points to note in the above code:</p>
+<ol>
+<li>The class uses the custom attribute <code>RouteAttribute</code> to define the route.</li>
+<li>The class inherits from <code>IComponent</code>.</li>
+<li>The class implements <code>Attach</code>.  The passed object <code>RenderHandle</code> is assigned to a local class field.</li>
+<li>The class implements <code>SetParametersAsync</code> which is called when the component is first rendered, and whenever any <code>Parameters</code> are changed.  In our case never - we have no <code>Parameters</code> defined.  It calls the class method  <code>Render</code>.</li>
+<li>The rest of the code is copied from the Razor component.</li>
+<li>There's no <code>OnInitialized</code>, <code>OnAfterRender</code>, <code>StateHasChanged</code>,...  These are all  part of <code>ComponentBase</code>.</li>
+</ol>
+<p>The <code>Render</code> method calls <code>RenderHandle.Render</code> on the <code>RenderHandle</code> the component received when it was attached to the render tree.  It passes the <code>RenderComponent</code> method as a delegate.  Calling <code>Render</code> queues the passed delegate onto the Renderer's render queue.  This is where the code is actually executed.  Being a delegate it executes in the owning object's context.</p>
+<p>The component is very simplistic, but it demonstrates the basics.</p>
+<h3 id="routed-components">Routed Components</h3>
+<p>Everything's a component, but not all components are equal.  <strong>Routed Components</strong> are a little special.</p>
+<p>They contain <em>@page</em> routing directives and optionally a <em>@Layout</em> directive.</p>
+<pre><code class="language-html">@page &quot;/WeatherForecast&quot;
+@page &quot;/WeatherForecasts&quot;
+@layout MainLayout
+</code></pre>
+<p>You can define these directly on classes like this:</p>
+<pre><code class="language-csharp">[LayoutAttribute(typeof(MainLayout))]
+[RouteAttribute(&quot;/helloworld&quot;)]
+public class RendererComponent : IComponent {}
+</code></pre>
+<p>The <code>RouteAttribute</code> is used by the router to find Routes in the application.</p>
+<p>Don't think of routed components as pages. It may seem obvious to do so, but don't.  Lots of web page properties don't apply to routed components.  You will:</p>
+<ul>
+<li>get confused when routed components don't behave like a page.</li>
+<li>try and code the component logic as if it is a web page.</li>
+</ul>
+<h2 id="componentbase">ComponentBase</h2>
+<p><code>ComponentBase</code> is the &quot;standard&quot; out-of-the-box Blazor implementation of <code>IComponent</code>.  All <em>.razor</em> files by default inherit from it.  While you may never step outside <code>ComponentBase</code> it's important to understand that it's just one implementation of the <code>IComponent</code> interface.  It doesn't define a component.  <code>OnInitialized</code> is not a component lifecycle method, it's a <code>ComponentBase</code> lifecycle method.</p>
+<h3 id="componentbase-lifecycle-and-events">ComponentBase Lifecycle and Events</h3>
+<p>There are articles galore regurgitating the same old basic lifecycle information.  I'm not going to repeat it.  Instead I'm going to concentrate on certain often misunderstood aspects of the lifecycle: there's more to the lifecycle that just the initial component load covered in most of the articles.</p>
+<p>We need to consider five types of event:</p>
+<ol>
+<li>Instantiation of the class</li>
+<li>Initialization of the component</li>
+<li>Component parameter changes</li>
+<li>Component events</li>
+<li>Component disposal</li>
+</ol>
+<p>There are seven exposed Events/Methods and their async equivalents:</p>
+<ol>
+<li><code>SetParametersAsync</code></li>
+<li><code>OnInitialized</code> and <code>OnInitializedAsync</code></li>
+<li><code>OnParametersSet</code> and <code>OnParametersSetAsync</code></li>
+<li><code>OnAfterRender</code> and <code>OnAfterRenderAsync</code></li>
+<li><code>Dispose</code> - if <code>IDisposable</code> is implemented</li>
+<li><code>StateHasChanged</code></li>
+<li><code>new</code> - often forgotten.</li>
+</ol>
+<p>The standard class instantiation method builds the <code>RenderFragment</code> that <code>StateHasChanged</code> passes to the  <code>Renderer</code> to render the component.  It sets two private class variables to false and runs <code>BuildRenderTree</code>.</p>
+<pre><code class="language-csharp">public ComponentBase()
+{
+    _renderFragment = builder =&gt;
+    {
+        _hasPendingQueuedRender = false;
+        _hasNeverRendered = false;
+        BuildRenderTree(builder);
+    };
+}
+</code></pre>
+<p><code>SetParametersAsync</code> sets the properties for the submitted parameters. It only runs <code>RunInitAndSetParametersAsync</code> - and thus <code>OnInitialized</code> followed by <code>OnInitializedAsync</code> - on initialization. It always calls <code>CallOnParametersSetAsync</code>.  Note:</p>
+<ol>
+<li><code>CallOnParametersSetAsync</code> waits on <code>OnInitializedAsync</code> to complete before calling <code>CallOnParametersSetAsync</code>.</li>
+<li><code>RunInitAndSetParametersAsync</code> calls <code>StateHasChanged</code> if <code>OnInitializedAsync</code> task yields before completion.</li>
+</ol>
+<pre><code class="language-csharp">public virtual Task SetParametersAsync(ParameterView parameters)
+{
+    parameters.SetParameterProperties(this);
+    if (!_initialized)
+    {
+        _initialized = true;
+        return RunInitAndSetParametersAsync();
+    }
+    else return CallOnParametersSetAsync();
+}
+
+private async Task RunInitAndSetParametersAsync()
+{
+    OnInitialized();
+    var task = OnInitializedAsync();
+    if (task.Status != TaskStatus.RanToCompletion &amp;&amp; task.Status != TaskStatus.Canceled)
+    {
+        StateHasChanged();
+        try { await task;}
+        catch { if (!task.IsCanceled) throw; }
+    }
+    await CallOnParametersSetAsync();
+
+</code></pre>
+<p><code>CallOnParametersSetAsync</code> calls <code>OnParametersSet</code> followed by <code>OnParametersSetAsync</code>, and finally <code>StateHasChanged</code>.  If the <code>OnParametersSetAsync()</code> task yields <code>CallStateHasChangedOnAsyncCompletion</code> awaits the task and re-runs <code>StateHasChanged</code>.</p>
+<pre><code class="language-csharp">private Task CallOnParametersSetAsync()
+{
+    OnParametersSet();
+    var task = OnParametersSetAsync();
+    var shouldAwaitTask = task.Status != TaskStatus.RanToCompletion &amp;&amp;
+        task.Status != TaskStatus.Canceled;
+
+    StateHasChanged();
+
+    return shouldAwaitTask ?
+        CallStateHasChangedOnAsyncCompletion(task) :
+        Task.CompletedTask;
+}
+
+private async Task CallStateHasChangedOnAsyncCompletion(Task task)
+{
+    try { await task; }
+    catch 
+    {
+        if (task.IsCanceled) return;
+        throw;
+    }
+    StateHasChanged();
+}
+</code></pre>
+<p>Lastly, lets look at <code>StateHasChanged</code>.  If a render is pending i.e. the renderer hasn't got round to running the queued render request, it closes - whatever changes have been made will be captured in the queued render.  If not, it sets the  <code>_hasPendingQueuedRender</code> class flag and calls the Render method on the <code>RenderHandle</code>.  This queues <code>_renderFragement</code> onto the <code>Renderer</code> <code>RenderQueue</code>.  When the queue runs <code>_renderFragment</code> - see above - it sets the two class flags to false and runs <code>BuildRenderTree</code>.</p>
+<pre><code class="language-csharp">protected void StateHasChanged()
+{
+    if (_hasPendingQueuedRender) return;
+    if (_hasNeverRendered || ShouldRender())
+    {
+        _hasPendingQueuedRender = true;
+        try { _renderHandle.Render(_renderFragment);}
+        catch {
+            _hasPendingQueuedRender = false;
+            throw;
+        }
+    }
+}
+</code></pre>
+<p>Some key points to note:</p>
+<ol>
+<li><p><code>OnInitialized</code> and <code>OnInitializedAsync</code> only get called during initialization.  <code>OnInitialized</code> is run first.  If, and only if, <code>OnInitializedAsync</code> yields back to the internal calling method <code>RunInitAndSetParametersAsync</code>, then <code>StateHasChanged</code> get called, providing the opportunity to provide &quot;Loading&quot; information to the user.  <code>OnInitializedAsync</code> completes before <code>OnParametersSet</code> and <code>OnParametersSetAsync</code> are called.</p>
+</li>
+<li><p><code>OnParametersSet</code> and <code>OnParametersSetAsync</code> get called whenever the parent component makes changes to the parameter set for the component or a captured cascaded parameter changes.  Any code that needs to respond to parameter changes need to live here. <code>OnParametersSet</code> is run first.  Note that if <code>OnParametersSetAsync</code> yields, <code>StateHasChanged</code> is run after the yield, providing the opportunity to provide &quot;Loading&quot; information to the user.</p>
+</li>
+<li><p><code>StateHasChanged</code> is called after the <code>OnParametersSet{async}</code> methods complete to render the component.</p>
+</li>
+<li><p><code>OnAfterRender</code> and <code>OnAfterRenderAsync</code> occur at the end of all four events.  <code>firstRender</code> is only true on component initialization.  Note that any changes made here to parameters won't get applied to display values until the component re-renders.</p>
+</li>
+<li><p><code>StateHasChanged</code> is called during the initialization process if the conditions stated above are met, after the <code>OnParametersSet</code> processes, and any event callback.  Don't call it explicitly during the render or parameter set process unless you need to.  If you do call it you are probably doing something wrong.</p>
+</li>
+</ol>
+<h2 id="the-render-process">The Render Process</h2>
+<p>Let's look in detail at how a simple page and component get rendered.</p>
+<h4 id="simplecomponent.razor">SimpleComponent.razor</h4>
+<pre><code class="language-html">&lt;div class=&quot;h4 bg-success text-white p-2&quot;&gt;Loaded&lt;/div&gt;
+</code></pre>
+<h4 id="simplepage.razor">SimplePage.razor</h4>
+<pre><code class="language-csharp">@page &quot;/simple&quot;
+&lt;h3&gt;SimplePage&lt;/h3&gt;
+@if (loaded)
+{
+    &lt;SimpleComponent&gt;&lt;/SimpleComponent&gt;
+}
+else
+{
+    &lt;div class=&quot;h4 bg-danger text-white p-2&quot;&gt;Loading.....&lt;/div&gt;
+}
+
+@code {
+    private bool loaded;
+
+    protected async override Task OnInitializedAsync()
+    {
+        await Task.Delay(2000);
+        loaded = true;
+    }
+}
+</code></pre>
+<p>The follow diagram shows a simplified <code>RenderTree</code> representing a simple &quot;/&quot; route.</p>
+<p><img src="https://shauncurtis.github.io/articles/assets/Blazor-Components/Root-Render-Tree.png" alt="Root Render Tree" /></p>
+<p>Note the three nodes in <code>NavMenu</code> for the three <code>NavLink</code> controls.</p>
+<p>On our page, the render tree looks like the diagram below on first render - we have a yielding <code>OnInitializedAsync</code> method, so <code>StateHasChanged</code> gets run in the initialization process.</p>
+<p><img src="https://shauncurtis.github.io/articles/assets/Blazor-Components/Simple-Page-Loading.png" alt="Simple Page Loading" /></p>
+<p>Once initialization completes, <code>StateHasChanged</code> is run a second time.  <code>Loaded</code> is now <code>true</code> and <code>SimpleComponent</code> is added to the component <code>RenderFragment</code>.  When the <code>Renderer</code> runs the <code>RenderFragment</code>, <code>SimpleComponent</code> is added to the render tree, instantiated and initialized.</p>
+<p><img src="https://shauncurtis.github.io/articles/assets/Blazor-Components/Simple-Page-Loaded.png" alt="Simple Page Loaded" /></p>
+<h3 id="component-content">Component Content</h3>
+<p>Change <code>SimpleComponent</code> and <code>SimplePage</code> to:</p>
+<h4 id="simplecomponent.razor-1">SimpleComponent.razor</h4>
+<pre><code class="language-csharp">&lt;div class=&quot;h4 bg-success text-white p-2&quot;&gt;@ChildContent&lt;/div&gt;
+
+@code {
+    [Parameter] public RenderFragment ChildContent { get; set; }
+}
+</code></pre>
+<h4 id="simplepage.razor-1">SimplePage.razor</h4>
+<pre><code class="language-csharp">@page &quot;/simple&quot;
+&lt;h3&gt;SimplePage&lt;/h3&gt;
+@if (loaded)
+{
+    &lt;SimpleComponent&gt;
+        &lt;button class=&quot;btn btn-primary&quot; @onclick=&quot;ButtonClick&quot;&gt;Click Me&lt;/button&gt;
+    &lt;/SimpleComponent&gt;
+}
+else
+{
+    &lt;div class=&quot;h4 bg-danger text-white p-2&quot;&gt;Loading.....&lt;/div&gt;
+}
+
+@code {
+    private bool loaded;
+
+    protected async override Task OnInitializedAsync()
+    {
+        await Task.Delay(2000);
+        loaded = true;
+    }
+
+    protected void ButtonClick(MouseEventArgs e)
+    {
+        var x = true;
+    }
+}
+</code></pre>
+<p>There is now content in <code>SimpleComponent</code>. When the application is run that content gets executed in the context of the parent component.  How?</p>
+<p>The answer is in <code>SimpleComponent</code>.   Remove the <code>[Parameter]</code> attribute from <code>SimpleComponent</code> and run the page.  It errors:</p>
+<pre><code class="language-Text">InvalidOperationException: Object of type 'xxx.SimpleComponent' has a property matching the name 'ChildContent', but it does not have [ParameterAttribute] or [CascadingParameterAttribute] applied.
+</code></pre>
+<p>If a component has &quot;content&quot; i.e. markup between the opening and closing tags, Blazor expects to find a <code>Parameter</code> named <code>ChildContent</code> in the component.  The content between the tags is pre-compiled into a <code>RenderFragment</code> and then added to the component.  The content of the <code>RenderFragment</code> is run in the context of the object that owns it - <code>SimplePage</code>.</p>
+<p>The content can also be defined like this:</p>
+<pre><code class="language-html">&lt;SimpleComponent&gt;
+    &lt;ChildContent&gt;
+        &lt;button class=&quot;btn btn-primary&quot; @onclick=&quot;ButtonClick&quot;&gt;
+            Click Me
+        &lt;/button&gt;
+    &lt;/ChildContent&gt;
+&lt;/SimpleComponent&gt;
+</code></pre>
+<p>The page can also be re-written as below, where it now becomes more obvious who owns the <code>RenderFragment</code>.</p>
+<pre><code class="language-csharp">@page &quot;/simple&quot;
+&lt;h3&gt;SimplePage&lt;/h3&gt;
+@if (loaded)
+{
+    &lt;SimpleComponent&gt;
+        @_childContent
+    &lt;/SimpleComponent&gt;
+}
+else
+{
+    &lt;div class=&quot;h4 bg-danger text-white p-2&quot;&gt;Loading.....&lt;/div&gt;
+}
+
+@code {
+
+    private bool loaded;
+
+    protected async override Task OnInitializedAsync()
+    {
+        await Task.Delay(2000);
+        loaded = true;
+    }
+
+    protected void ButtonClick(MouseEventArgs e)
+    {
+        var x = true;
+    }
+
+    private RenderFragment _childContent =&gt; (builder) =&gt;
+    {
+        builder.OpenElement(0, &quot;button&quot;);
+        builder.AddAttribute(1, &quot;class&quot;, &quot;btn btn-primary&quot;);
+        builder.AddAttribute(2, &quot;onclick&quot;, EventCallback.Factory.Create&lt;MouseEventArgs&gt;(this, ButtonClick));
+        builder.AddContent(3, &quot;Click Me&quot;);
+        builder.CloseElement();
+    };
+}
+</code></pre>
+<p>A component is not limited to a single <code>RenderFragment</code>.  A table component could look like this:</p>
+<pre><code class="language-html">&lt;TableComponent&gt;
+    &lt;Header&gt;
+        ...
+    &lt;/Header&gt;
+    &lt;Rows&gt;
+        ...
+    &lt;/Rows&gt;
+    &lt;Footer&gt;
+        ...
+    &lt;/Footer&gt;
+&lt;/TableComponent&gt;
+</code></pre>
+<h2 id="component-events">Component Events</h2>
+<p>The most important point to understand about Component events is they are <strong>NOT</strong> fire and forget.  All events are by default asynchronous and look like this:</p>
+<pre><code class="language-csharp">var task = InvokeAsync(HandlerMethod);
+StateHasChanged();
+if (!task.IsCompleted)
+{
+    await task;
+    StateHasChanged();
+}
+</code></pre>
+<p>So the following code won't execute as expected:</p>
+<pre><code class="language-csharp">void async ButtonClick(MouseEventArgs e) 
+{
+  await Task.Delay(2000);
+  UpdateADisplayProperty();
+}
+</code></pre>
+<p>The DisplayProperty doesn't display the current value until another <code>StateHasChanged</code> events occurs.  Why? ButtonClick doesn't return a <code>Task</code>, so there's nothing for the event handler to wait on.  It runs <code>StateHasChanged</code> before <code>UpdateADisplayProperty</code> completes.</p>
+<p>This is a bandaid fix - it's bad pactice.</p>
+<pre><code class="language-csharp">void async ButtonClick(MouseEventArgs e) 
+{
+  await Task.Delay(2000);
+  UpdateADisplayProperty();
+  StateHasChanged();
+}
+</code></pre>
+<p>The correct solution is:</p>
+<pre><code class="language-csharp">Task async ButtonClick(MouseEventArgs e) 
+{
+  await Task.Delay(2000);
+  UpdateADisplayProperty();
+}
+</code></pre>
+<p>Now the event handle has a <code>Task</code> to await and doesn't execute <code>StateHasChanged</code> until <code>ButtonClick</code> completes.</p>
+<h2 id="some-important-less-documented-information-and-lessons-learned">Some Important Less Documented Information and Lessons Learned</h2>
+<h3 id="keep-parameter-properties-simple">Keep Parameter Properties Simple</h3>
+<p>Your parameter declarations should look like this:</p>
+<pre><code class="language-csharp">[Parameter] MyClass myClass {get; set;}
+</code></pre>
+<p><strong>DON'T</strong> add code to the getter or setter.  Why?  Any setter must be run as part of the render process and can have a significant impact on render speed and component state.</p>
+<h3 id="overriding-setparametersasync">Overriding SetParametersAsync</h3>
+<p>If you override <code>SetParametersAsync</code> your method should look like this:</p>
+<pre><code class="language-csharp">    public override Task SetParametersAsync(ParameterView parameters)
+    {
+        // always call first
+        parameters.SetParameterProperties(this);
+        // Your Code
+        .....
+        // pass an empty ParameterView, not parameters
+        return base.SetParametersAsync(ParameterView.Empty);
+    }
+</code></pre>
+<p>Set the parameters in the first line and call the base method passing <code>ParameterView.Empty</code>.  Don't try to pass <code>parameters</code> - you will get an error.</p>
+<h3 id="treat-parameters-as-immutable">Treat Parameters as Immutable</h3>
+<p>Never set Parameters in your code.  If you want to make or track changes do this:</p>
+<pre><code class="language-csharp">    [Parameter] public int MyParameter { get; set; }
+    private int _MyParameter;
+    public event EventHandler MyParameterChanged;
+
+    public async override Task SetParametersAsync(ParameterView parameters)
+    {
+        parameters.SetParameterProperties(this);
+        if (!_MyParameter.Equals(MyParameter))
+        {
+            _MyParameter = MyParameter;
+            MyParameterChanged?.Invoke(_MyParameter, EventArgs.Empty);
+        }
+        await base.SetParametersAsync(ParameterView.Empty);
+    }
+</code></pre>
+<h3 id="iterators">Iterators</h3>
+<p>A common problem occurs when a <code>For</code> iterator is used to loop through a collection to build a <code>select</code> or a data table.  A typical example is shown below:</p>
+<pre><code class="language-csharp">@for (var counter = 0; counter &lt; this.myList.Count; counter++)
+{
+    &lt;button class=&quot;btn btn-dark m-3&quot; @onclick=&quot;() =&gt; ButtonClick(this.myList[counter])&quot;&gt;@this.myList[counter]&lt;/button&gt;
+}
+@for (var counter = 0; counter &lt; this.myList.Count; counter++)
+{
+    &lt;button class=&quot;btn btn-dark m-3&quot; @onclick=&quot;() =&gt; ButtonClick(counter)&quot;&gt;@this.myList[counter]&lt;/button&gt;
+}
+&lt;div&gt;Value = @this.value &lt;/div&gt;
+
+@code {
+    private List&lt;int&gt; myList =&gt; new List&lt;int&gt; { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 };
+    private int value;
+
+    private Task ButtonClick(int value)
+    {
+        this.value = value;
+        return Task.CompletedTask;
+    }
+}
+</code></pre>
+<p>If you click on a button in the first row, you will get a <em>Index was out of range</em> error.  Click on a button in the second row and value is always 10.  The reason is that the interator has completed before you click a button, at which time <code>counter</code> is 10.</p>
+<p>To fix the problem, set a local variable within the loop as shown below.</p>
+<pre><code class="language-csharp">@for (var counter = 0; counter &lt; this.myList.Count; counter++)
+{
+    var item = this.myList[counter];
+    &lt;button class=&quot;btn btn-dark m-3&quot; @onclick=&quot;() =&gt; ButtonClick(item)&quot;&gt;@item&lt;/button&gt;
+}
+@for (var counter = 0; counter &lt; this.myList.Count; counter++)
+{
+    var item = this.myList[counter];
+    var thiscount = counter;
+    &lt;button class=&quot;btn btn-info m-3&quot; @onclick=&quot;() =&gt; ButtonClick(thiscount)&quot;&gt;@item&lt;/button&gt;
+}
+</code></pre>
+<p>The best solution is to use <code>ForEach</code>.</p>
+<pre><code class="language-csharp">@foreach  (var item in this.myList)
+{
+    &lt;button class=&quot;btn btn-primary m-3&quot; @onclick=&quot;() =&gt; ButtonClick(item)&quot;&gt;@item&lt;/button&gt;
+}
+</code></pre>
+<h3 id="component-numbering">Component Numbering</h3>
+<p>It's seems logical to use iterators to automate the numbering of component elements.  DON'T.  The numbering system is used by the diffing engine to decide which bits of the DOM need updating and which bits don't.  Numbering must be consistent within a <code>RenderFragment</code>.  You can use <code>OpenRegion</code> and <code>CloseRegion</code> to define a region with it's own number space.  <a href="https://gist.github.com/SteveSandersonMS/ec232992c2446ab9a0059dd0fbc5d0c3">See this gist for a more detailed explanation</a>.</p>
+<h2 id="building-components">Building Components</h2>
+<p>Components can be defined in three ways:</p>
+<ol>
+<li>As a <em>.razor</em> file with an code inside an <em>@code</em> block.</li>
+<li>As a <em>.razor</em> file and a code behind <em>.razor.cs</em> file.</li>
+<li>As a pure <em>.cs</em> class file inheriting from <em>ComponentBase</em> or a <em>ComponentBase</em> inherited class, or implementing <em>IComponent</em>.</li>
+</ol>
+<h5 id="all-in-one-razor-file">All in One Razor File</h5>
+<p>HelloWorld.razor</p>
+<pre><code class="language-html">&lt;div&gt;
+@HelloWorld
+&lt;/div&gt;
+
+@code {
+[Parameter]
+public string HelloWorld {get; set;} = &quot;Hello?&quot;;
+}
+</code></pre>
+<h5 id="code-behind">Code Behind</h5>
+<p>HelloWorld.razor</p>
+<pre><code class="language-html">@inherits ComponentBase
+@namespace CEC.Blazor.Server.Pages
+
+&lt;div&gt;
+@HelloWorld
+&lt;/div&gt;
+</code></pre>
+<p>HelloWorld.razor.cs</p>
+<pre><code class="language-csharp">namespace CEC.Blazor.Server.Pages
+{
+    public partial class HelloWorld : ComponentBase
+    {
+        [Parameter]
+        public string HelloWorld {get; set;} = &quot;Hello?&quot;;
+    }
+}
+</code></pre>
+<h5 id="c-class">C# Class</h5>
+<p>HelloWorld.cs</p>
+<pre><code class="language-csharp">namespace CEC.Blazor.Server.Pages
+{
+    public class HelloWorld : ComponentBase
+    {
+        [Parameter]
+        public string HelloWorld {get; set;} = &quot;Hello?&quot;;
+
+        protected override void BuildRenderTree(RenderTreeBuilder builder)
+        {
+            builder.OpenElement(0, &quot;div&quot;);
+            builder.AddContent(1, (MarkupString)this._Content);
+            builder.CloseElement();
+        }
+    }
+}
+</code></pre>
+<h2 id="some-observations">Some Observations</h2>
+<ol>
+<li><p>There's a tendency to pile too much code into <code>OnInitialized</code> and <code>OnInitializedAsync</code> and then use events to drive <code>StateHasChanged</code> updates in the component tree.  Get the relevant code into the right places in the lifecycle and you won't need the events.</p>
+</li>
+<li><p>There's a temptation to start with the non-async versions (because they're easier to implement) and only use the async versions when you have to, when the opposite should be true.  Most web based activities are inherently async in nature.  I never use the non-async versions - I work on the principle that at some point I'm going to need to add async behaviour.</p>
+</li>
+<li><p><code>StateHasChanged</code> is called far to often, normally because code is in the wrong place in the component lifecycle, or the events have been coded incorrectly.  Ask yourself a challenging &quot;Why?&quot; when you type <code>StateHasChanged</code>.</p>
+</li>
+<li><p>Components are underused in the UI.  The same code/markup blocks are used repeatedly.  The same rules apply to code/markup blocks as to C# code.</p>
+</li>
+<li><p>Once you really, REALLY understand components, writing Blazor code becomes a totally &quot;different&quot; experience.</p>
+</li>
 </ol>
 </div></div></div></body></html>
 

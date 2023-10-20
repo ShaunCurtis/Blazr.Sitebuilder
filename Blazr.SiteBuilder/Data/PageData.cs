@@ -10,6 +10,7 @@ public record PageData: IPageData
 {
     public string Title { get; init; } = "Not Set";
     public string Description { get; init; } = "Not Set";
+    public string Precis { get; init; } = string.Empty;
     public string Author { get; init; } = "Not Set";
     public string Category { get; init; } = "Articles";
     public string Story { get; init; } = string.Empty;

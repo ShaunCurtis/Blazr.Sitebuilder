@@ -1,4 +1,3 @@
-# A Short Tour of the Blazor WASM hosted Project
 
 The Blazor Web Assembly Core Hosted project is a little confusing for newcomers to Blazor.  This note hopefully sheds some light on it.
 

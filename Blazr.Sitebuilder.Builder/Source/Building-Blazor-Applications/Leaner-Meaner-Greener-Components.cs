@@ -12,7 +12,7 @@ public class Leaner_Meaner_Greener_Components : BuildingBlazorApplicationsFolder
         PublishDate = new DateOnly(2022, 11, 4),
         LastUpdated = new(2022, 11, 4),
         Author = "Shaun Curtis",
-        Category = "Posts",
+        Category = "Articles",
         Tags = "#Blazor;#Components;",
         Description = "Building Leaner, Meaner, Greener Blazor Components - AKA Rethinking the Blazor Component.",
         MarkdownFile = $"Leaner-Meaner-Greener-Components.md",

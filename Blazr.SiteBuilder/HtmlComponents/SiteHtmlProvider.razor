@@ -55,16 +55,36 @@
 
             <div class="list-group">
 
-                <div class="list-group-item list-group-item-action">
-
-                    @foreach (var route in provider.RouteProvider.RouteListForCategory(currentCategory))
-                    {
+                @foreach (var route in provider.RouteProvider.RouteListForCategory(currentCategory))
+                {
+                    <div class="bg-white border border-secondary border-1 p-2 m-1">
                         <a href="@($"{route.Route}.html")">@route.PageData.Title</a>
-                        <div><small>@route.PageData.Description</small></div>
-                    }
-
-                </div>
+                        <div><small class=float-left>@route.PageData.Description</small><small class="float-right">@route.PageData.LastUpdated.AsGlobalDate()</small></div>
+                    </div>
+                }
 
             </div>
         };
+
+    public static RenderFragment<ContentRenderer> LatestRoutesListHtml => (provider) => (__builder) =>
+        {
+            var latestRoutes = provider.RouteProvider.RouteList
+                .Where(item => !item.PageData.HideInNavigationLists)
+                .OrderByDescending(item => item.PageData.LastUpdated)
+                .Take(5);
+
+            <div class="list-group">
+
+                @foreach (var route in latestRoutes)
+                {
+                    <div class="card border-left-info shadow h-100 py-2 px-2 mb-2">
+                        <a class="h3" href="@($"{route.Route}.html")">@route.PageData.Title</a>
+                        <div><span class=float-left>@route.PageData.Description</span><span class="float-right">@route.PageData.LastUpdated.AsGlobalDate()</span></div>
+                    </div>
+                }
+
+            </div>
+        };
+
 }
+

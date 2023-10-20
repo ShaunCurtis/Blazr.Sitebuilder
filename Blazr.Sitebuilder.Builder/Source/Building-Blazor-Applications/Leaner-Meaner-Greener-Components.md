@@ -1,5 +1,4 @@
-﻿# Building Leaner, Meaner, Greener Blazor Components - AKA Rethinking the Blazor Component
-
+﻿
 Blazor ships with a single developer "Component".  If you add a Razor file it inherits from it by default.
 
 `ComponentBase` rules the Blazor UI world.  You don't have to use it, but probably 99.x% of all developer built components either inherit directly or indirectly from it.

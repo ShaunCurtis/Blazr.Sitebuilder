@@ -10,6 +10,7 @@ public interface IPageData
 {
     public string Title { get; }
     public string Description { get; }
+    public string Precis { get; }
     public string Author { get; }
     public string Category { get; }
     public string Story { get; }
