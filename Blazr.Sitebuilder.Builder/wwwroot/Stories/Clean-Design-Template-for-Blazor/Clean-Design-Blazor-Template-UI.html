@@ -74,7 +74,7 @@
     <div class="mb-2"><h3>Document List</h3>
         <ul><li><a href="/stories/Clean-Design-Template-for-Blazor/Clean-Design-In-Blazor.html">Clean Design Principles in Blazor Applications</a></li><li><a href="/stories/Clean-Design-Template-for-Blazor/Index.html">A Blazor Clean Design Template</a></li><li><a href="/stories/Clean-Design-Template-for-Blazor/Clean-Design-Blazor-Template-Solution-Structure.html">Solution Structure</a></li><li><a href="/stories/Clean-Design-Template-for-Blazor/Clean-Design-Blazor-Template-DataServices.html">Data Services</a></li><li><a href="/stories/Clean-Design-Template-for-Blazor/Clean-Design-Blazor-Template-UI.html">The UI</a></li><li><a href="/stories/Clean-Design-Template-for-Blazor/Clean-Design-Blazor-Template-Solution-Setup.html">Solution Setup</a></li><li><a href="/stories/Clean-Design-Template-for-Blazor/Clean-Design-Blazor-Template-Testing.html">Testing</a></li></ul></div>
     <p>The UI Razor files are re-organised into the following structure:</p>
-<p><img src="https://shauncurtis.github.io/Design/assets/Blazr.Template.UI-File-Structure.png" alt="Ui File Structure" /></p>
+<p><img src="./assets/Clean-Design-Template-for-Blazor/Blazr.Template.UI-File-Structure.png" alt="Ui File Structure" /></p>
 <h2 id="namespacing">Namespacing</h2>
 <p>All code files, including the razor files, are explicitly namespaced to <code>Blazr.Template.UI</code>.</p>
 <p><code>Counter.razor</code>:</p>
@@ -139,7 +139,7 @@
 <pre><code class="language-csharp">private PagingData _pagingData =&gt; PagingData!;
 </code></pre>
 <h3 id="weatherforecastlist">WeatherForecastList</h3>
-<p><code>WeatherForecastList.razor</code> is a re-usable compoinent containing all the code from <code>FetchData</code>.  The component:</p>
+<p><code>WeatherForecastList.razor</code> is a re-usable component containing all the code from <code>FetchData</code>.  The component:</p>
 <ol>
 <li>Injects the View Service.</li>
 <li>Uses a local reference to the View Service to handklle nullable issues.</li>
@@ -149,7 +149,7 @@
 </ol>
 <h2 id="a-look-at-how-paging-works">A Look at How Paging Works</h2>
 <p>It's isn't obvious from <code>WeatherForecastList</code> how it updates when a new page is clicked in the <code>PagingControl</code>.</p>
-<p><img src="https://shauncurtis.github.io/Design/assets/Pagination.png" alt="Pagination" /></p>
+<p><img src="./assets/Clean-Design-Template-for-Blazor/Pagination.png" alt="Pagination" /></p>
 <p>Clicking a page button Sets the new page number in <code>PagingData</code> and triggers <code>PagingData.PageChanged</code>.  This triggers <code>WeatherForecastViewService.OnPageChanged</code> event handler that gets the new paged dataset.  This triggers the <code>WeatherForecastViewService.ListChanged</code> event.  <code>WeatherForecastList</code> is register for this event.  It triggers <code>StateHasChanged</code> which re-renders the component.</p>
 <p>Meanwhile in <code>PagingControl</code>, which triggered the whole sequence, the new page number has been set in <code>PagingData</code> before the event handler completes and calls <code>StateHasChanged</code>.</p>
 <p>On first render <code>PagingControl</code> is inside <code>LoadingControl</code>, so is only rendered when loading is complete.</p>

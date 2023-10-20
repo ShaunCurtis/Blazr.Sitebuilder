@@ -100,7 +100,7 @@
 <p>All Blazor edit state solutions I've come across were cludges in one way or another, I've created more that one myself. What the community hoped for were changes in NetCore 5, specifically some extra functionality in NavigationManager to cancel or block navigation requests. That didn't happen: I don't think there was team concensus on the right solution, so we're back to square one.</p>
 <p>What I cover in this article is my latest approach to the problem. It's not perfect, but I don't think we will ever get a near perfect solution until we get some new browser standards allowing a switch to SPA mode and control over toolbar navigation.</p>
 <p>Our goal is to prevent navigation where possible i.e. lock the page, and where that fails hit the user with an exit option message.  No side doors!</p>
-<p><img src="https://shauncurtis.github.io/articles/assets/Edit-Forms/Dirty-App-Exit.png" alt="Dirty Editor" /></p>
+<p><img src="./assets/Edit-Forms/Dirty-App-Exit.png" alt="Dirty Editor" /></p>
 <h2 id="code-repository-and-demo-site">Code Repository and Demo Site</h2>
 <p>The repository for the article is <a href="https://github.com/ShaunCurtis/Blazr.Demo.EditForm">here</a>.</p>
 <p>You can see the code in this article in action on my Blazr Database demo site is here - <a href="https://blazr-demo.azurewebsites.net/">Blazr.Demo Azure Site</a></p>

@@ -48,7 +48,7 @@
 <li class="TOC-item TOC-item-1" >
 <ul class="TOC TOC-1" >
 <li class="TOC-item TOC-item-2" >
-<a class="TOC-link" href="#dependancy-injection-containers">Dependancy Injection Containers</a>
+<a class="TOC-link" href="#dependency-injection-containers">Dependency Injection Containers</a>
 </li>
 <li class="TOC-item TOC-item-2" >
 <a class="TOC-link" href="#building-a-test-environment">Building a Test Environment</a>
@@ -68,8 +68,8 @@
 			
 			<div class="col-12 col-sm-9 col-lg-10 p-2"><div class="pt-2 pb-2 border-bottom mb-4 text-primary"><h1>Blazor Services</h1>
             <div><small>An examination of Blazor DI and Services.</small></div></div>
-    <p>This post looks at Blazor the Dependancy Injection Containers and examines the lifecycle of the services they provide.</p>
-<h2 id="dependancy-injection-containers">Dependancy Injection Containers</h2>
+    <p>This post looks at Blazor the Dependency Injection Containers and examines the lifecycle of the services they provide.</p>
+<h2 id="dependency-injection-containers">Dependency Injection Containers</h2>
 <p>Blazor has three levels of service containers.  These are:</p>
 <p>Application Service Container.  This is held by the running instance of DotNetCore.  In the Blazor Server Context the <code>WebApplication</code>.  This contains all the Singleton Services.</p>
 <p>Blazor Hub Service Container.  This is held by the Blazor Hub Session for the running SPA: one per user Hub session.  This contains the normal Scoped and Transient Services.</p>
@@ -216,7 +216,7 @@ Disposing ScopedService - 8b965aa9-22b2-4061-88a4-ac3893d95a31
 Disposing ScopedService - b436f1b0-ef28-4f35-8780-8dca3bc6365b
 </code></pre>
 <p>The next section is the actual first live render of <code>Index</code>.</p>
-<p><img src="https://shauncurtis.github.io/posts/assets/Blazor-Services/Blazor-Component.png" alt="Blazor-Component" /></p>
+<p><img src="./assets/Blazor-Services/Blazor-Component.png" alt="Blazor-Component" /></p>
 <ol>
 <li>The singleton 7765 instance is the same throughout.</li>
 <li>The Scoped 0d58 instance is the normal Hub Session instance.  It's used by both instances of the component.</li>
@@ -237,7 +237,7 @@ New Instance ScopedService - d57a6c8b-7464-48f3-b52c-45fe4f6bd53a
 Disposing ScopedService - d57a6c8b-7464-48f3-b52c-45fe4f6bd53a
 </code></pre>
 <p>When we navigate back to <code>Index</code></p>
-<p><img src="https://shauncurtis.github.io/posts/assets/Blazor-Services/Blazor-Component-Routed.png" alt="Blazor-Component" /></p>
+<p><img src="./assets/Blazor-Services/Blazor-Component-Routed.png" alt="Blazor-Component" /></p>
 <ol>
 <li>The singleton 7765 instance is the same.</li>
 <li>The Scoped 0d58 instance is the same normal Hub Session instance.</li>
@@ -302,7 +302,7 @@ Disposing TransientService - b2581dd9-abf4-4cdb-86e9-14cdf707550f
 }
 </code></pre>
 <h2 id="wrap-up">Wrap Up</h2>
-<p>Hopefully you're a little more enlightened about Blazor and AspNetCore Dependancy Injection and Services.</p>
+<p>Hopefully you're a little more enlightened about Blazor and AspNetCore Dependency Injection and Services.</p>
 </div></div></div></body></html>
 
 

@@ -67,7 +67,7 @@ The result are a set of projects as follows:
 7. *Razr.Database* - Blazor project to buid the WASM application code.
 8. *Razr.Database.Web* - the web server applicaton.
 
-![Project Dependancies](./assets/Database/Project-dependencies.png)
+![Project Dependencies](./assets/Database/Project-dependencies.png)
 
 There are also testing projects currently being developed.
  

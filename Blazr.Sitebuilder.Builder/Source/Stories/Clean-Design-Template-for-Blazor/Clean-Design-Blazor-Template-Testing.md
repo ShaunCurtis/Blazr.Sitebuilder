@@ -39,7 +39,7 @@ This is a XUnit test project.  The project file is:
 
 The tests demonstrate how to implement various testing strategies.
 
-![Testing](https://shauncurtis.github.io/Design/assets/Testing-Example.png)
+![Testing](./assets/Clean-Design-Template-for-Blazor/Testing-Example.png)
 
 I'n not going to go into details here.  There are two test code modules:
 

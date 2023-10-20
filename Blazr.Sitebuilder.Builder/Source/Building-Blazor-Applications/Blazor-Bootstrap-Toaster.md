@@ -18,7 +18,7 @@ You can find the code in my [Blazr.Demo.Toaster Repo](https://github.com/ShaunCu
 
 A demo site can be found here at [https://blazr-demo-database-server.azurewebsites.net](https://blazr-demo-database-server.azurewebsites.net)
 
-![Example](https://shauncurtis.github.io/posts/assets/Toaster/Toaster-Startup.png)
+![Example](./assets/Toaster/Toaster-Startup.png)
 
 ## Code Classes
 
@@ -36,7 +36,7 @@ public enum MessageColour
 
 1. Toast is declared as a `record`.
 2. There are five public properties that are used by the UI to display the toast. All are declared as immutable  with `{ get; init; }`.
-3. `TimeToBurn` uses `DateTimeOffset` to give timezone independant absolute time. 
+3. `TimeToBurn` uses `DateTimeOffset` to give time zone independent absolute time. 
 
 ```csharp
 public record Toast

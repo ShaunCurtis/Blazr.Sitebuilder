@@ -14,7 +14,7 @@ The template demonstrates:
 
 It uses the three domain model to structure the solution.
 
-![Domain model](https://shauncurtis.github.io/Design/assets/Domain-Model.png)
+![Domain model](./assets/Clean-Design-Template-for-Blazor/Domain-Model.png)
 
 The structure is enforced through projects.  Each domain has a project, with project dependencies enforcing code dependencies:
 

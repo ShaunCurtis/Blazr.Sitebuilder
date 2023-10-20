@@ -73,7 +73,7 @@
 <li><em>Blazor.Template.APIControllers</em> is a Razor Library project.  It contains all the API Controllers code.</li>
 <li><em>Blazor.Template.WASM</em> is a <code>BlazorWebAssembly</code> project.  It builds the WASM compliant code to deploy to the browser.</li>
 <li><em>Blazor.Template.Server.Web</em> is an <code>AspNetCore</code> Web project, configured to support the Blazor Server Hub, and contains the launch file for the Blazor Server SPA.</li>
-<li><em>Blazor.Template.WASM.Web</em> is an <code>AspNetCore</code> Web project configured to provide server side files for the WASM SPA, the launch file for the Blazor Server SPA, and any API conbntrollers.</li>
+<li><em>Blazor.Template.WASM.Web</em> is an <code>AspNetCore</code> Web project configured to provide server side files for the WASM SPA, the launch file for the Blazor Server SPA, and any API controllers.</li>
 <li><em>Blazor.Template.Tests</em> is a XUnit Test project.  It contains all the test code for the solution.</li>
 </ol>
 <h2 id="running-the-solution">Running the Solution.</h2>
@@ -85,19 +85,11 @@
 <h2 id="structure-and-namespaces">Structure and Namespaces</h2>
 <p>All the primary application code is split into three <em>domains</em>.  These are:</p>
 <ol>
-<li><em>Data Domain</em> - <code>Blazr.Template.Data</code> - Data access code.  The only application dependancy is to the <code>Blazr.Template.Core</code>.</li>
-<li><em>Core Domain</em> - <code>Blazr.Template.Core</code> - Application and Business Logic code.  Core code has no dependancies on other application domain code.</li>
-<li><em>UI Domain</em> - <code>Blazr.Template.UI</code> - UI code, principally components and supporting classes .  UI code only depends on <code>Blazr.Template.Core</code>.  There is no dependancies on <code>Blazr.Template.Data</code>.</li>
+<li><em>Data Domain</em> - <code>Blazr.Template.Data</code> - Data access code.  The only application dependency is to the <code>Blazr.Template.Core</code>.</li>
+<li><em>Core Domain</em> - <code>Blazr.Template.Core</code> - Application and Business Logic code.  Core code has no dependencies on other application domain code.</li>
+<li><em>UI Domain</em> - <code>Blazr.Template.UI</code> - UI code, principally components and supporting classes .  UI code only depends on <code>Blazr.Template.Core</code>.  There is no dependencies on <code>Blazr.Template.Data</code>.</li>
 </ol>
-<p><img src="https://shauncurtis.github.io/Design/assets/Domain-Model.png" alt="Domain model" /></p>
-<p>The documents associated with this demo ate:</p>
-<ul>
-<li><a href="/Clean-Design-Blazor-Template-Solution-Structure.html">Solution Structure</a></li>
-<li><a href="./Clean-Design-Blazor-Template-DataServices.html">Data Services</a></li>
-<li><a href="./Clean-Design-Blazor-Template-UI.html">UI</a></li>
-<li><a href="./Clean-Design-Blazor-Template-Solution-Setup.html">Solution Setup</a></li>
-<li><a href="./Clean-Design-Blazor-Template-Solution-Testing.html">Testing</a></li>
-</ul>
+<p><img src="./assets/Clean-Design-Template-for-Blazor/Domain-Model.png" alt="Domain model" /></p>
 </div></div></div></body></html>
 
 

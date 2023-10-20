@@ -8,6 +8,17 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Source\Stories\A-Blazor-Database-Primer\A-Blazor-Database-Primer.cs" />
+    <Compile Remove="Source\Stories\A-Blazor-Database-Primer\Chapter-1.cs" />
+    <Compile Remove="Source\Stories\A-Blazor-Database-Primer\Chapter-2.cs" />
+    <Compile Remove="Source\Stories\A-Blazor-Database-Primer\Chapter-3.cs" />
+    <Compile Remove="Source\Stories\A-Blazor-Database-Primer\Chapter-4.cs" />
+    <Compile Remove="Source\Stories\A-Blazor-Database-Primer\Chapter-5.cs" />
+    <Compile Remove="Source\Stories\A-Blazor-Database-Primer\Chapter-6.cs" />
+    <Compile Remove="Source\Stories\A-Blazor-Database-Primer\Chapter-7.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Blazr.BaseComponents" Version="1.0.1" />
     <PackageReference Include="Markdig" Version="0.33.0" />
   </ItemGroup>

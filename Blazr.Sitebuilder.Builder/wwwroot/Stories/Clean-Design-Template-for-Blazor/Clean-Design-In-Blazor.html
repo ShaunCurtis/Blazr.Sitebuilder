@@ -51,7 +51,7 @@
 <a class="TOC-link" href="#the-templatesolution">The Template/Solution</a>
 </li>
 <li class="TOC-item TOC-item-2" >
-<a class="TOC-link" href="#project-dependancies">Project Dependancies</a>
+<a class="TOC-link" href="#project-dependencies">Project Dependencies</a>
 </li>
 <li class="TOC-item TOC-item-2" >
 <a class="TOC-link" href="#key-design-points">Key Design Points:</a>
@@ -74,13 +74,13 @@
     <div class="mb-2"><h3>Document List</h3>
         <ul><li><a href="/stories/Clean-Design-Template-for-Blazor/Clean-Design-In-Blazor.html">Clean Design Principles in Blazor Applications</a></li><li><a href="/stories/Clean-Design-Template-for-Blazor/Index.html">A Blazor Clean Design Template</a></li><li><a href="/stories/Clean-Design-Template-for-Blazor/Clean-Design-Blazor-Template-Solution-Structure.html">Solution Structure</a></li><li><a href="/stories/Clean-Design-Template-for-Blazor/Clean-Design-Blazor-Template-DataServices.html">Data Services</a></li><li><a href="/stories/Clean-Design-Template-for-Blazor/Clean-Design-Blazor-Template-UI.html">The UI</a></li><li><a href="/stories/Clean-Design-Template-for-Blazor/Clean-Design-Blazor-Template-Solution-Setup.html">Solution Setup</a></li><li><a href="/stories/Clean-Design-Template-for-Blazor/Clean-Design-Blazor-Template-Testing.html">Testing</a></li></ul></div>
     <p>Large, well organised software projects normally apply a strict set of design principles.  Smaller teams less so.</p>
-<p>This short article descibes a basic architecture that many individuals and organisations have come to independantly.  It goes by many names, and has many variations, but the principles remain the saame.  The two names I use here are <em>Clean</em> and <em>Sound</em>.</p>
-<p>This article provdes a short overview of the architecture - it's pretty simple - and then applies the architecture to build a new Blazor Template based on the out-of-the-box templates.</p>
+<p>This short article describes a basic architecture that many individuals and organisations have come to independantly.  It goes by many names, and has many variations, but the principles remain the saame.  The two names I use here are <em>Clean</em> and <em>Sound</em>.</p>
+<p>This article provides a short overview of the architecture - it's pretty simple - and then applies the architecture to build a new Blazor Template based on the out-of-the-box templates.</p>
 <p>We'll use the Blazr.Demo solution to discuss the architecture implementation in practice.</p>
 <p>The key design goals are:</p>
 <ol>
 <li>Enforced Separation of Concerns</li>
-<li>Abstraction of Dependancies</li>
+<li>Abstraction of Dependencies</li>
 </ol>
 <p>Any application can broadly be separated into three <em>Domains</em>:</p>
 <ol>
@@ -88,12 +88,12 @@
 <li><strong>The Core domain</strong> - the core business logic of the application. What turns the raw data from the Data Domain into useful information that can be presented in the UI Domain.</li>
 <li><strong>The UI Domain</strong> - displaying and handling data input.</li>
 </ol>
-<p>The diagram below illustrates these domains and the dependancies.</p>
-<p><img src="https://shauncurtis.github.io/Design/assets/Domain-Model.png" alt="Design Architecture" /></p>
+<p>The diagram below illustrates these domains and the dependencies.</p>
+<p><img src="./assets/Clean-Design-Template-for-Blazor/Domain-Model.png" alt="Design Architecture" /></p>
 <p>The core principles of the architecture are:</p>
 <ol>
-<li>The Core Domain has no dependancies on other domains within the project.  You can have your own libraries, but these should also adher to the same design principles.</li>
-<li>The Data and UI domains have a dependancy on the Core Domain, but not on each other.</li>
+<li>The Core Domain has no dependencies on other domains within the project.  You can have your own libraries, but these should also adhere to the same design principles.</li>
+<li>The Data and UI domains have a dependency on the Core Domain, but not on each other.</li>
 </ol>
 <p>Application of this architecture means you can change out the UI or the data store with no impact on the Core Domain Code.</p>
 <h2 id="the-templatesolution">The Template/Solution</h2>
@@ -116,30 +116,30 @@
 <h3 id="solution-projects">Solution Projects</h3>
 <p>Within the project this translates into the following projects:</p>
 <ol>
-<li><strong>.Core</strong> - <em>Microsoft.NET.Sdk</em> SDK - Contains all the Core Domain code.  No internal project dependancies.</li>
-<li><strong>.Data</strong> - <em>Microsoft.NET.Sdk</em> SDK - Contains all the Data Domain code.  Only dependancy is on <em>.Core</em>.</li>
-<li><strong>.UI</strong> - <em>Microsoft.NET.Sdk.Razor</em> SDK - contains all the UI component code.  Only Dependancy is on <em>.Core</em>.</li>
-<li><strong>.Config</strong> - <em>Microsoft.NET.Sdk.Razor</em> SDK - contains the application xconfiguration code and the <code>IServiceCollection</code> extension methods.   Dependancies are <em>.Core</em> and <em>.Data</em>.</li>
-<li><strong>.Controller</strong> - <em>Microsoft.NET.Sdk</em> SDK - contains the API controllers. Normal Dependancy is <em>.Core</em>.  Should interface with the data domain through the same interfaces as used by the core.</li>
+<li><strong>.Core</strong> - <em>Microsoft.NET.Sdk</em> SDK - Contains all the Core Domain code.  No internal project dependencies.</li>
+<li><strong>.Data</strong> - <em>Microsoft.NET.Sdk</em> SDK - Contains all the Data Domain code.  Only dependency is on <em>.Core</em>.</li>
+<li><strong>.UI</strong> - <em>Microsoft.NET.Sdk.Razor</em> SDK - contains all the UI component code.  Only Dependency is on <em>.Core</em>.</li>
+<li><strong>.Config</strong> - <em>Microsoft.NET.Sdk.Razor</em> SDK - contains the application configuration code and the <code>IServiceCollection</code> extension methods.   Dependencies are <em>.Core</em> and <em>.Data</em>.</li>
+<li><strong>.Controller</strong> - <em>Microsoft.NET.Sdk</em> SDK - contains the API controllers. Normal Dependency is <em>.Core</em>.  Should interface with the data domain through the same interfaces as used by the core.</li>
 <li><strong>.Server.Web</strong> - <em>Microsoft.NET.Sdk.Web</em> SDK - The Web Server project to run the Server SPA.</li>
 <li><strong>.WASM</strong> - <em>Microsoft.NET.Sdk.BlazorWebAssembly</em> SDK - the project to build and bundle the WASM codebase.</li>
 <li><strong>.WASM.Web</strong> - <em>Microsoft.NET.Sdk.Web</em> SDK - The Web Server project to host the WASM SPA and run the WASM API Controllers.</li>
 <li><strong>.Tests</strong> - <em>Microsoft.NET.Sdk</em> SDK - The XUnit/BUnit test project.</li>
 </ol>
-<h2 id="project-dependancies">Project Dependancies</h2>
-<h3 id="server-spaweb-dependancies">Server SPA/Web Dependancies</h3>
-<p><img src="https://shauncurtis.github.io/Design/assets/Blazr.Demo.Server.Web-Project-Structure.png" alt="Server Dependancies" /></p>
-<h3 id="wasm-spaweb-dependancies">WASM SPA/Web Dependancies</h3>
-<p><img src="https://shauncurtis.github.io/Design/assets/Blazr.Demo.WASM.Web-Project-Structure.png" alt="WASM Dependancies" /></p>
+<h2 id="project-dependencies">Project Dependencies</h2>
+<h3 id="server-spaweb-dependencies">Server SPA/Web Dependencies</h3>
+<p><img src="./assets/Clean-Design-Template-for-Blazor/Blazr.Demo.Server.Web-Project-Structure.png" alt="Server Dependencies" /></p>
+<h3 id="wasm-spaweb-dependencies">WASM SPA/Web Dependencies</h3>
+<p><img src="./assets/Clean-Design-Template-for-Blazor/Blazr.Demo.WASM.Web-Project-Structure.png" alt="WASM Dependencies" /></p>
 <h2 id="key-design-points">Key Design Points:</h2>
 <ol>
 <li>The core application code is separated from the Data Source and UI.  The UI or the Data Source can be changed out without impacting on the application code.</li>
 <li>The core to data domain interface is through <code>interfaces</code>.  This design uses Data Brokers as <em>thin</em> pass through layers to implement the interfaces.</li>
-<li>Using projects for each domain allows good dependancy control.  Namespaces within a project are too easy to breach and more difficult to control and detect.</li>
-<li>All the Blazor specific code is shared.  It's the same for the WASM and Server SPAs.  The only differencies in this solution are the service configurations for the Data Brokers.</li>
+<li>Using projects for each domain allows good dependency control.  Namespaces within a project are too easy to breach and more difficult to control and detect.</li>
+<li>All the Blazor specific code is shared.  It's the same for the WASM and Server SPAs.  The only differences in this solution are the service configurations for the Data Brokers.</li>
 </ol>
 <h2 id="running-the-spas">Running the SPA's</h2>
-<p>To run the SPA's set the following as the solutiuon startup project:</p>
+<p>To run the SPA's set the following as the solution startup project:</p>
 <ol>
 <li><strong>Server SPA</strong> - *<em>.Server.Web</em></li>
 <li><strong>WASM SPA</strong> - *<em>.WASM.Web</em></li>

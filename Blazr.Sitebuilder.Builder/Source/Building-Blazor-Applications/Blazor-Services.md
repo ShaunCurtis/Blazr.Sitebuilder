@@ -1,6 +1,6 @@
-This post looks at Blazor the Dependancy Injection Containers and examines the lifecycle of the services they provide.
+This post looks at Blazor the Dependency Injection Containers and examines the lifecycle of the services they provide.
 
-## Dependancy Injection Containers
+## Dependency Injection Containers
 
 Blazor has three levels of service containers.  These are:
 
@@ -181,7 +181,7 @@ Disposing ScopedService - b436f1b0-ef28-4f35-8780-8dca3bc6365b
 
 The next section is the actual first live render of `Index`.
 
-![Blazor-Component](https://shauncurtis.github.io/posts/assets/Blazor-Services/Blazor-Component.png)
+![Blazor-Component](./assets/Blazor-Services/Blazor-Component.png)
 
 1. The singleton 7765 instance is the same throughout.
 2. The Scoped 0d58 instance is the normal Hub Session instance.  It's used by both instances of the component.
@@ -206,7 +206,7 @@ Disposing ScopedService - d57a6c8b-7464-48f3-b52c-45fe4f6bd53a
 ```
 When we navigate back to `Index`
 
-![Blazor-Component](https://shauncurtis.github.io/posts/assets/Blazor-Services/Blazor-Component-Routed.png)
+![Blazor-Component](./assets/Blazor-Services/Blazor-Component-Routed.png)
 
 1. The singleton 7765 instance is the same.
 2. The Scoped 0d58 instance is the same normal Hub Session instance.
@@ -287,4 +287,4 @@ Here's a slightly different implementation of `ServicesComponent`.  The `Transie
 
 ## Wrap Up
 
-Hopefully you're a little more enlightened about Blazor and AspNetCore Dependancy Injection and Services.
+Hopefully you're a little more enlightened about Blazor and AspNetCore Dependency Injection and Services.

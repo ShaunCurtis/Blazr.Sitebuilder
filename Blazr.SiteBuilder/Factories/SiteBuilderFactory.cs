@@ -57,7 +57,7 @@ public class SiteBuilderFactory
                 var source = new DirectoryInfo(assetFilePath);
                 if (source.Exists)
                 {
-                    string targetFIlePath = Path.Combine(new string[] { Environment.CurrentDirectory, "assets" });
+                    string targetFIlePath = Path.Combine(new string[] { Environment.CurrentDirectory, "wwwroot", "assets" });
                     var target = Directory.CreateDirectory(targetFIlePath);
 
                     CopyFilesRecursively(source, target);

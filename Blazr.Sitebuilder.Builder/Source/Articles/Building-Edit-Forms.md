@@ -20,7 +20,7 @@ What I cover in this article is my latest approach to the problem. It's not perf
 
 Our goal is to prevent navigation where possible i.e. lock the page, and where that fails hit the user with an exit option message.  No side doors!
 
-![Dirty Editor](https://shauncurtis.github.io/articles/assets/Edit-Forms/Dirty-App-Exit.png)
+![Dirty Editor](./assets/Edit-Forms/Dirty-App-Exit.png)
 
 ## Code Repository and Demo Site
 

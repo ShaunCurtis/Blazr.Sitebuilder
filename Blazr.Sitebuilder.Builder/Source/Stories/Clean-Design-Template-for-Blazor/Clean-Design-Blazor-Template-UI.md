@@ -1,7 +1,7 @@
 
 The UI Razor files are re-organised into the following structure:
 
-![Ui File Structure](https://shauncurtis.github.io/Design/assets/Blazr.Template.UI-File-Structure.png)
+![Ui File Structure](./assets/Clean-Design-Template-for-Blazor/Blazr.Template.UI-File-Structure.png)
  
 ## Namespacing
 
@@ -82,7 +82,7 @@ private PagingData _pagingData => PagingData!;
 
 ### WeatherForecastList
 
-`WeatherForecastList.razor` is a re-usable compoinent containing all the code from `FetchData`.  The component:
+`WeatherForecastList.razor` is a re-usable component containing all the code from `FetchData`.  The component:
 
 1. Injects the View Service.
 2. Uses a local reference to the View Service to handklle nullable issues.
@@ -94,7 +94,7 @@ private PagingData _pagingData => PagingData!;
 
 It's isn't obvious from `WeatherForecastList` how it updates when a new page is clicked in the `PagingControl`.
 
-![Pagination](https://shauncurtis.github.io/Design/assets/Pagination.png)
+![Pagination](./assets/Clean-Design-Template-for-Blazor/Pagination.png)
 
 Clicking a page button Sets the new page number in `PagingData` and triggers `PagingData.PageChanged`.  This triggers `WeatherForecastViewService.OnPageChanged` event handler that gets the new paged dataset.  This triggers the `WeatherForecastViewService.ListChanged` event.  `WeatherForecastList` is register for this event.  It triggers `StateHasChanged` which re-renders the component.
 

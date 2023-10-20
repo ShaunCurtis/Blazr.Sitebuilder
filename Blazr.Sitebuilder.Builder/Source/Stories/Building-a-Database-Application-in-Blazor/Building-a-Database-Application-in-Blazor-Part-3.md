@@ -21,17 +21,17 @@ There's a SQL script in /SQL in the repository for building the database.
 
 The demo site has changed now the Server and WASM have been combined.  The site starts in Server mode - [https://cec-blazor-database.azurewebsites.net/](https://cec-blazor-database.azurewebsites.net/).
 
-The List Form
-![Weather Forecast Viewer](/siteimages/Articles/Database/FetchData-List.png)
+#### The List Form
+![Weather Forecast Viewer](./assets/Database/FetchData-List.png)
 
-The Modal Viewer
-![Weather Forecast Viewer](/siteimages/Articles/Database/WeatherForecast-Viewer.png)
+#### The Modal Viewer
+![Weather Forecast Viewer](./assets/Database/WeatherForecast-Viewer.png)
 
-The Inline Editor
-![Weather Forecast Viewer](/siteimages/Articles/Database/WeatherForecast-Editor.png)
+#### The Inline Editor
+![Weather Forecast Viewer](./assets/Database/WeatherForecast-Editor.png)
 
-Edit State Control
-![Weather Forecast Viewer](/siteimages/Articles/Database/Editor-dirty-Exit.png)
+#### Edit State Control
+![Weather Forecast Viewer](./assets/Database/Editor-dirty-Exit.png)
 
 
 Several custom controls are used in the forms.  The detail on these is covered in separate articles:
@@ -44,7 +44,7 @@ Code Project Articles:
 
 This Repo Originals:
 
-- [EditFormState](articles/Building-Edit-Forms.html)
+- [EditFormState](/articles/Building-Edit-Forms.html)
 - [EditValidationState Control](/articles/validationformstate.html) 
 - [InlineDialog Control](/articles/inline-dialog.html)
 - [ModalDialog Control](/articles/bootstrap-modal-dialog.html)

@@ -108,8 +108,7 @@ info: Microsoft.Hosting.Lifetime[0]
 info: Microsoft.Hosting.Lifetime[0]
       Content root path: C:\Users\shaun\source\repos\BlazorServer\
 ```
-![Base Template](https://shauncurtis.github.io/articles/assets/Blazor-App/Base-modified-Template-Run.png)
-
+![Base Template](./assets/Blazor-App/Base-modified-Template-Run.png)
 
 Hot reload is working. We have a running Razor web application.
 
@@ -210,7 +209,7 @@ You should now be able to navigate to *Component* and see the page render.  Clic
 
 We have a component that is statically rendered by the server.  However, there's no Blazor services configured.  Open Developer tools and you will see a JS error.
 
-![JS Error](https://shauncurtis.github.io/articles/assets/Blazor-App/blazor-server-js-error.png)
+![JS Error](./assets/Blazor-App/blazor-server-js-error.png)
 
 The Server has pre-rendered the component and then passed the generated markup to the browser.  What is failing is the Blazor Server JS code.  There's no *_framework/blazor.server.js* to download.
 
@@ -237,7 +236,7 @@ Everything now runs with no errors.  But the button click doesn't work:  the tim
 
 Go to *HelloBlazor.razor* and note that VS Code is have trouble recognising `@onclick`.  We need *Microsoft.AspNetCore.Components.Web* to sort that.
 
-![onclick Error](https://shauncurtis.github.io/articles/assets/Blazor-App/Component-No-Library.png)
+![onclick Error](./assets/Blazor-App/Component-No-Library.png)
 
 Update *HelloBlazor.razor* by adding a using to the top of the file.
 
@@ -247,11 +246,11 @@ Update *HelloBlazor.razor* by adding a using to the top of the file.
 @using Microsoft.AspNetCore.Components.Web  // New
 ```
 
-![onclick Error](https://shauncurtis.github.io/articles/assets/Blazor-App/Component-With-Library.png)
+![onclick Error](./assets/Blazor-App/Component-With-Library.png)
 
 The button now works and updates the time.
 
-![Base Template](https://shauncurtis.github.io/articles/assets/Blazor-App/Blazor-Component.png)
+![Base Template](./assets/Blazor-App/Blazor-Component.png)
 
 We have a Blazor Component running our Razor Server side page.  A bit of Deja-Vu for old hands!
 
@@ -425,7 +424,7 @@ Add */Pages/SimpleBlazor.cshtml*
 
 You should now be able to navigate to the Simple App, and navigate between the top menu bar links.
 
-![Base Template](https://shauncurtis.github.io/articles/assets/Blazor-App/Simple-Blazor.png)
+![Base Template](./assets/Blazor-App/Simple-Blazor.png)
 
 ### Section Summary
 

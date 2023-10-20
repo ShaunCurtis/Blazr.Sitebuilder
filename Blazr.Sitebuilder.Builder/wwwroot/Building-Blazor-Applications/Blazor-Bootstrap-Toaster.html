@@ -87,7 +87,7 @@
 <h2 id="repo-and-demo-site">Repo and Demo Site</h2>
 <p>You can find the code in my <a href="https://github.com/ShaunCurtis/Blazr.Demo.Toaster">Blazr.Demo.Toaster Repo</a>.</p>
 <p>A demo site can be found here at <a href="https://blazr-demo-database-server.azurewebsites.net">https://blazr-demo-database-server.azurewebsites.net</a></p>
-<p><img src="https://shauncurtis.github.io/posts/assets/Toaster/Toaster-Startup.png" alt="Example" /></p>
+<p><img src="./assets/Toaster/Toaster-Startup.png" alt="Example" /></p>
 <h2 id="code-classes">Code Classes</h2>
 <h3 id="toast">Toast</h3>
 <p>First an <code>enum</code> for the message colour.  It uses Bootstrap nomenclature directly to make building Css strings simple.</p>
@@ -100,7 +100,7 @@
 <ol>
 <li>Toast is declared as a <code>record</code>.</li>
 <li>There are five public properties that are used by the UI to display the toast. All are declared as immutable  with <code>{ get; init; }</code>.</li>
-<li><code>TimeToBurn</code> uses <code>DateTimeOffset</code> to give timezone independant absolute time.</li>
+<li><code>TimeToBurn</code> uses <code>DateTimeOffset</code> to give time zone independent absolute time.</li>
 </ol>
 <pre><code class="language-csharp">public record Toast
 {

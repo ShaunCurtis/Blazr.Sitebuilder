@@ -167,7 +167,7 @@ info: Microsoft.Hosting.Lifetime[0]
 info: Microsoft.Hosting.Lifetime[0]
       Content root path: C:\Users\shaun\source\repos\BlazorServer\
 </code></pre>
-<p><img src="https://shauncurtis.github.io/articles/assets/Blazor-App/Base-modified-Template-Run.png" alt="Base Template" /></p>
+<p><img src="./assets/Blazor-App/Base-modified-Template-Run.png" alt="Base Template" /></p>
 <p>Hot reload is working. We have a running Razor web application.</p>
 <p>To wrap up this section, let's take a quick look at <code>Program</code>.</p>
 <pre><code class="language-csharp">// Initialise the WebApplication Builder
@@ -250,7 +250,7 @@ app.Run();
 </code></pre>
 <p>You should now be able to navigate to <em>Component</em> and see the page render.  Click on the button and,  nothing happens.</p>
 <p>We have a component that is statically rendered by the server.  However, there's no Blazor services configured.  Open Developer tools and you will see a JS error.</p>
-<p><img src="https://shauncurtis.github.io/articles/assets/Blazor-App/blazor-server-js-error.png" alt="JS Error" /></p>
+<p><img src="./assets/Blazor-App/blazor-server-js-error.png" alt="JS Error" /></p>
 <p>The Server has pre-rendered the component and then passed the generated markup to the browser.  What is failing is the Blazor Server JS code.  There's no <em>_framework/blazor.server.js</em> to download.</p>
 <h2 id="configuring-the-server-to-run-the-blazor-services">Configuring the Server to run the Blazor Services</h2>
 <p>First we add the Blazor server-side services.  Update <code>Program</code>:</p>
@@ -265,15 +265,15 @@ app.MapBlazorHub();
 </code></pre>
 <p>Everything now runs with no errors.  But the button click doesn't work:  the time doesn't update!</p>
 <p>Go to <em>HelloBlazor.razor</em> and note that VS Code is have trouble recognising <code>@onclick</code>.  We need <em>Microsoft.AspNetCore.Components.Web</em> to sort that.</p>
-<p><img src="https://shauncurtis.github.io/articles/assets/Blazor-App/Component-No-Library.png" alt="onclick Error" /></p>
+<p><img src="./assets/Blazor-App/Component-No-Library.png" alt="onclick Error" /></p>
 <p>Update <em>HelloBlazor.razor</em> by adding a using to the top of the file.</p>
 <pre><code class="language-csharp">@inherits ComponentBase
 @namespace Components
 @using Microsoft.AspNetCore.Components.Web  // New
 </code></pre>
-<p><img src="https://shauncurtis.github.io/articles/assets/Blazor-App/Component-With-Library.png" alt="onclick Error" /></p>
+<p><img src="./assets/Blazor-App/Component-With-Library.png" alt="onclick Error" /></p>
 <p>The button now works and updates the time.</p>
-<p><img src="https://shauncurtis.github.io/articles/assets/Blazor-App/Blazor-Component.png" alt="Base Template" /></p>
+<p><img src="./assets/Blazor-App/Blazor-Component.png" alt="Base Template" /></p>
 <p>We have a Blazor Component running our Razor Server side page.  A bit of Deja-Vu for old hands!</p>
 <h2 id="building-a-blazor-spa">Building a Blazor SPA</h2>
 <p>Components running in a Razor page isn't a Single Page Application.  Or is it?</p>
@@ -415,7 +415,7 @@ Welcome to your new app.
 &lt;/html&gt;
 </code></pre>
 <p>You should now be able to navigate to the Simple App, and navigate between the top menu bar links.</p>
-<p><img src="https://shauncurtis.github.io/articles/assets/Blazor-App/Simple-Blazor.png" alt="Base Template" /></p>
+<p><img src="./assets/Blazor-App/Simple-Blazor.png" alt="Base Template" /></p>
 <h3 id="section-summary">Section Summary</h3>
 <p>We've created a server side razor page, loading a Blazor component as it's main content.  This component consists of a navigation bar and a sub-component.  Clicking on the links in the navigation bar just change out the sub-component.  <code>StateHasChanged</code> queues a re-render of the page on the Renderer's queue.  The Renderer runs the render (in reality a <code>RenderFragment</code> that represents the page), works out any differences between the old DOM and the new DOM, and passes those to the browser to update the browser displayed DOM.  No page navigation involved, just DOM changes.</p>
 <h2 id="building-a-full-blazor-server-app">Building a Full Blazor Server App</h2>

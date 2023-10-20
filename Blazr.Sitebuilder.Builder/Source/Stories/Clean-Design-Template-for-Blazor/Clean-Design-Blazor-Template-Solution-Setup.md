@@ -52,7 +52,7 @@ public static IServiceCollection AddWASMServerApplicationServices(this IServiceC
 
 The Blazor Server web site.
 
-![Blazr.Temlate.Server.Web File Structure](https://shauncurtis.github.io/Design/assets/Blazr.Template.Server.Web-File-Structure.png)
+![Blazr.Temlate.Server.Web File Structure](./assets/Clean-Design-Template-for-Blazor/Blazr.Template.Server.Web-File-Structure.png)
 
 ### Project File
 
@@ -101,7 +101,7 @@ Thhe standard Blazor server files.
 
 The project that builds the WASM specific compiled code.
 
-![Blazr.Temlate.WASM File Structure](https://shauncurtis.github.io/Design/assets/Blazr.Template.WASM-File-Structure.png)
+![Blazr.Temlate.WASM File Structure](./assets/Clean-Design-Template-for-Blazor/Blazr.Template.WASM-File-Structure.png)
 
 ### Project File
 
@@ -156,7 +156,7 @@ The standard WASM project wwwroot files.
 
 The Blazor WASM SPA host site with the API controllers.
 
-![Blazr.Temlate.WASM.Web File Structure](https://shauncurtis.github.io/Design/assets/Blazr.Template.WASM.Web-File-Structure.png)
+![Blazr.Template.WASM.Web File Structure](./assets/Clean-Design-Template-for-Blazor/Blazr.Template.WASM.Web-File-Structure.png)
 
 ### Project File
 
