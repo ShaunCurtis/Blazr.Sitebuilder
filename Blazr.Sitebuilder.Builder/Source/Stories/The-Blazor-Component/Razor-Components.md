@@ -1,4 +1,3 @@
-[Back to the Index](index.md)
 
 Developers write most components in Razor.  There's plenty of reference material on writing in Razor, I'll not regurgitate what you can read elsewhere.  What I want to look at is the relationship between Razor Components, Blazor Components and `IComponent`?
 

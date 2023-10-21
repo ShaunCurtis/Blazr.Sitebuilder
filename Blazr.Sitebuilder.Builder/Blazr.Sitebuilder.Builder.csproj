@@ -27,4 +27,8 @@
     <ProjectReference Include="..\Blazr.SiteBuilder\Blazr.SiteBuilder.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="wwwroot\Stories\Building-a-Database-Application-in-Blazor\" />
+  </ItemGroup>
+
 </Project>

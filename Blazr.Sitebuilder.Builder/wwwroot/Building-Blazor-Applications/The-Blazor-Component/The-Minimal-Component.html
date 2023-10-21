@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<base href="/">
+
+	
+
+	
+
+	
+	<link href="/resources/vendor/fontawesome-free/css/all.min.css" rel="stylesheet" type="text/css">
+	<link href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i" rel="stylesheet">
+
+	
+	<link href="/resources/css/sb-admin-2.css" rel="stylesheet" type="text/css">
+	<link href="/resources/css/site.css" rel="stylesheet" type="text/css">
+
+	
+	<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/Microsoft/vscode/extensions/markdown-language-features/media/highlight.css">
+	<link rel="stylesheet" href="/resources/css/article.css" type="text/css">
+
+	
+	<link rel="icon" href="/images/favicon.png">
+
+	<title>The Minimal Component</title>
+        <meta property="author" content="Shaun Curtis" />
+        <meta property="description" content="In the introduction we saw a very minimal component.  In this chapter we transform that base into a fully functional base component." />
+    <meta property="og:site_name" content="Cold Elm Coders" />
+        <meta property="og:site" content="https://shauncurtis.github.io/" />
+        <meta property="og:title" content="The Minimal Component" />
+        <meta property="og:description" content="In the introduction we saw a very minimal component.  In this chapter we transform that base into a fully functional base component." /></head>
+<body><header class="navbar bg-dark p-2 text-large text-light"><section class="navbar-section  text-light"><a href="/" class="navbar-brand mr-2 text-large text-light p-2">Cold Elm Coders</a>
+			<a href="/Posts" class="btn btn-link text-light">Posts</a>
+			<a href="/Rants" class="btn btn-link text-light">Rants</a>
+			<a href="/Articles" class="btn btn-link text-light">Articles</a>
+			<a href="/Stories" class="btn btn-link text-light">Stories</a>
+			<a href="/about.html" class="btn btn-link text-light">About</a></section></header>
+
+	<div class="container-fluid"><div class="row"><div class="col-12 col-sm-3 col-lg-2 bg-light pt-2"><div class="article-info p-2"><div class="mb-2">Published: 17-Nov-2022</div>
+                <div class="mb-2">Updated: 17-Nov-2022</div>
+                <div class="mb-2">Author: Shaun Curtis</div></div>
+    <h4 class="p-2">Table of Contents</h4>
+<ul class="TOC" >
+<li class="TOC-item TOC-item-0" >
+<a class="TOC-link" href="#">Top</a>
+<ul class="TOC TOC-0" >
+<li class="TOC-item TOC-item-1" >
+<ul class="TOC TOC-1" >
+<li class="TOC-item TOC-item-2" >
+<a class="TOC-link" href="#optmizing-minimalbase">Optmizing MinimalBase</a>
+</li>
+<li class="TOC-item TOC-item-2" >
+<a class="TOC-link" href="#some-examples">Some Examples</a>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+			
+			<div class="col-12 col-sm-9 col-lg-10 p-2"><div class="pt-2 pb-2 border-bottom mb-4 text-primary"><h1>The Minimal Component</h1>
+            <div><small>In the introduction we saw a very minimal component.  In this chapter we transform that base into a fully functional base component.</small></div></div>
+    <div class="mb-2"><h3>Document List</h3>
+        <ul><li><a href="/Building-Blazor-Applications/The-Blazor-Component/Introduction.html">Introduction</a></li><li><a href="/Building-Blazor-Applications/The-Blazor-Component/The-Supporting-Cast.html">The Supporting Cast</a></li><li><a href="/Building-Blazor-Applications/The-Blazor-Component/The-Minimal-Component.html">The Minimal Component</a></li><li><a href="/Building-Blazor-Applications/The-Blazor-Component/The-Component-Lifecycle-And-Rendering.html">The Component Lifecycle And Rendering</a></li><li><a href="/Building-Blazor-Applications/The-Blazor-Component/Razor-Components.html">Razor Components</a></li><li><a href="/Building-Blazor-Applications/The-Blazor-Component/ComponentBase.html">ComponentBase</a></li><li><a href="/Building-Blazor-Applications/The-Blazor-Component/The-Renderer-And-Events.html">The Renderer and Events</a></li><li><a href="/Building-Blazor-Applications/The-Blazor-Component/Important-Less-Doumented-Information-And-Final-Observations.html">Important Less Documented Information And Final Observations</a></li></ul></div>
+    <p>Our first pass is to:</p>
+<ol>
+<li>Capture and save the <code>RenderHandle</code>.</li>
+<li>Render the component whenever <code>SetParametersAsync</code> is called.</li>
+<li>Provide the virtual method for the Razor compiler to override.</li>
+<li>Make it <code>abstract</code> as this is a base class.</li>
+</ol>
+<pre><code class="language-csharp">public abstract class Minimal1Base : IComponent
+{
+    protected RenderHandle? renderHandle;
+
+    public void Attach(RenderHandle handle)
+        =&gt; renderHandle = handle;
+
+    public Task SetParametersAsync(ParameterView parameters)
+    {
+        // Sets the component parameters to the latest values
+        parameters.SetParameterProperties(this);
+        // Creates a render fragment as an anonymous function that calls BuildRenderTree
+        RenderFragment fragment = (builder) =&gt; BuildRenderTree(builder);
+        // passes the fragment to the RenderTree to render
+        this.renderHandle?.Render(fragment);
+        return Task.CompletedTask;
+    }
+
+    // This is the method the Razor compiler will override with the render fragment built from the Razor markup
+    protected abstract void BuildRenderTree(RenderTreeBuilder builder);
+}
+</code></pre>
+<p>The Hello World Razor component looks like this:</p>
+<pre><code class="language-html">@inherits RazorClass
+&lt;h3&gt;Hello Blazor&lt;/h3&gt;
+</code></pre>
+<h2 id="optmizing-minimalbase">Optmizing MinimalBase</h2>
+<p>The current code isn't a very efficient.</p>
+<p>Consider:</p>
+<pre><code class="language-csharp">RenderFragment fragment = (builder) =&gt; BuildRenderTree(builder);
+</code></pre>
+<p>The runtime has to build the same anonymous function every time the component renders.  That's a relatively expensive operation.  We can solve that by caching it in the ctor.</p>
+<p>First some state fields:</p>
+<pre><code class="language-csharp">    protected RenderHandle renderHandle;
+    private bool _renderPending;
+    private RenderFragment _componentFragment;
+    protected virtual bool hide { get; set; }
+</code></pre>
+<p>The render fragment is the code the Render runs.  <code>hide</code> provides an efficient way to show/hide the component output.</p>
+<pre><code class="language-csharp">    public MinimalBase()
+    {
+        _componentFragment = (builder) =&gt;
+        {
+            _renderPending = false;
+            if (!this.hide)
+                BuildRenderTree(builder);
+        };
+    }
+</code></pre>
+<p>The render code can also be improved.  The existing code queues <code>_componentFragment</code> regardless of whether it's already queued.</p>
+<pre><code class="language-csharp">this.renderHandle.Render(fragment);
+</code></pre>
+<p>The new method uses a private <code>bool</code> <code>_renderPending</code> to track render state.  If <code>_componentFragment</code> is already queued, it doesn't queue it again. The last changes will be applied when the already queued fragment runs.</p>
+<pre><code class="language-csharp">protected void RequestRender()
+{
+    if (!_renderPending)
+    {
+        _renderPending = true;
+        this.renderHandle.Render(_componentFragment);
+    }
+}
+</code></pre>
+<p>The final base component:</p>
+<pre><code class="language-csharp">public abstract class MinimalBase : IComponent
+{
+    protected RenderHandle renderHandle;
+    private bool _renderPending;
+    private RenderFragment _componentFragment;
+    protected virtual bool hide { get; set; }
+   
+    public MinimalBase()
+    {
+        _componentFragment = (builder) =&gt;
+        {
+            _renderPending = false;
+            if (!this.hide)
+                BuildRenderTree(builder);
+        };
+    }
+
+    public void Attach(RenderHandle handle)
+        =&gt; renderHandle = handle;
+
+    public Task SetParametersAsync(ParameterView parameters)
+    {
+        parameters.SetParameterProperties(this);
+        this.RequestRender();
+        return Task.CompletedTask;
+    }
+
+    protected abstract void BuildRenderTree(RenderTreeBuilder builder);
+
+    protected void RequestRender()
+    {
+        if (!_renderPending)
+        {
+            _renderPending = true;
+            this.renderHandle.Render(_componentFragment);
+        }
+    }
+}
+</code></pre>
+<h2 id="some-examples">Some Examples</h2>
+<p>To demonstrate the new base component in action we need to build some real components that inherit from it</p>
+<p>Here are two simple but fully functional Bootstrap UI Components:</p>
+<p><strong>BootstrapAlert</strong></p>
+<pre><code class="language-csharp">@inherits MinimalBase
+
+&lt;div class=&quot;alert @this.Colour&quot;&gt;@this.Message&lt;/div&gt;
+
+@code {
+    protected override bool shouldHide =&gt; this.Hidden;
+
+    [Parameter] public bool Hidden { get; set; }
+    [Parameter] public string Colour { get; set; } = &quot;alert-primary&quot;;
+    [Parameter] public string Message { get; set; } = &quot;Bootstrap Alert&quot;;
+}
+</code></pre>
+<p><strong>BootstrapButton</strong></p>
+<pre><code class="language-csharp">@inherits MinimalBase
+
+&lt;button class=&quot;btn @this.Colour&quot; @onclick=this.Clicked &gt;@this.Text&lt;/button&gt;
+
+@code {
+    protected override bool shouldHide =&gt; this.Hidden;
+
+    [Parameter] public bool Hidden { get; set; }
+    [Parameter] public string Colour { get; set; } = &quot;btn-primary&quot;;
+    [Parameter] public string Text { get; set; } = &quot;Button&quot;;
+    [Parameter] public EventCallback&lt;MouseEventArgs&gt; Clicked { get; set; }
+}
+</code></pre>
+<p>Here are the two components in action in a test page:</p>
+<pre><code class="language-csharp">@page &quot;/&quot;
+@inherits MinimalBase
+
+&lt;BootstrapAlert Hidden=this.hidden Message=&quot;Hello Blazor&quot; /&gt;
+
+&lt;BootstrapButton Colour=&quot;btn-primary&quot; Text=&quot;Update&quot; Clicked=this.Clicked /&gt;
+
+@code {
+    private bool hidden;
+
+    private void Clicked()
+    {
+        this.hidden = !this.hidden;
+        this.RequestRender();
+    }
+}
+</code></pre>
+</div></div></div></body></html>
+
+
+
+
+

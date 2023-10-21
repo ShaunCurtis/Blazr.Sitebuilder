@@ -1,4 +1,3 @@
-[Back to the Index](index.md)
 
 A detailed description of thr Render process is beyond the scope of this article, however you need a basic grasp of the concepts to understand the rendering process.
 
@@ -21,7 +20,7 @@ The `Renderer` has a diffing process that detects changes in the DOM caused by `
 
 The diagram below is a visual representation of the render tree for the out-of-the-box Blazor template.
 
-![Root Render Tree](https://shauncurtis.github.io/articles/assets/Blazor-Components/Root-Render-Tree.png)
+![Root Render Tree](./assets/The-Blazor-Component/Root-Render-Tree.png)
 
 ## UI Events
 

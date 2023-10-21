@@ -1,6 +1,4 @@
 
-## Introduction
-
 This article is the fifth in a series on Building Blazor Database Applications. The articles so far are:
 
 1. Project Structure and Framework.

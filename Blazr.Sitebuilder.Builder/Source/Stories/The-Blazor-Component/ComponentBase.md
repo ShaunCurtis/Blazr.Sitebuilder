@@ -1,4 +1,3 @@
-[Back to the Index](index.md)
 
 `ComponentBase` is the "standard" out-of-the-box Blazor implementation of `IComponent`.  All *.razor* files by default inherit from it.  It's important to understand that it's just one implementation of the `IComponent` interface.  It doesn't define a component.  `OnInitialized` is not a component lifecycle method, it's a `ComponentBase` lifecycle method.
 

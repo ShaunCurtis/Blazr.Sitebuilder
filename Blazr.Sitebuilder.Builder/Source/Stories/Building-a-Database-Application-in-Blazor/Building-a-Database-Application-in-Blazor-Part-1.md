@@ -1,7 +1,4 @@
-﻿::: danger
-This set of articles and code base is out of date. They don't reflect my current framework. Use them at your risk.
-:::
-
+﻿
 This set of articles describes a framework for building and structuring Database Applications in Blazor.
 
 It's just a framework.  I make no recommendations: use it or abuse it.  It's what I use.  It's lightly opinionated: using out-of-the-box Blazor/Razor/DotNetCore systems and toolkits wherever possible.  The CSS framework is a lightly customized version of BootStrap. 

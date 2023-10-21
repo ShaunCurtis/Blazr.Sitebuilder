@@ -1,6 +1,4 @@
 ﻿
-## Introduction
-
 This is the third in a series of articles looking at how to build and structure a Database Application in Blazor. The articles so far are:
 
 1. Project Structure and Framework.

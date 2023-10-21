@@ -1,10 +1,9 @@
-[Back to the Index](index.md)
 
 ## The Component Lifecycle
 
-The component liefcycle is managed by the Renderer.  You have no control over it.  You can't instanciate a component and pass it to the renderer, and you should never attempt to dispose a component.
+The component lifecycle is managed by the Renderer.  You have no control over it.  You can't instantiate a component and pass it to the renderer, and you should never attempt to dispose a component.
 
-1. The component is instanciated and the ctor is run.  This is often overlooked in components.  Once run, the parameters are in their default state and there's no `RenderHandle`.
+1. The component is instantiated and the ctor is run.  This is often overlooked in components.  Once run, the parameters are in their default state and there's no `RenderHandle`.
 
 2. The Renderer calls `Attach` and passes in a `RenderHandle`.  This is the component's communications channel with the Renderer.  Save it to an internal field.
 
@@ -97,7 +96,7 @@ public abstract class MinimalDebugBase : IComponent, IDisposable
 }
 ```
 
-And a page that demonstrstes various ways of showing and hiding components.
+And a page that demonstrates various ways of showing and hiding components.
 
 ```csharp
 @page "/MinimalDebugTest"
@@ -200,11 +199,11 @@ MinimalComponent - instance : 5027d65d-fc85-45cb-894e-35c4650d9505 disposed at 2
 
 The diagram for Show looks like this:
 
-![Show Diagram](../../images/hide-components-1.png)
+![Show Diagram](./assets/The-Blazor-Component/hide-components-1.png)
 
 And for Hide:
 
-![Hide Diagram](../../images//hide-components-2.png)
+![Hide Diagram](./assets/The-Blazor-Component/hide-components-2.png)
 
 The key differences between the three methods are:
 

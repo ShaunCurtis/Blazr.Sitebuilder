@@ -1,6 +1,4 @@
 
-## Introduction
-
 This article is the fourth in a series on Building Blazor Database Applications.  This article looks at the components we use in the UI and then focuses on how to build generic UI Components from HTML and CSS.
 
 1. Project Structure and Framework.

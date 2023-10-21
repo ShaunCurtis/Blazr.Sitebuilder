@@ -1,6 +1,3 @@
-[Back to the Index](index.md)
-
-In the introduction we saw a very minimal component.  In this chapter we transform that base into a fully functional base component.
 
 Our first pass is to:
 

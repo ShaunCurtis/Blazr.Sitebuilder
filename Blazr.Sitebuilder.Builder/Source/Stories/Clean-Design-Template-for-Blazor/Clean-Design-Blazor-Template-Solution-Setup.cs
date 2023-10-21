@@ -3,7 +3,7 @@ using Blazr.SiteBuilder;
 
 namespace Blazr.Sitebuilder.Builder;
 
-[Route("/stories/Clean-Design-Template-for-Blazor/Clean-Design-Blazor-Template-Solution-Setup")]
+[Route("/Design/Clean-Design-Blazor-Template-Solution-Setup")]
 public class Clean_Design_Blazor_Template_Solution_Setup : StoryBase
 {
     public override PageData PageData { get; } = new()

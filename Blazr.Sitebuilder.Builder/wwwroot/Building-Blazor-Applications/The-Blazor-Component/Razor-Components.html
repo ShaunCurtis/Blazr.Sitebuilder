@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<base href="/">
+
+	
+
+	
+
+	
+	<link href="/resources/vendor/fontawesome-free/css/all.min.css" rel="stylesheet" type="text/css">
+	<link href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i" rel="stylesheet">
+
+	
+	<link href="/resources/css/sb-admin-2.css" rel="stylesheet" type="text/css">
+	<link href="/resources/css/site.css" rel="stylesheet" type="text/css">
+
+	
+	<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/Microsoft/vscode/extensions/markdown-language-features/media/highlight.css">
+	<link rel="stylesheet" href="/resources/css/article.css" type="text/css">
+
+	
+	<link rel="icon" href="/images/favicon.png">
+
+	<title>Razor Components</title>
+        <meta property="author" content="Shaun Curtis" />
+        <meta property="description" content="Exploring Razor Components." />
+    <meta property="og:site_name" content="Cold Elm Coders" />
+        <meta property="og:site" content="https://shauncurtis.github.io/" />
+        <meta property="og:title" content="Razor Components" />
+        <meta property="og:description" content="Exploring Razor Components." /></head>
+<body><header class="navbar bg-dark p-2 text-large text-light"><section class="navbar-section  text-light"><a href="/" class="navbar-brand mr-2 text-large text-light p-2">Cold Elm Coders</a>
+			<a href="/Posts" class="btn btn-link text-light">Posts</a>
+			<a href="/Rants" class="btn btn-link text-light">Rants</a>
+			<a href="/Articles" class="btn btn-link text-light">Articles</a>
+			<a href="/Stories" class="btn btn-link text-light">Stories</a>
+			<a href="/about.html" class="btn btn-link text-light">About</a></section></header>
+
+	<div class="container-fluid"><div class="row"><div class="col-12 col-sm-3 col-lg-2 bg-light pt-2"><div class="article-info p-2"><div class="mb-2">Published: 17-Nov-2022</div>
+                <div class="mb-2">Updated: 17-Nov-2022</div>
+                <div class="mb-2">Author: Shaun Curtis</div></div>
+    <h4 class="p-2">Table of Contents</h4>
+<ul class="TOC" >
+<li class="TOC-item TOC-item-0" >
+<a class="TOC-link" href="#">Top</a>
+<ul class="TOC TOC-0" >
+<li class="TOC-item TOC-item-1" >
+<ul class="TOC TOC-1" >
+<li class="TOC-item TOC-item-2" >
+<a class="TOC-link" href="#building-render-fragments">Building Render Fragments</a>
+</li>
+<li class="TOC-item TOC-item-2" >
+<a class="TOC-link" href="#childcontent">ChildContent</a>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+			
+			<div class="col-12 col-sm-9 col-lg-10 p-2"><div class="pt-2 pb-2 border-bottom mb-4 text-primary"><h1>Razor Components</h1>
+            <div><small>Exploring Razor Components.</small></div></div>
+    <div class="mb-2"><h3>Document List</h3>
+        <ul><li><a href="/Building-Blazor-Applications/The-Blazor-Component/Introduction.html">Introduction</a></li><li><a href="/Building-Blazor-Applications/The-Blazor-Component/The-Supporting-Cast.html">The Supporting Cast</a></li><li><a href="/Building-Blazor-Applications/The-Blazor-Component/The-Minimal-Component.html">The Minimal Component</a></li><li><a href="/Building-Blazor-Applications/The-Blazor-Component/The-Component-Lifecycle-And-Rendering.html">The Component Lifecycle And Rendering</a></li><li><a href="/Building-Blazor-Applications/The-Blazor-Component/Razor-Components.html">Razor Components</a></li><li><a href="/Building-Blazor-Applications/The-Blazor-Component/ComponentBase.html">ComponentBase</a></li><li><a href="/Building-Blazor-Applications/The-Blazor-Component/The-Renderer-And-Events.html">The Renderer and Events</a></li><li><a href="/Building-Blazor-Applications/The-Blazor-Component/Important-Less-Doumented-Information-And-Final-Observations.html">Important Less Documented Information And Final Observations</a></li></ul></div>
+    <p>Developers write most components in Razor.  There's plenty of reference material on writing in Razor, I'll not regurgitate what you can read elsewhere.  What I want to look at is the relationship between Razor Components, Blazor Components and <code>IComponent</code>?</p>
+<p>The truth is there isn't one.</p>
+<p>To demonstrate here's a base class that can be used as <code>@inherits</code> in a Razor component:</p>
+<pre><code class="language-csharp">public abstract class RazorBase
+{
+    protected abstract void BuildRenderTree(RenderTreeBuilder builder);
+
+    public RenderFragment Content =&gt; (builder) =&gt; BuildRenderTree(builder);
+}
+</code></pre>
+<p>And a test Razor component:</p>
+<pre><code class="language-csharp">// Div.razor
+@inherits RazorBase
+
+&lt;h3&gt;My Razor Class Div&lt;/h3&gt;
+</code></pre>
+<p>It will compile and you can reference the class, but you can't use it as a component.</p>
+<p>You can however do this in a page:</p>
+<pre><code class="language-csharp">@(new Div().Content)
+</code></pre>
+<p>The only requirement for inheritance in a Razor component is that the inherited class implements:</p>
+<pre><code class="language-csharp">protected virtual void BuildRenderTree(RenderTreeBuilder builder);
+</code></pre>
+<p>When the Razor compiler compiles the Razor markup, it overrides <code>BuilderRenderTree</code> with the Razor compiled RenderTreeBuilder instruction code.</p>
+<p>What normally happens is no inheritance is explicitly defined, so the compiler sets inheritance to <code>ComponentBase</code>.</p>
+<h2 id="building-render-fragments">Building Render Fragments</h2>
+<p>There are two ways to build render fragments.</p>
+<p>Firstly we can use the RenderTreeBuilder.  This is how the Razor compiler builds a class from a Razor component file.</p>
+<pre><code class="language-csharp">@inherits RazorClass
+
+@HelloWorld
+
+@code {
+    protected RenderFragment HelloWorld =&gt; (RenderTreeBuilder builder) =&gt;
+    {
+        builder.OpenElement(0, &quot;div&quot;);
+        builder.AddContent(1, &quot;Hello Razor 2&quot;);
+        builder.CloseElement();
+    };
+}
+</code></pre>
+<p>This defines a <code>RenderFragment</code> property and assigns to it a block of code in an anonymous method that conforms to the <code>RenderFragment</code> pattern.  It takes a  <code>RenderTreeBuilder</code> and has no return so returns a void.  It uses the provided <code>RenderTreeBuilder</code> object to build the content: a simple hello world html div.  Each call to the builder adds what is called a <code>RenderTreeFrame</code>.  Each frame is compile time sequentially numbered. Do not use run time counter to assign this number.</p>
+<p>Or like this:</p>
+<pre><code class="language-csharp">@inherits MinimalBase
+
+@HelloWorld
+
+@code {
+    protected RenderFragment HelloWorld =&gt; (RenderTreeBuilder builder) =&gt;
+    {
+        &lt;div&gt;Hello Blazor 3&lt;/div&gt;
+    };
+}
+</code></pre>
+<p>Here we're mixing C# code and markup.  The Razor compiler recognises this and compiles the code correctly.</p>
+<p>It's important to understand two points:</p>
+<ol>
+<li>The component itself never &quot;runs&quot; the <code>RenderFragement</code>.  It is passed to the Renderer which Invokes it.</li>
+<li>Even though the <code>Renderer</code> invokes the code, the code is run in the context of the component, and uses the state of the component when it executes.</li>
+</ol>
+<p>The functionality above can be defined directly in a class.</p>
+<pre><code class="language-csharp">public class DivClass : MinimalBase
+{
+    protected override void BuildRenderTree(RenderTreeBuilder builder)
+    {
+        builder.OpenElement(0, &quot;div&quot;);
+        builder.AddContent(1, &quot;Hello Razor 2&quot;);
+        builder.CloseElement();
+    }
+}
+</code></pre>
+<h2 id="childcontent">ChildContent</h2>
+<p>Consider the following markup:</p>
+<pre><code class="language-csharp">&lt;MinimalComponent&gt;
+    Value: @this.Value
+&lt;/MinimalComponent&gt;
+@code {
+    private int Value = 4;
+}
+</code></pre>
+<p>There is content relating to the parent component within <code>MyControl</code>.  In the above code the Razor compiler will expect <code>MyControl</code> to have a <code>RenderFragment</code> parameter named <code>ChildContent</code> where it places the compiled fragment that represents the content.  If one doesn't exist, the runtime will throw an error.</p>
+<pre><code>Message	&quot;Object of type 'Blazr.Components.Components.MinimalComponent' does not have a property matching the name 'ChildContent'.&quot;
+</code></pre>
+<p>To understand this, here's the actual class the Razor compiler builds.  I've removed all the commenting and refactored it a little to make it more readable.</p>
+<pre><code class="language-csharp">[RouteAttribute(&quot;/&quot;)]
+public partial class Test : MinimalBase
+{
+    protected override void BuildRenderTree(RenderTreeBuilder __builder)
+    {
+        __builder.AddMarkupContent(1, &quot;\r\n\r\n&quot;);
+        __builder.OpenComponent&lt;MinimalComponent&gt;(2);
+        __builder.AddAttribute(3, &quot;ChildContent&quot;, __content2);
+    }
+
+    private RenderFragment __content2 =&gt; __builder2 =&gt;
+    {
+        __builder2.AddMarkupContent(4, &quot;\r\n    Value : &quot;);
+        __builder2.AddContent(5, this.Value);
+    };
+
+    private int Value = 4;
+}
+</code></pre>
+<p>The compiler has:</p>
+<ol>
+<li>Compiled the markup into the parent's <code>BuildRenderTree</code> method as a set of <code>RenderTreeBuilder</code> methods.</li>
+<li>Compiled the code block defined within <code>&lt;MininalComponent&gt;</code> into a RenderFragment defined in the parent class.</li>
+<li>Used the <code>OpenComponent</code> method on <code>RenderTreeBuilder</code> to define the <code>MinimalComponent</code>.</li>
+<li>Defined the <code>ChildContent</code> attribute/parameter on <code>MinimalComponent</code> as the <code>RenderFragment</code> defined in `__content2.</li>
+</ol>
+<p>The reason why you get a runtime error and not a compiler error is that the compiler doesn't know that the <code>MinimalComponent</code> doesn't have a <code>ChildContent</code> attribute.  It can't differentiate correctly between attributes and parameters at compile time.</p>
+<p>You can also specify which <code>RenderFragment</code> to use like this:</p>
+<pre><code class="language-csharp">&lt;MinimalComponent&gt;
+    &lt;ChildContent&gt;
+        Value: @this.Value
+    &lt;/ChildContent&gt;
+&lt;/MinimalComponent&gt;
+</code></pre>
+<p>A component is not limited to a single <code>RenderFragment</code>.  A table component could look like this:</p>
+<pre><code class="language-html">&lt;TableComponent&gt;
+    &lt;Header&gt;
+        ...
+    &lt;/Header&gt;
+    &lt;Rows&gt;
+        ...
+    &lt;/Rows&gt;
+    &lt;Footer&gt;
+        ...
+    &lt;/Footer&gt;
+&lt;/TableComponent&gt;
+</code></pre>
+</div></div></div></body></html>
+
+
+
+
+

@@ -31,7 +31,7 @@ public class StoryProvider
     public IEnumerable<SiteRouteData> GetStoryArticles(string story)
     { 
         var list =  _routeFactory.RouteList
-        .Where(item => item.PageData.Story.Equals(story, StringComparison.CurrentCultureIgnoreCase))
+        .Where(item => item.PageData.Story.Equals(story, StringComparison.CurrentCultureIgnoreCase) && !item.PageData.HideInNavigationLists)
         .OrderBy(item => item.PageData.Order);
 
         return list;
