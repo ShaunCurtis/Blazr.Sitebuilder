@@ -4,6 +4,7 @@
 /// If you use it, donate something to a charity somewhere
 /// ============================================================
 using Markdig;
+using Markdown.ColorCode;
 using System.Diagnostics;
 
 namespace Blazr.SiteBuilder;
@@ -52,8 +53,11 @@ public class ContentRenderer
         string markdownText = await File.ReadAllTextAsync(markdownFlePath);
 
         // Process the Markdown to html
-        var markdownPipeline = new MarkdownPipelineBuilder().UseAdvancedExtensions().Build();
-        _articleHtml = Markdown.ToHtml(markdownText, markdownPipeline);
+        var markdownPipeline = new MarkdownPipelineBuilder()
+            .UseAdvancedExtensions()
+            .UseColorCode()
+            .Build();
+        _articleHtml = Markdig.Markdown.ToHtml(markdownText, markdownPipeline);
 
         // Gwt the TOC
         var toc = TOCUtils.GetTOC(_articleHtml);
