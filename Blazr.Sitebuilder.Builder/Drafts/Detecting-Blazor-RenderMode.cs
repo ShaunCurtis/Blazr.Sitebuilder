@@ -2,7 +2,7 @@
 
 namespace Blazr.Sitebuilder.Builder;
 
-[Route("/Articles/Detecting-Blazor-RenderMode")]
+//[Route("/Articles/Detecting-Blazor-RenderMode")]
 public class Detecting_Blazor_RenderMode : ArticlesFolderBase
 {
     public override PageData PageData => base.PageData with

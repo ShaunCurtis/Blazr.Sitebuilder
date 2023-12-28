@@ -3,7 +3,7 @@ using Blazr.SiteBuilder;
 
 namespace Blazr.Sitebuilder.Builder;
 
-[Route("/Articles/Index")]
+[Route("/Articles/index")]
 
 public class ArticlesIndex : CategoryIndexBase
 {
