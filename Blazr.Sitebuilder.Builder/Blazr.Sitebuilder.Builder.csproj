@@ -19,12 +19,29 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Remove="Source\Articles\assets\south.jpg" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="Source\Articles\assets\favicon.png" />
+    <Content Include="Source\Articles\assets\south.jpg">
+      <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Blazr.BaseComponents" Version="1.0.1" />
     <PackageReference Include="Markdig" Version="0.33.0" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\Blazr.SiteBuilder\Blazr.SiteBuilder.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Source\Posts\assets\Mongrel-Blazor\" />
+    <Folder Include="wwwroot\" />
   </ItemGroup>
 
 </Project>
