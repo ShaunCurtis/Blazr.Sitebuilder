@@ -1,5 +1,5 @@
 
-This first post shows the pattern and library used on a *simplistic* data model.  THe same data class `WeatherForecast` represents the domain object and the underlying persistence class in the infrastructure.
+This first post shows the pattern and library used on a *simplistic* data model.  The same data class `WeatherForecast` represents the domain object and the underlying persistence class in the infrastructure.
 
 In a second post, I'll cover a more realistic use case where we have different domain and infrastructure classes and need to provide mapping brokers.
 

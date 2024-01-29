@@ -3,7 +3,7 @@ using Blazr.SiteBuilder;
 
 namespace Blazr.Sitebuilder.Builder;
 
-[Route("/Modern-Coding/Index")]
+[Route("/Modern-Coding/index")]
 
 public class ModernIndex : CategoryIndexBase
 {

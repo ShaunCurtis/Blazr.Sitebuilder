@@ -3,7 +3,7 @@ using Blazr.SiteBuilder;
 
 namespace Blazr.Sitebuilder.Builder;
 
-[Route("/Stories/The-Blazor-Component/Index")]
+[Route("/Stories/The-Blazor-Component/index")]
 public class The_Blazor_Component_Index : StoryBase
 {
     public override PageData PageData { get; } = new()

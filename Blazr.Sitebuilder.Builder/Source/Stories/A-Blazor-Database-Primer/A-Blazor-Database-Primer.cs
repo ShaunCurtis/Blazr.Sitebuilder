@@ -3,7 +3,7 @@ using Blazr.SiteBuilder;
 
 namespace Blazr.Sitebuilder.Builder;
 
-[Route("/Stories/A-Blazor-Database-Primer/Index")]
+[Route("/Stories/A-Blazor-Database-Primer/index")]
 
 public class A_Blazor_Database_Primer : StoryObseleteBase
 {
