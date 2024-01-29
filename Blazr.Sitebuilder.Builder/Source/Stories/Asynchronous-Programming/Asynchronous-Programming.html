@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+    <html>
+    <head>
+        <meta charset="UTF-8">
+        <title>Building Render Fragments</title>
+        <style>
+/* From extension vscode.github */
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+
+.vscode-dark img[src$=\#gh-light-mode-only],
+.vscode-light img[src$=\#gh-dark-mode-only] {
+	display: none;
+}
+
+</style>
+        
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/Microsoft/vscode/extensions/markdown-language-features/media/markdown.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/Microsoft/vscode/extensions/markdown-language-features/media/highlight.css">
+<style>
+            body {
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe WPC', 'Segoe UI', system-ui, 'Ubuntu', 'Droid Sans', sans-serif;
+                font-size: 14px;
+                line-height: 1.6;
+            }
+        </style>
+        <style>
+.task-list-item {
+    list-style-type: none;
+}
+
+.task-list-item-checkbox {
+    margin-left: -20px;
+    vertical-align: middle;
+    pointer-events: none;
+}
+</style>
+        
+    </head>
+    <body class="vscode-body vscode-light">
+        <p><a href="index.html">Back to the Index</a></p>
+<p>Developers write most components in Razor.  There's plenty of reference material on writing in Razor, I'll not regurgitate what you can read elsewhere.  What I want to look at is the relationship between Razor Components, Blazor Components and <code>IComponent</code>?</p>
+<p>The truth is there isn't one.</p>
+<p>To demonstrate here's a base class that can be used as <code>@inherits</code> in a Razor component:</p>
+<pre><code class="language-csharp"><span class="hljs-keyword">public</span> <span class="hljs-keyword">abstract</span> <span class="hljs-keyword">class</span> <span class="hljs-title">RazorBase</span>
+{
+    <span class="hljs-function"><span class="hljs-keyword">protected</span> <span class="hljs-keyword">abstract</span> <span class="hljs-keyword">void</span> <span class="hljs-title">BuildRenderTree</span>(<span class="hljs-params">RenderTreeBuilder builder</span>)</span>;
+
+    <span class="hljs-keyword">public</span> RenderFragment Content =&gt; (builder) =&gt; BuildRenderTree(builder);
+}
+</code></pre>
+<p>And a test Razor component:</p>
+<pre><code class="language-csharp"><span class="hljs-comment">// Div.razor</span>
+@inherits RazorBase
+
+&lt;h3&gt;My Razor Class Div&lt;/h3&gt;
+</code></pre>
+<p>It will compile and you can reference the class, but you can't use it as a component.</p>
+<p>You can however do this in a page:</p>
+<pre><code class="language-csharp">@(<span class="hljs-keyword">new</span> Div().Content)
+</code></pre>
+<p>The only requirement for inheritance in a Razor component is that the inherited class implements:</p>
+<pre><code class="language-csharp"><span class="hljs-function"><span class="hljs-keyword">protected</span> <span class="hljs-keyword">virtual</span> <span class="hljs-keyword">void</span> <span class="hljs-title">BuildRenderTree</span>(<span class="hljs-params">RenderTreeBuilder builder</span>)</span>;
+</code></pre>
+<p>When the Razor compiler compiles the Razor markup, it overrides <code>BuilderRenderTree</code> with the Razor compiled RenderTreeBuilder instruction code.</p>
+<p>What normally happens is no inheritance is explicitly defined, so the compiler sets inheritance to <code>ComponentBase</code>.</p>
+<h2 id="building-render-fragments">Building Render Fragments</h2>
+<p>There are two ways to build render fragments.</p>
+<p>Firstly we can use the RenderTreeBuilder.  This is how the Razor compiler builds a class from a Razor component file.</p>
+<pre><code class="language-csharp">@inherits RazorClass
+
+@HelloWorld
+
+@code {
+    <span class="hljs-keyword">protected</span> RenderFragment HelloWorld =&gt; (RenderTreeBuilder builder) =&gt;
+    {
+        builder.OpenElement(<span class="hljs-number">0</span>, <span class="hljs-string">&quot;div&quot;</span>);
+        builder.AddContent(<span class="hljs-number">1</span>, <span class="hljs-string">&quot;Hello Razor 2&quot;</span>);
+        builder.CloseElement();
+    };
+}
+</code></pre>
+<p>This defines a <code>RenderFragment</code> property and assigns to it a block of code in an anonymous method that conforms to the <code>RenderFragment</code> pattern.  It takes a  <code>RenderTreeBuilder</code> and has no return so returns a void.  It uses the provided <code>RenderTreeBuilder</code> object to build the content: a simple hello world html div.  Each call to the builder adds what is called a <code>RenderTreeFrame</code>.  Each frame is compile time sequentially numbered. Do not use run time counter to assign this number.</p>
+<p>Or like this:</p>
+<pre><code class="language-csharp">@inherits MinimalBase
+
+@HelloWorld
+
+@code {
+    <span class="hljs-keyword">protected</span> RenderFragment HelloWorld =&gt; (RenderTreeBuilder builder) =&gt;
+    {
+        &lt;div&gt;Hello Blazor <span class="hljs-number">3</span>&lt;/div&gt;
+    };
+}
+</code></pre>
+<p>Here we're mixing C# code and markup.  The Razor compiler recognises this and compiles the code correctly.</p>
+<p>It's important to understand two points:</p>
+<ol>
+<li>The component itself never &quot;runs&quot; the <code>RenderFragement</code>.  It is passed to the Renderer which Invokes it.</li>
+<li>Even though the <code>Renderer</code> invokes the code, the code is run in the context of the component, and uses the state of the component when it executes.</li>
+</ol>
+<p>The functionality above can be defined directly in a class.</p>
+<pre><code class="language-csharp"><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title">DivClass</span> : <span class="hljs-title">MinimalBase</span>
+{
+    <span class="hljs-function"><span class="hljs-keyword">protected</span> <span class="hljs-keyword">override</span> <span class="hljs-keyword">void</span> <span class="hljs-title">BuildRenderTree</span>(<span class="hljs-params">RenderTreeBuilder builder</span>)</span>
+    {
+        builder.OpenElement(<span class="hljs-number">0</span>, <span class="hljs-string">&quot;div&quot;</span>);
+        builder.AddContent(<span class="hljs-number">1</span>, <span class="hljs-string">&quot;Hello Razor 2&quot;</span>);
+        builder.CloseElement();
+    }
+}
+</code></pre>
+<h2 id="childcontent">ChildContent</h2>
+<p>Consider the following markup:</p>
+<pre><code class="language-csharp">&lt;MinimalComponent&gt;
+    Value: @this.Value
+&lt;/MinimalComponent&gt;
+@code {
+    <span class="hljs-keyword">private</span> <span class="hljs-built_in">int</span> Value = <span class="hljs-number">4</span>;
+}
+</code></pre>
+<p>There is content relating to the parent component within <code>MyControl</code>.  In the above code the Razor compiler will expect <code>MyControl</code> to have a <code>RenderFragment</code> parameter named <code>ChildContent</code> where it places the compiled fragment that represents the content.  If one doesn't exist, the runtime will throw an error.</p>
+<pre><code>Message	&quot;Object of type 'Blazr.Components.Components.MinimalComponent' does not have a property matching the name 'ChildContent'.&quot;
+</code></pre>
+<p>To understand this, here's the actual class the Razor compiler builds.  I've removed all the commenting and refactored it a little to make it more readable.</p>
+<pre><code class="language-csharp">[<span class="hljs-meta">RouteAttribute(<span class="hljs-string">&quot;/&quot;</span>)</span>]
+<span class="hljs-keyword">public</span> <span class="hljs-keyword">partial</span> <span class="hljs-keyword">class</span> <span class="hljs-title">Test</span> : <span class="hljs-title">MinimalBase</span>
+{
+    <span class="hljs-function"><span class="hljs-keyword">protected</span> <span class="hljs-keyword">override</span> <span class="hljs-keyword">void</span> <span class="hljs-title">BuildRenderTree</span>(<span class="hljs-params">RenderTreeBuilder __builder</span>)</span>
+    {
+        __builder.AddMarkupContent(<span class="hljs-number">1</span>, <span class="hljs-string">&quot;\r\n\r\n&quot;</span>);
+        __builder.OpenComponent&lt;MinimalComponent&gt;(<span class="hljs-number">2</span>);
+        __builder.AddAttribute(<span class="hljs-number">3</span>, <span class="hljs-string">&quot;ChildContent&quot;</span>, __content2);
+    }
+
+    <span class="hljs-keyword">private</span> RenderFragment __content2 =&gt; __builder2 =&gt;
+    {
+        __builder2.AddMarkupContent(<span class="hljs-number">4</span>, <span class="hljs-string">&quot;\r\n    Value : &quot;</span>);
+        __builder2.AddContent(<span class="hljs-number">5</span>, <span class="hljs-keyword">this</span>.Value);
+    };
+
+    <span class="hljs-keyword">private</span> <span class="hljs-built_in">int</span> Value = <span class="hljs-number">4</span>;
+}
+</code></pre>
+<p>The compiler has:</p>
+<ol>
+<li>Compiled the markup into the parent's <code>BuildRenderTree</code> method as a set of <code>RenderTreeBuilder</code> methods.</li>
+<li>Compiled the code block defined within <code>&lt;MininalComponent&gt;</code> into a RenderFragment defined in the parent class.</li>
+<li>Used the <code>OpenComponent</code> method on <code>RenderTreeBuilder</code> to define the <code>MinimalComponent</code>.</li>
+<li>Defined the <code>ChildContent</code> attribute/parameter on <code>MinimalComponent</code> as the <code>RenderFragment</code> defined in `__content2.</li>
+</ol>
+<p>The reason why you get a runtime error and not a compiler error is that the compiler doesn't know that the <code>MinimalComponent</code> doesn't have a <code>ChildContent</code> attribute.  It can't differentiate correctly between attributes and parameters at compile time.</p>
+<p>You can also specify which <code>RenderFragment</code> to use like this:</p>
+<pre><code class="language-csharp">&lt;MinimalComponent&gt;
+    &lt;ChildContent&gt;
+        Value: @this.Value
+    &lt;/ChildContent&gt;
+&lt;/MinimalComponent&gt;
+</code></pre>
+<p>A component is not limited to a single <code>RenderFragment</code>.  A table component could look like this:</p>
+<pre><code class="language-html"><span class="hljs-tag">&lt;<span class="hljs-name">TableComponent</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">Header</span>&gt;</span>
+        ...
+    <span class="hljs-tag">&lt;/<span class="hljs-name">Header</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">Rows</span>&gt;</span>
+        ...
+    <span class="hljs-tag">&lt;/<span class="hljs-name">Rows</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">Footer</span>&gt;</span>
+        ...
+    <span class="hljs-tag">&lt;/<span class="hljs-name">Footer</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">TableComponent</span>&gt;</span>
+</code></pre>
+
+        
+        
+    </body>
+    </html>
