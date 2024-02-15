@@ -14,6 +14,6 @@ public class The_Blazor_Button_Click : PostsFolderBase
         Category = "Posts",
         Tags = "#Blazor; #Net8;",
         Description = "This post explains what goes on behind a Blazor UI event such as a button click.",
-        MarkdownFile = "The_Blazor_Button_Click.md",
+        MarkdownFile = "The-Blazor-Button-Click.md",
     };
 }
