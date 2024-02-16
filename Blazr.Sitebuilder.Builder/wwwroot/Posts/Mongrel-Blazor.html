@@ -38,7 +38,7 @@
 			<a href="/about.html" class="btn btn-link text-light">About</a></section></header>
 
 	<div class="container-fluid"><div class="row"><div class="col-12 col-sm-3 col-lg-2 bg-light pt-2"><div class="article-info p-2"><div class="mb-2">Published: 28-Dec-2023</div>
-                <div class="mb-2">Updated: 28-Dec-2023</div>
+                <div class="mb-2">Updated: 10-Feb-2024</div>
                 <div class="mb-2">Author: Shaun Curtis</div></div>
     <h4 class="p-2">Table of Contents</h4>
 <ul class="TOC" >
@@ -74,8 +74,8 @@
 			
 			<div class="col-12 col-sm-9 col-lg-10 p-2"><div class="pt-2 pb-2 border-bottom mb-4 text-primary"><h1>Mongrel Blazor</h1>
             <div><small>This post explains why Blazor&#x27;s InteractiveAuto and Per Page/Component mode is a rocky road to choose for your first Blazor project.</small></div></div>
-    <p>Everyone's favourite deployment mode for Blazor 8 seems to be <em>InteractiveAuto</em> and <em>Per Page/Component</em>.  The full works, freedom to choose.</p>
-<p>In this article I'll take a look at how this template option works, discuss  design and deployment issues and explain what I believe are the only two use cases for choosing this <em>modus operandi</em>.</p>
+    <p>There's a honeypot in the Blazor Web App template : <em>InteractiveAuto</em> with Interactivity set for <em>Per Page/Component</em>.  Almost everyone new to Blazor goes for it. The full works, freedom to choose.  The problem is you're unaware of the consequences of that decision.  It's not your fault, it's Microsoft's, for putting the honeypot there in the first place, and for not giving it a serious government health warning.</p>
+<p>In this post I'll take a look at how this template option works, discuss  design and deployment issues and explain what I believe are the only two use cases for choosing this <em>modus operandi</em>.</p>
 <p>A word on acronyms and terminology.  I'll talk about three modes of rendering:</p>
 <ol>
 <li><strong>SSSR</strong> - classic Static Server Side Rendering.</li>
@@ -92,7 +92,7 @@
 <li>The Client project containing the Web Assembly project.</li>
 </ol>
 <p>Both of these are deployment projects: they create a deployable solution.</p>
-<h3 id="adding-the-renderstate-to-the-solution">Adding the RenderState to the Solution</h3>
+<h3 id="adding-renderstate-to-the-solution">Adding RenderState to the Solution</h3>
 <p>The <em>RenderState</em> Nuget package provides some simple infrastructure to log and display the render mode of components.  See <a href="https://github.com/ShaunCurtis/Blazr.RenderState">Blazr.RenderState Repo on GitHub</a></p>
 <p>Add the following Nuget packages to the projects:</p>
 <p>Web Server :</p>

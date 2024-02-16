@@ -9,10 +9,10 @@ public class Mongrel_Blazor : PostsFolderBase
     {
         Title = "Mongrel Blazor",
         PublishDate = new DateOnly(2023, 12, 28),
-        LastUpdated = new(2023, 12, 28),
+        LastUpdated = new(2024, 02, 10),
         Author = "Shaun Curtis",
         Category = "Posts",
-        Tags = "#Blazor; #Net8;",
+        Tags = "#Blazor; #Net8; #InteractiveAuto;",
         Description = "This post explains why Blazor's InteractiveAuto and Per Page/Component mode is a rocky road to choose for your first Blazor project.",
         MarkdownFile = "Mongrel-Blazor.md",
     };
