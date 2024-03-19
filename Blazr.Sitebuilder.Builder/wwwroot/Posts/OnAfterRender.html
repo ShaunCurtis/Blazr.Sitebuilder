@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<base href="/">
+
+	
+
+	
+
+	
+	<link href="/resources/vendor/fontawesome-free/css/all.min.css" rel="stylesheet" type="text/css">
+	<link href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i" rel="stylesheet">
+
+	
+	<link href="/resources/css/sb-admin-2.css" rel="stylesheet" type="text/css">
+	<link href="/resources/css/site.css" rel="stylesheet" type="text/css">
+
+	
+	<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/Microsoft/vscode/extensions/markdown-language-features/media/highlight.css">
+	<link rel="stylesheet" href="/resources/css/article.css" type="text/css">
+
+	
+	<link rel="icon" href="/assets/favicon.png">
+
+	<title>The Trouble with OnAfterRender</title>
+        <meta property="author" content="Shaun Curtis" />
+        <meta property="description" content="Why you shouldn&#x27;t use OnAfterRender to mutate the state of a component." />
+    <meta property="og:site_name" content="Cold Elm Coders" />
+        <meta property="og:site" content="https://shauncurtis.github.io/" />
+        <meta property="og:title" content="The Trouble with OnAfterRender" />
+        <meta property="og:description" content="Why you shouldn&#x27;t use OnAfterRender to mutate the state of a component." /></head>
+<body><header class="navbar bg-dark p-2 text-large text-light"><section class="navbar-section  text-light"><a href="/" class="navbar-brand mr-2 text-large text-light p-2">Cold Elm Coders</a>
+			<a href="/Posts/index.html" class="btn btn-link text-light">Posts</a>
+			<a href="/Rants/index.html" class="btn btn-link text-light">Rants</a>
+			<a href="/Articles/index.html" class="btn btn-link text-light">Articles</a>
+			<a href="/Stories/index.html" class="btn btn-link text-light">Stories</a>
+			<a href="/about.html" class="btn btn-link text-light">About</a></section></header>
+
+	<div class="container-fluid"><div class="row"><div class="col-12 col-sm-3 col-lg-2 bg-light pt-2"><div class="article-info p-2"><div class="mb-2">Published: 18-Mar-2024</div>
+                <div class="mb-2">Updated: 18-Mar-2024</div>
+                <div class="mb-2">Author: Shaun Curtis</div></div>
+    <h4 class="p-2">Table of Contents</h4>
+<ul class="TOC" >
+<li class="TOC-item TOC-item-0" >
+<a class="TOC-link" href="#">Top</a>
+<ul class="TOC TOC-0" >
+<li class="TOC-item TOC-item-1" >
+<ul class="TOC TOC-1" >
+<li class="TOC-item TOC-item-2" >
+<a class="TOC-link" href="#a-busy-synchronisation-context">A Busy Synchronisation Context</a>
+</li>
+<li class="TOC-item TOC-item-2" >
+<a class="TOC-link" href="#an-idle-synchronisation-context">An Idle Synchronisation Context</a>
+</li>
+<li class="TOC-item TOC-item-2" >
+<a class="TOC-link" href="#pre-rendering">Pre-Rendering</a>
+</li>
+<li class="TOC-item TOC-item-2" >
+<a class="TOC-link" href="#takeaways">Takeaways</a>
+</li>
+<li class="TOC-item TOC-item-2" >
+<a class="TOC-link" href="#appendix-the-demo-component">Appendix - The Demo Component</a>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+			
+			<div class="col-12 col-sm-9 col-lg-10 p-2"><div class="pt-2 pb-2 border-bottom mb-4 text-primary"><h1>The Trouble with OnAfterRender</h1>
+            <div><small>Why you shouldn&#x27;t use OnAfterRender to mutate the state of a component.</small></div></div>
+    <p>In my [humble] opinion, 90+% of code in <code>OnAfterRender{Async}</code> shouldn't be there.  In this article I'll explain why.</p>
+<p>So, what should be there?</p>
+<p>JSInterop code.  That's about it.  If your code needs to interact with the browser through JS, then it's in the right place.</p>
+<p>Before jumping into the code, some important relevant facts:</p>
+<ol>
+<li><p><code>OnAfterRender{Async}</code> is a UI event.  It's raised by the Renderer when the broweser signals that a UI update has completed.  What is isn't is part of the component lifecycle methods.  That's an extremely important distinction.  The calls to <code>StateHasChanged</code> in the component lifecycle may ultimately trigger <code>OnAfterRender{Async}</code>, but that's just a consequence of an action.  There's no direct linkage, and therefore no control over when <code>OnAfterRender{Async}</code> is executed by the <em>synchronisation context</em>.</p>
+</li>
+<li><p>The <em>Blazor Synchronisation Context</em> prioritizes delegates <em>Posted</em> to it's queue over UI event delegates.  It effectively has two queues: the <em>Post</em> queue and the UI queue.  The lifecycle code is posted to the <em>Post</em> queue, <code>OnAfterRender{Async}</code> is queued on the UI event queue.</p>
+</li>
+</ol>
+<p>The demo console logging component is shown in full at the end of the article.</p>
+<h2 id="a-busy-synchronisation-context">A Busy Synchronisation Context</h2>
+<p>In this section an async method with a minimal delay.</p>
+<div style="color:#DADADA;background-color:#1E1E1E;"><pre>
+    <span style="color:#569CD6;">protected</span> <span style="color:#569CD6;">async</span> <span style="color:#569CD6;">override</span> Task OnInitializedAsync()
+    {
+        <span style="color:#57A64A;">//...</span>
+        <span style="color:#569CD6;">await</span> Task.Delay(<span style="color:#B5CEA8;">1</span>);
+        <span style="color:#57A64A;">//...</span>
+    }
+</pre></div>
+<p>The page runs as follows:</p>
+<pre><code class="language-text">1. 735bf90a =&gt; OnInitialized Completed.
+2. 735bf90a =&gt; OnInitializedAsync Started.
+3. 735bf90a =&gt; Component Rendered.
+4. 735bf90a =&gt; OnInitializedAsync Completed.
+5. 735bf90a =&gt; OnParametersSet Completed.
+6. 735bf90a =&gt; OnParametersSetAsync Completed.
+7. 735bf90a =&gt; ShouldRender.
+8. 735bf90a =&gt; Component Rendered.
+9. 735bf90a =&gt; First OnAfterRender Completed.
+10. 735bf90a =&gt; First OnAfterRenderAsync Completed.
+11. 735bf90a =&gt; Subsequent OnAfterRender Completed.
+12. 735bf90a =&gt; Subsequent OnAfterRenderAsync Completed.
+</code></pre>
+<p>Note that the component rendered at steps 3 and 8, but the two consequential <code>OnAfterRender{Async}</code> events ran at the end of the sequence [9-12].</p>
+<p>This happened because the <em>synchronisation context</em> post queue remained busy. The Task.Delay continuation was posted to the <em>synchronisation context</em> before it completed it's queued work. It continued processing it's queue, including the continuation, until it was empty.  <code>OnAfterRender{Async}</code> was in the slow lane and only processed when the post queue was empty.</p>
+<h2 id="an-idle-synchronisation-context">An Idle Synchronisation Context</h2>
+<p>In this section there's a longer delay.</p>
+<div style="color:#DADADA;background-color:#1E1E1E;"><pre>
+    <span style="color:#569CD6;">protected</span> <span style="color:#569CD6;">async</span> <span style="color:#569CD6;">override</span> Task OnInitializedAsync()
+    {
+        <span style="color:#57A64A;">//...</span>
+        <span style="color:#569CD6;">await</span> Task.Delay(<span style="color:#B5CEA8;">100</span>);
+        <span style="color:#57A64A;">//...</span>
+    }
+</pre></div>
+<p>The page runs as follows:</p>
+<pre><code class="language-text">1. 53772c02 =&gt; OnInitialized Completed.
+2. 53772c02 =&gt; OnInitializedAsync Started.
+3. 53772c02 =&gt; Component Rendered.
+4. 53772c02 =&gt; First OnAfterRender Completed.
+5. 53772c02 =&gt; First OnAfterRenderAsync Completed.
+6. 53772c02 =&gt; OnInitializedAsync Completed.
+7. 53772c02 =&gt; OnParametersSet Completed.
+8. 53772c02 =&gt; OnParametersSetAsync Completed.
+9. 53772c02 =&gt; ShouldRender.
+10. 53772c02 =&gt; Component Rendered.
+11. 53772c02 =&gt; Subsequent OnAfterRender Completed.
+12. 53772c02 =&gt; Subsequent OnAfterRenderAsync Completed.
+</code></pre>
+<p>Note the initial <code>OnAfterRender{Async}</code> is now run immediately after the render at 3 and 4.</p>
+<p>The change happens because the <em>synchronisation context</em> completes all the queued work and can service the UI event queue before the Task.Delay awaiter finally completes and the continuation is scheduled.</p>
+<h3 id="implications">Implications</h3>
+<ol>
+<li><p>You don't control how long awaiters wait [or even if they wait at all] : you have no control on when <code>OnAfterRender{Async}</code> runs.</p>
+</li>
+<li><p>The output demonstrates the consequences of trying to run logic code in <code>OnAfterRender{Async}</code>.  A different delay leads to different output.  The lifecycle methods almost certainly mutate the component state, and that state will be different at the two execution points.</p>
+</li>
+<li><p>Changing state in <code>OnAfterRender{Async}</code> means you need to execute one more call to <code>StateHasChanged</code> to update the UI to the current component state.  Why not just execute the code in the lifecycle methods.</p>
+</li>
+</ol>
+<h2 id="pre-rendering">Pre-Rendering</h2>
+<p>Net8 introduced the RenderMode and brought pre-rendering to the for.  One interesting facet of this is that <code>OnAfterRender{Async}</code> isn't called during pre-render: there's no browser context.  That's makes it an obvious target for code, such as relatively slow external data fetches, that you don't want to run during pre-render.</p>
+<p>Don't fall into the trap.  The reasons for not doing it highlighted above still hold.</p>
+<p>In Net8, you can detect component pre-rendering like this:</p>
+<div style="color:#DADADA;background-color:#1E1E1E;"><pre>
+@code {
+    [CascadingParameter] HttpContext? HttpContext { <span style="color:#569CD6;">get</span>; <span style="color:#569CD6;">set</span>; }
+
+    <span style="color:#569CD6;">private</span> <span style="color:#569CD6;">bool</span> _isPreRender;
+
+    <span style="color:#569CD6;">protected</span> <span style="color:#569CD6;">override</span> <span style="color:#569CD6;">void</span> OnInitialized()
+    {
+        _isPreRender = <span style="color:#569CD6;">this</span>.HttpContext <span style="color:#569CD6;">is</span> not <span style="color:#569CD6;">null</span>;
+    }
+}
+</pre></div>
+<p>The <code>HttpContext</code> is a root level cascade that is only exists when the component is pre-rendering.  In interactive rendering mode, it's <code>null</code>.</p>
+<h2 id="takeaways">Takeaways</h2>
+<p>To summarise what does and doesn't belong in <code>OnAfterRender{Async}</code>:</p>
+<ul>
+<li>If your code needs to interact with the browser through JS, it's in the right place.</li>
+<li>If your code mutates the component state necessitating a render, it belongs elsewhere in <code>OnInitialized{Async}\OnParametersSet{Async}</code>.</li>
+</ul>
+<h2 id="appendix-the-demo-component">Appendix - The Demo Component</h2>
+<p>The following component helps document the process.  It logs when code is executed on the <em>synchronisation context</em>.</p>
+<div style="color:#DADADA;background-color:#1E1E1E;"><pre>
+@page <span style="color:#D69D85;">&quot;/&quot;</span>
+
+@{ Console.WriteLine($<span style="color:#D69D85;">&quot;{_componentUid} =&gt; Component Rendered.&quot;</span>); }
+
+&lt;h1&gt;OnAfterRender Rendering&lt;/h1&gt;
+
+&lt;div <span style="color:#569CD6;">class</span>=<span style="color:#D69D85;">&quot;bg-dark text-white mt-5 m-2 p-2&quot;</span>&gt;
+    &lt;pre&gt;@value&lt;/pre&gt;
+&lt;/div&gt;
+
+@code {
+    <span style="color:#569CD6;">private</span> <span style="color:#569CD6;">string</span> _componentUid = Guid.NewGuid().ToString().Substring(<span style="color:#B5CEA8;">0</span>, <span style="color:#B5CEA8;">8</span>);
+    <span style="color:#569CD6;">private</span> <span style="color:#569CD6;">string</span> value = <span style="color:#569CD6;">string</span>.Empty;
+
+    <span style="color:#569CD6;">protected</span> <span style="color:#569CD6;">override</span> <span style="color:#569CD6;">void</span> OnInitialized()
+    {
+        Console.WriteLine($<span style="color:#D69D85;">&quot;{_componentUid} =&gt; OnInitialized Completed.&quot;</span>);
+    }
+
+    <span style="color:#569CD6;">protected</span> <span style="color:#569CD6;">async</span> <span style="color:#569CD6;">override</span> Task OnInitializedAsync()
+    {
+        Console.WriteLine($<span style="color:#D69D85;">&quot;{_componentUid} =&gt; OnInitializedAsync Started.&quot;</span>);
+        value = $<span style="color:#D69D85;">&quot;1&quot;</span>;
+        <span style="color:#569CD6;">await</span> Task.Delay(<span style="color:#B5CEA8;">1</span>);
+        value = $<span style="color:#D69D85;">&quot;{value}=&gt;2&quot;</span>;
+        Console.WriteLine($<span style="color:#D69D85;">&quot;{_componentUid} =&gt; OnInitializedAsync Completed.&quot;</span>);
+    }
+
+    <span style="color:#569CD6;">protected</span> <span style="color:#569CD6;">override</span> <span style="color:#569CD6;">void</span> OnParametersSet()
+    {
+        Console.WriteLine($<span style="color:#D69D85;">&quot;{_componentUid} =&gt; OnParametersSet Completed.&quot;</span>);
+    }
+
+    <span style="color:#569CD6;">protected</span> <span style="color:#569CD6;">override</span> Task OnParametersSetAsync()
+    {
+        Console.WriteLine($<span style="color:#D69D85;">&quot;{_componentUid} =&gt; OnParametersSetAsync Completed.&quot;</span>);
+        <span style="color:#569CD6;">return</span> Task.CompletedTask;
+    }
+
+    <span style="color:#569CD6;">protected</span> <span style="color:#569CD6;">override</span> <span style="color:#569CD6;">bool</span> ShouldRender()
+    {
+        Console.WriteLine($<span style="color:#D69D85;">&quot;{_componentUid} =&gt; ShouldRender.&quot;</span>);
+        <span style="color:#569CD6;">return</span> <span style="color:#569CD6;">true</span>;
+    }
+
+    <span style="color:#569CD6;">protected</span> <span style="color:#569CD6;">override</span> <span style="color:#569CD6;">void</span> OnAfterRender(<span style="color:#569CD6;">bool</span> firstRender)
+    {
+        <span style="color:#569CD6;">if</span> (firstRender)
+        {
+            Console.WriteLine($<span style="color:#D69D85;">&quot;{_componentUid} =&gt; First OnAfterRender Completed.&quot;</span>);
+            value = $<span style="color:#D69D85;">&quot;{value}=&gt;3&quot;</span>;
+        }
+        <span style="color:#569CD6;">else</span>
+            Console.WriteLine($<span style="color:#D69D85;">&quot;{_componentUid} =&gt; Subsequent OnAfterRender Completed.&quot;</span>);
+
+    }
+
+    <span style="color:#569CD6;">protected</span> <span style="color:#569CD6;">override</span> Task OnAfterRenderAsync(<span style="color:#569CD6;">bool</span> firstRender)
+    {
+        <span style="color:#569CD6;">if</span> (firstRender)
+            Console.WriteLine($<span style="color:#D69D85;">&quot;{_componentUid} =&gt; First OnAfterRenderAsync Completed.&quot;</span>);
+        <span style="color:#569CD6;">else</span>
+            Console.WriteLine($<span style="color:#D69D85;">&quot;{_componentUid} =&gt; Subsequent OnAfterRenderAsync Completed.&quot;</span>);
+
+        <span style="color:#569CD6;">return</span> Task.CompletedTask;
+    }
+}
+</pre></div></div></div></div></body></html>
+
+
+
+
+
