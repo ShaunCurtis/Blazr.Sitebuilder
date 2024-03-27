@@ -76,7 +76,7 @@
 <p>JSInterop code.  That's about it.  If your code needs to interact with the browser through JS, then it's in the right place.</p>
 <p>Before jumping into the code, some important relevant facts:</p>
 <ol>
-<li><p><code>OnAfterRender{Async}</code> is a UI event.  It's raised by the Renderer when the broweser signals that a UI update has completed.  What is isn't is part of the component lifecycle methods.  That's an extremely important distinction.  The calls to <code>StateHasChanged</code> in the component lifecycle may ultimately trigger <code>OnAfterRender{Async}</code>, but that's just a consequence of an action.  There's no direct linkage, and therefore no control over when <code>OnAfterRender{Async}</code> is executed by the <em>synchronisation context</em>.</p>
+<li><p><code>OnAfterRender{Async}</code> is a UI event.  It's raised by the Renderer when the browser signals that a UI update has completed.  What is isn't is part of the component lifecycle methods.  That's an extremely important distinction.  The calls to <code>StateHasChanged</code> in the component lifecycle may ultimately trigger <code>OnAfterRender{Async}</code>, but that's just a consequence of an action.  There's no direct linkage, and therefore no control over when <code>OnAfterRender{Async}</code> is executed by the <em>synchronisation context</em>.</p>
 </li>
 <li><p>The <em>Blazor Synchronisation Context</em> prioritizes delegates <em>Posted</em> to it's queue over UI event delegates.  It effectively has two queues: the <em>Post</em> queue and the UI queue.  The lifecycle code is posted to the <em>Post</em> queue, <code>OnAfterRender{Async}</code> is queued on the UI event queue.</p>
 </li>

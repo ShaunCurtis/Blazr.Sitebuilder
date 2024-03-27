@@ -6,7 +6,7 @@ JSInterop code.  That's about it.  If your code needs to interact with the brows
 
 Before jumping into the code, some important relevant facts:
 
-1. `OnAfterRender{Async}` is a UI event.  It's raised by the Renderer when the broweser signals that a UI update has completed.  What is isn't is part of the component lifecycle methods.  That's an extremely important distinction.  The calls to `StateHasChanged` in the component lifecycle may ultimately trigger `OnAfterRender{Async}`, but that's just a consequence of an action.  There's no direct linkage, and therefore no control over when `OnAfterRender{Async}` is executed by the *synchronisation context*.
+1. `OnAfterRender{Async}` is a UI event.  It's raised by the Renderer when the browser signals that a UI update has completed.  What is isn't is part of the component lifecycle methods.  That's an extremely important distinction.  The calls to `StateHasChanged` in the component lifecycle may ultimately trigger `OnAfterRender{Async}`, but that's just a consequence of an action.  There's no direct linkage, and therefore no control over when `OnAfterRender{Async}` is executed by the *synchronisation context*.
 
 2. The *Blazor Synchronisation Context* prioritizes delegates *Posted* to it's queue over UI event delegates.  It effectively has two queues: the *Post* queue and the UI queue.  The lifecycle code is posted to the *Post* queue, `OnAfterRender{Async}` is queued on the UI event queue. 
 
