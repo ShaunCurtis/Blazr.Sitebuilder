@@ -1,6 +1,6 @@
-﻿There's a common misconception in async programming that a thread can do more that one thing at once.  It can monitor for something to happen [and execute when it does] and at the same time run other tasks.  Wrapping code in an async/await block makes it non-blocking.
+﻿There's a common misconception in async programming that a thread can muti-task: do more that one thing at once.  It monitors something for an event [and execute when it does] while running other tasks.  Wrapping code in an async/await block makes it non-blocking.
 
-Here's a recent example in a question I answered on StackOverflow.  I've refactored thr code a little to make it easier to see thr changes.
+Here's a recent example in a question I answered on StackOverflow.  I've refactored the code a little to make it easier to see thr changes.
 
 It opens a new shell process, runs a *ping* and passes back the output.
 
@@ -52,13 +52,29 @@ It opens a new shell process, runs a *ping* and passes back the output.
 }
 ```
 
-When you run this, the console updates at each ping, but the Blazor application will only update at the end.
+When you run this code, the console updates at each ping, but the Blazor application will only update at the end.  If the console updates properly, why doesn't the App. 
 
-If the console updates properly, why doesn't the App. Surely, the console updates prove the code is non blocking.
+> Surely, the console updates prove the code is non blocking?
 
-The important question to answer here is: 
+Consider this:
 
-> Where is the shell process running?
+If your code is waiting for something to happen, that's all it's doing.  It's blocked.  In our code block the thread running the shell process is waiting for output.  When it gets it it raises the `OutputDataReceived` event and then goes back to waiting for the next output [or the exit].
 
-Consider where we're starting it.  On the UI thread [the synchronisation context].  It's not started asynchronously, so it all runs on the same thread.  And it blocks that thread for the duration.
+This code is running on the UI thread [the synchronisation context].  When the shell process raises `OutputDataReceived` it runs `OnDataReceived` which writes to the console, updates the component state and then queues a Render.  The problem is here.  The Renderer queues the render on the *synchronisation context*.  Unfortunately, that's busy running `RunPingAsync`, which doesn't complete until the shell process completes.
 
+The *synchronisation context* is blocked until `RunPingAsync` completes.  The render is then executed and updates the UI.
+
+## The solution
+
+The solution is to run the shell process elsewhere: on the Threadpool.
+
+We can change `ProcessSomething` like this to run the shell process on the Threadpool.
+
+```csharp
+    private Task ProcessSomething()
+    {
+        _output.Clear();
+         Task.Run(RunPingAsync);
+        return Task.CompletedTask;
+    }
+```
