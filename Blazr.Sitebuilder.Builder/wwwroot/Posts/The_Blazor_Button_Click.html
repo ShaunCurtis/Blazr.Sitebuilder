@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<base href="/">
+
+	
+
+	
+
+	
+	<link href="/resources/vendor/fontawesome-free/css/all.min.css" rel="stylesheet" type="text/css">
+	<link href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i" rel="stylesheet">
+
+	
+	<link href="/resources/css/sb-admin-2.css" rel="stylesheet" type="text/css">
+	<link href="/resources/css/site.css" rel="stylesheet" type="text/css">
+
+	
+	<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/Microsoft/vscode/extensions/markdown-language-features/media/highlight.css">
+	<link rel="stylesheet" href="/resources/css/article.css" type="text/css">
+
+	
+	<link rel="icon" href="/assets/favicon.png">
+
+	<title>The Blazor Button Click</title>
+        <meta property="author" content="Shaun Curtis" />
+        <meta property="description" content="This post explains what goes on behind a Blazor UI event such as a button click." />
+    <meta property="og:site_name" content="Cold Elm Coders" />
+        <meta property="og:site" content="https://shauncurtis.github.io/" />
+        <meta property="og:title" content="The Blazor Button Click" />
+        <meta property="og:description" content="This post explains what goes on behind a Blazor UI event such as a button click." /></head>
+<body><header class="navbar bg-dark p-2 text-large text-light"><section class="navbar-section  text-light"><a href="/" class="navbar-brand mr-2 text-large text-light p-2">Cold Elm Coders</a>
+			<a href="/Posts/index.html" class="btn btn-link text-light">Posts</a>
+			<a href="/Rants/index.html" class="btn btn-link text-light">Rants</a>
+			<a href="/Articles/index.html" class="btn btn-link text-light">Articles</a>
+			<a href="/Stories/index.html" class="btn btn-link text-light">Stories</a>
+			<a href="/about.html" class="btn btn-link text-light">About</a></section></header>
+
+	<div class="container-fluid"><div class="row"><div class="col-12 col-sm-3 col-lg-2 bg-light pt-2"><div class="article-info p-2"><div class="mb-2">Published: 14-Feb-2024</div>
+                <div class="mb-2">Updated: 14-Feb-2024</div>
+                <div class="mb-2">Author: Shaun Curtis</div></div>
+    <h4 class="p-2">Table of Contents</h4>
+<ul class="TOC" >
+<li class="TOC-item TOC-item-0" >
+<a class="TOC-link" href="#">Top</a>
+<ul class="TOC TOC-0" >
+<li class="TOC-item TOC-item-1" >
+<ul class="TOC TOC-1" >
+<li class="TOC-item TOC-item-2" >
+<a class="TOC-link" href="#the-synchronisation-context">The Synchronisation Context</a>
+</li>
+<li class="TOC-item TOC-item-2" >
+<a class="TOC-link" href="#the-button-click">The Button Click</a>
+</li>
+<li class="TOC-item TOC-item-2" >
+<a class="TOC-link" href="#some-take-aways">Some Take Aways</a>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+			
+			<div class="col-12 col-sm-9 col-lg-10 p-2"><div class="pt-2 pb-2 border-bottom mb-4 text-primary"><h1>The Blazor Button Click</h1>
+            <div><small>This post explains what goes on behind a Blazor UI event such as a button click.</small></div></div>
+    <p>What really happens when you click a button in the Blazor UI is a little hazy for many.  In this post/article I'll provide a fairly high level conceptual demonstration of what's going on behind the scenes.</p>
+<p>If you're already conversant with the topic, this is probably not for you.  The real code implementation is a little different and more complex.  Go dig into the code base on GitHub, examime generated code in SharpLabs, or read some of the deep dive articles by the experts and the code writers.</p>
+<h3 id="counter">Counter</h3>
+<p>I use a modified version of <code>Counter</code> for this demonstration.</p>
+<ol>
+<li><p>It has an asynchronous <code>IncrementCount</code> method that yields control and behaves like a true asynchronous operation.</p>
+</li>
+<li><p><code>IHandleEvent.HandleEventAsync</code> is overridden: it simply calls the event handler, no built in calls to <code>StateHasChanged</code>.  These are now in <code>IncrementCountAsync</code> so we can see what's really happening.</p>
+</li>
+<li><p>There's a loader alert displayed while the async operation is running to show the UI is responsive.</p>
+</li>
+</ol>
+<p>Here's <code>Counter</code>:</p>
+<div style="color:#DADADA;background-color:#1E1E1E;"><pre>
+@page <span style="color:#D69D85;">&quot;/counter&quot;</span>
+@implements IHandleEvent
+&lt;PageTitle&gt;Counter&lt;/PageTitle&gt;
+
+&lt;h1&gt;Counter&lt;/h1&gt;
+
+&lt;p role=<span style="color:#D69D85;">&quot;status&quot;</span>&gt;Current count: @currentCount&lt;/p&gt;
+
+&lt;button <span style="color:#569CD6;">class</span>=<span style="color:#D69D85;">&quot;btn btn-primary&quot;</span> @onclick=<span style="color:#D69D85;">&quot;IncrementCountAsync&quot;</span>&gt;Click me&lt;/button&gt;
+
+@<span style="color:#569CD6;">if</span>(_loading)
+{
+    &lt;div <span style="color:#569CD6;">class</span>=<span style="color:#D69D85;">&quot;alert alert-danger m-2&quot;</span>&gt;Loading&lt;/div&gt;
+}
+
+@code {
+    <span style="color:#569CD6;">private</span> <span style="color:#569CD6;">int</span> currentCount = <span style="color:#B5CEA8;">0</span>;
+    <span style="color:#569CD6;">private</span> <span style="color:#569CD6;">bool</span> _loading = <span style="color:#569CD6;">false</span>;
+
+    <span style="color:#569CD6;">private</span> <span style="color:#569CD6;">async</span> Task IncrementCountAsync()
+    {
+        _loading = <span style="color:#569CD6;">true</span>;
+
+        <span style="color:#569CD6;">var</span> awaiter = DoSomeAsyncWork.GetNextAsync(currentCount);
+        <span style="color:#569CD6;">if</span>(!awaiter.IsCompleted)
+        {
+            <span style="color:#569CD6;">this</span>.StateHasChanged();
+           currentCount = <span style="color:#569CD6;">await</span> awaiter;
+        }
+        _loading = <span style="color:#569CD6;">false</span>;
+        <span style="color:#569CD6;">this</span>.StateHasChanged();
+    }
+
+    <span style="color:#569CD6;">async</span> Task IHandleEvent.HandleEventAsync(EventCallbackWorkItem item, <span style="color:#569CD6;">object</span>? obj)
+    {
+        <span style="color:#569CD6;">await</span> item.InvokeAsync(obj);
+    }
+}
+</pre></div><h3 id="dosomeasyncwork">DoSomeAsyncWork</h3>
+<p><code>DoSomeAsyncWork</code> is the class wrapper for the async operation.  It has one static public method: <code>GetNextAsync</code>.  It uses a timer to provide the async functionality.  We'll see how it works as we walk through the demo.</p>
+<div style="color:#DADADA;background-color:#1E1E1E;"><pre>
+<span style="color:#569CD6;">public</span> <span style="color:#569CD6;">class</span> DoSomeAsyncWork
+{
+    <span style="color:#569CD6;">private</span> TaskCompletionSource&lt;<span style="color:#569CD6;">int</span>&gt; _taskCompletionSource = <span style="color:#569CD6;">new</span>();
+    <span style="color:#569CD6;">private</span> Timer? _timer;
+    <span style="color:#569CD6;">private</span> <span style="color:#569CD6;">int</span> _count;
+
+    <span style="color:#569CD6;">private</span> Task&lt;<span style="color:#569CD6;">int</span>&gt; GetAsync(<span style="color:#569CD6;">int</span> value, <span style="color:#569CD6;">int</span> delay = <span style="color:#B5CEA8;">1000</span>)
+    {
+        _count = value;
+        _timer = <span style="color:#569CD6;">new</span>(OnTimerExpired, <span style="color:#569CD6;">null</span>, delay, <span style="color:#B5CEA8;">0</span>);
+        _taskCompletionSource = <span style="color:#569CD6;">new</span>();
+        <span style="color:#569CD6;">return</span> _taskCompletionSource.Task;
+    }
+
+    <span style="color:#569CD6;">private</span> <span style="color:#569CD6;">void</span> OnTimerExpired(<span style="color:#569CD6;">object</span>? state)
+    {
+        _count++;
+        _taskCompletionSource.SetResult(_count);
+        _timer?.Dispose();
+    }
+
+    <span style="color:#569CD6;">public</span> <span style="color:#569CD6;">static</span> Task&lt;<span style="color:#569CD6;">int</span>&gt; GetNextAsync(<span style="color:#569CD6;">int</span> value, <span style="color:#569CD6;">int</span> delay = <span style="color:#B5CEA8;">2000</span>)
+    {
+        <span style="color:#569CD6;">var</span> work = <span style="color:#569CD6;">new</span> DoSomeAsyncWork();
+        <span style="color:#569CD6;">return</span> work.GetAsync(value, delay);
+    }
+}
+</pre></div><h2 id="the-synchronisation-context">The Synchronisation Context</h2>
+<p>All UI based applications use a <em>synchronisation context</em> to manage UI activity.</p>
+<p>The <em>Blazor Synchronisation Context</em> manages operations that apply changes to the DOM. It's designed to:</p>
+<ul>
+<li>provide a single virtual thread of execution for the UI within an asynchronous operating environment,</li>
+<li>prioritise posted work over new UI events [finish what it's started before processing a new UI event].</li>
+</ul>
+<p>At the heart of a <em>Synchronisation Context</em> is a message loop/pump/queue [call it what you wish] that processes delegates posted on queues.</p>
+<blockquote>
+<p>A short digression on delegates if you don't know what they are.  A delegate is a type that represents references to methods with a particular signature: parameter list and return type. When you instantiate a delegate, you can associate its instance with any method with a compatible signature and return type. You can invoke (or call) the method through the delegate instance.</p>
+</blockquote>
+<p>In the Blazor context there's:</p>
+<ol>
+<li>The normal <em>Post</em> queue used by background threads to post continuations back to the <em>synchronisation context</em>.  Calling <code>InvokeAsync</code> on a component posts the submitted delegate to this queue.</li>
+<li>The <em>Render</em> queue.  This drives render tree and DOM updates  The Renderer posts <code>RenderFragments</code> to the <em>synchronisation context's</em> <em>Post</em> queue.  Calling <code>StateHasChanged</code> places a render fragment in this queue.</li>
+<li>The <em>UI Event</em> queue.  This is where UI event delegates are queued.  This queue has a lower priority than the <em>Post</em> queue.  A button click or input update ends up in this queue.</li>
+</ol>
+<p>We'll see these queues in action shortly.</p>
+<h2 id="the-button-click">The Button Click</h2>
+<p>When <code>Counter</code> is rendered, the Blazor JS environment registers a handler with the browser on the button click event.</p>
+<p>When you click the button, that event is fired, and transmitted through JSInterop into the Blazor SPA session.  The relevant event handler, in our case <code>GetNextCountAsync</code>, is queued on the UI Event Queue.</p>
+<p>Assuming the <em>synchronisation context</em> is idle, <code>GetNextCountAsync</code> executes immediately.  This is our primary execution code block.</p>
+<p>The execution sequence is:</p>
+<ol>
+<li>Sets <code>_loading</code> to true in the <code>Counter</code> instance.</li>
+<li>Jumps object context to <code>GetNextAsync</code>.</li>
+<li>Creates an instance of <code>DoSomeAsyncWork</code>.</li>
+<li>Calls <code>GetAsync</code> on the instance.</li>
+<li>Saves the count internally in the instance.</li>
+<li>Creates a new Timer on the Timer Service.</li>
+<li>Creates a new <code>TaskCompletionSource&lt;int&gt;</code> instance.</li>
+<li>Returns the <code>Task</code> associated with the <code>TaskCompletionSource&lt;int&gt;</code> instance.</li>
+</ol>
+<p>Dissecting this:</p>
+<p>Step 1 updates <code>_loading</code>, mutating the state of the component.  It's internal state is now out of sync with it's displayed state.</p>
+<p>Steps 2, 3 and 4 call <code>GetNextAsync</code> which jumps the object context to an instance of <code>DoSomeAsyncWork</code> created by the static method.</p>
+<p>Step 5 saves the count internally. It can be incremented and returned when the async operation completes.</p>
+<p>Step 6 creates a <code>System.Threading.Timer</code>, passing it a <code>TimerCallback</code> delegate [<code>OnTimerExpired</code>], a <code>null</code> state and a period of <code>delay</code> milliseconds.  The repeat interval is 0 so it only runs once.</p>
+<blockquote>
+<p>A short digression on timers.  A DotNetCore application has one [and only one] Timer : I refer to this as the Timer Service.  It's an object that implements the singleton pattern.  It has a queue of registered timers and a message loop to service that queue running on a background thread. It manages system <em>TimeOut</em> timers as well as timers we create.  When we create our timer, it's automatically added to the queue.  When it completes, the timer service runs the registered <code>TimerCallback</code> on a threadpool thread, passing it the provided nullable <code>state</code> object.</p>
+</blockquote>
+<p>When we post the timer to the queue, we pass responsibility to invoke the call back to the timer service.</p>
+<p>Step 7 creates a <code>TaskCompletionSource</code> instance.</p>
+<blockquote>
+<p>Another digression. <code>TaskCompletionSource</code> provides mechanisms for manually creating and controlling a <code>Task</code>.  It's associated <code>Task</code> is &quot;running&quot; when the <code>TaskCompletionSource</code> initializes: <code>IsCompleted</code> is <code>false</code>.  It can be set to cancelled, an exception or complete at any time.  When initialized, the Task captures the current <em>synchronisation context</em> which it uses to post registered continuations if <code>ConfigureAwait</code> is <code>true</code> [the default].</p>
+</blockquote>
+<p>Step 8 returns the associated <code>Task</code>: note <code>IsCompleted</code> is <code>false</code>.</p>
+<p><code>GetNextAsync</code> is now complete.  Object execution is now back in <code>IncrementCountAsync</code> in <code>Counter</code>.  It checks the state of the returned Task.</p>
+<p>It's incomplete so calls <code>StateHasChanged</code>: that's OK because the execution context is the <em>synchronisation context</em>.  <code>StateHasChanged</code> passes the component render fragment to the renderer, which wraps it in an anonymous method and posts it to the <em>synchronisation context</em>'s <em>Post</em> queue.</p>
+<p>Note that the <em>synchronisation context</em> now has a queued post as well as the running code.</p>
+<p>The next step is to await the awaiter provided by the returned task.</p>
+<blockquote>
+<p>Yet another digression. <code>async .... await</code> will only await a method that returns an object that implements the <em>awaitable</em> pattern: a <code>GetAwaiter</code> method that returns an object that implements the <em>awaiter</em> pattern.  <code>Task</code> in all it's guises implements this pattern.</p>
+</blockquote>
+<p>In the compiled code any code block following an <code>await</code> is bundled up into a separate code block.  Our's looks like this::</p>
+<pre><code>{
+    currentCount = awaiter.Result;
+    _loading = false;
+    this.StateHasChanged();
+}
+</code></pre>
+<p>The main code block's final action is to add this continuation to the <em>awaiter</em>.  It passes responsibility for running the continuation to the process behind the <em>awaitable</em>.  In our case <code>TaskCompletionSource</code>, when it completes.</p>
+<p>At this point it's worth looking at what we have:</p>
+<ol>
+<li>The main code block running on the <em>synchronisation context</em> has completed.</li>
+<li>An instance of <code>DoSomeAsyncWork</code> in memory.</li>
+<li>A timer object registered with the Timer service with a reference to the <code>OnTimerElapsed</code> method of the <code>DoSomeAsyncWork</code> instance.</li>
+<li>A <code>Task</code> owned by the <code>DoSomeAsyncWork</code> instance with a continuation associated with it.</li>
+<li>A queued <code>RenderFragment</code> on the <em>synchronisation context</em>.</li>
+</ol>
+<h3 id="running-the-renderfragment">Running the RenderFragment</h3>
+<p>The <em>synchronisation context</em> message loop now executes the queued render fragment.  This updates the component's DOM section based on <code>Counter</code>'s state and pushes those updates to the UI.  In our case it displays the alert.  This in turn triggers an <code>OnAfterRender</code> UI event which gets queued on the UI Event queue.</p>
+<p>The render fragment execution is complete so the <em>synchronisation context</em> is idle.  It executes any registered <code>OnAfterRender{Async]</code> handlers.  We don't have any, so it quickly completes.</p>
+<h3 id="the-wait">The Wait</h3>
+<p>Pause.</p>
+<p>There's nothing happening. Our primary execution thread has run to completion.  The Ui has been updated to reflect the current state of <code>Countwr</code>.  The <em>synchronisation context</em> is idle.  The timer hasn't expired.</p>
+<p>When the timer completes, the timer service schedules the callback on a Threadpool thread.  Note, a threadpool thread, not the <em>synchronisation context</em>: the Timer Service has no concept of a <em>synchronisation context</em>.</p>
+<p>This code gets executed on that thread:</p>
+<div style="color:#DADADA;background-color:#1E1E1E;"><pre>
+_count++;
+_taskCompletionSource.SetResult(_count);
+_timer?.Dispose();
+</pre></div>
+<p>The key bit of activity is setting the result on <code>_taskCompletionSource</code>.</p>
+<p>Behind the scenes, the <code>TaskCompletionSource</code>:</p>
+<ol>
+<li>Sets the value of the <code>Result</code> property.</li>
+<li>Sets the Task's state to completed.</li>
+<li><em>Posts</em> any continuations registered on the Task to the captured <em>synchronisation context</em> if one exists and <code>ConfigureAwait</code> has been set to true.  If not, posts any continuations to the Threadpool.</li>
+</ol>
+<p>The important action is the execution context switching.  The callback code runs on a background threadpool thread, but the continuations are switched to the saved <em>synchronisation context</em>.</p>
+<p>The <em>synchronisation context</em> isn't busy, so it runs the posted continuation:</p>
+<pre><code>{
+    currentCount = awaiter.Result;
+    _loading = false;
+    this.StateHasChanged();
+}
+</code></pre>
+<p>It sets <code>currentCount</code> to the result from the task, sets the <code>Counter</code> state, and schedules another render [the details of which we have already covered above].</p>
+<h2 id="some-take-aways">Some Take Aways</h2>
+<p>UI code is executed as blocks of code posted to the <em>synchronisation context</em> as delegates.</p>
+<p>A thread can only do one thing at once. It can't watch for something to happen while it's doing something else.</p>
+<p>When a method yields control in an <code>await</code>, whatever is being awaited is running on another thread.  It must implement the <code>Awaitable</code> pattern and is responsible for:</p>
+<ul>
+<li>assigning any value returned by the awaited process,</li>
+<li>setting the <em>awaitable</em> state, and</li>
+<li>scheduling any registered continuations on the appropriate execution context.</li>
+</ul>
+<p>The various incarnations of <code>Task</code> are the most common <em>awaitables</em> you will use.</p>
+<p>When a method yields control, it's finished.  There's no black magic.  If the Task returned by the method is <em>Not Completed</em>, the method has passed the buck to another process running on another thread to complete the job.</p>
+<p>In reality the compiler totally reworks the code in every <code>async .. await</code> method into a new method and an internal <em>Async State Machine</em> where the original method is split into code blocks based on await statements.  I'll cover the <em>Async State Machine</em> in another article.</p>
+</div></div></div></body></html>
+
+
+
+
+

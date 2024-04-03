@@ -9,8 +9,8 @@ public class Asynchronous_Programming_Index : StoryBase
     public override PageData PageData { get; } = new()
     {
         Title = "An In-Depth look at Asynchronous Programming",
-        PublishDate = new DateOnly(2023, 01, 29),
-        LastUpdated = new(2023, 01, 29),
+        PublishDate = new DateOnly(2024, 01, 01),
+        LastUpdated = new(2024, 01, 01),
         Author = "Shaun Curtis",
         Category = "Stories",
         Story = "Asynchronous Programming",

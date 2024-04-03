@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<base href="/">
+
+	
+
+	
+
+	
+	<link href="/resources/vendor/fontawesome-free/css/all.min.css" rel="stylesheet" type="text/css">
+	<link href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i" rel="stylesheet">
+
+	
+	<link href="/resources/css/sb-admin-2.css" rel="stylesheet" type="text/css">
+	<link href="/resources/css/site.css" rel="stylesheet" type="text/css">
+
+	
+	<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/Microsoft/vscode/extensions/markdown-language-features/media/highlight.css">
+	<link rel="stylesheet" href="/resources/css/article.css" type="text/css">
+
+	
+	<link rel="icon" href="/assets/favicon.png">
+
+	<title>Sloppy Code - The Pattern Mismatch</title>
+        <meta property="author" content="Shaun Curtis" />
+        <meta property="description" content="Compilers often let you get away with delegate mismatches." />
+    <meta property="og:site_name" content="Cold Elm Coders" />
+        <meta property="og:site" content="https://shauncurtis.github.io/" />
+        <meta property="og:title" content="Sloppy Code - The Pattern Mismatch" />
+        <meta property="og:description" content="Compilers often let you get away with delegate mismatches." /></head>
+<body><header class="navbar bg-dark p-2 text-large text-light"><section class="navbar-section  text-light"><a href="/" class="navbar-brand mr-2 text-large text-light p-2">Cold Elm Coders</a>
+			<a href="/Posts/index.html" class="btn btn-link text-light">Posts</a>
+			<a href="/Rants/index.html" class="btn btn-link text-light">Rants</a>
+			<a href="/Articles/index.html" class="btn btn-link text-light">Articles</a>
+			<a href="/Stories/index.html" class="btn btn-link text-light">Stories</a>
+			<a href="/about.html" class="btn btn-link text-light">About</a></section></header>
+
+	<div class="container-fluid"><div class="row"><div class="col-12 col-sm-3 col-lg-2 bg-light pt-2"><div class="article-info p-2"><div class="mb-2">Published: 15-Feb-2024</div>
+                <div class="mb-2">Updated: 15-Feb-2024</div>
+                <div class="mb-2">Author: Shaun Curtis</div></div>
+    <h4 class="p-2">Table of Contents</h4>
+<ul class="TOC" >
+<li class="TOC-item TOC-item-0" >
+<a class="TOC-link" href="#">Top</a>
+</li>
+</ul>
+</div>
+			
+			<div class="col-12 col-sm-9 col-lg-10 p-2"><div class="pt-2 pb-2 border-bottom mb-4 text-primary"><h1>Sloppy Code - The Pattern Mismatch</h1>
+            <div><small>Compilers often let you get away with delegate mismatches.</small></div></div>
+    <p>It's interesting what compilers will and will not let you get away with.</p>
+<p>Here's the answer to a recent Stack Overflow question on adding an onclick event to a component.</p>
+<div style="color:#DADADA;background-color:#1E1E1E;"><pre>
+&lt;div @onclick=<span style="color:#D69D85;">&quot;OnClick&quot;</span>&gt;
+    @ChildContent
+&lt;/div&gt;
+
+<span style="color:#569CD6;">public</span> <span style="color:#569CD6;">partial</span> <span style="color:#569CD6;">class</span> DataRow
+{
+    [Parameter] <span style="color:#569CD6;">public</span> RenderFragment? ChildContent { <span style="color:#569CD6;">get</span>; <span style="color:#569CD6;">set</span>; }
+    [Parameter] <span style="color:#569CD6;">public</span> EventCallback OnClick { <span style="color:#569CD6;">get</span>; <span style="color:#569CD6;">set</span>; }
+}
+</pre></div>
+<p>The code looks clean and succinct.  Where's the problem?</p>
+<p>Consider this:</p>
+<p><code>@onclick</code> is expecting this pattern.</p>
+<div style="color:#DADADA;background-color:#1E1E1E;"><pre>
+Task EventHandler(MouseEventArgs e)
+</pre></div>
+<p>And we're giving it:</p>
+<div style="color:#DADADA;background-color:#1E1E1E;"><pre>
+<span style="color:#569CD6;">void</span> EventCallback()
+</pre></div>
+<p>The Razor compiler doesn't complain and just wires it up.  And it works.</p>
+<p>Well sort of.  But if you apply this pattern more generally you will see unpredicated UI behaviour:  UI updates will happen out of the sequence you expect.</p>
+<p>Let's look at a correct implementation.</p>
+<div style="color:#DADADA;background-color:#1E1E1E;"><pre>
+&lt;div @onclick=<span style="color:#D69D85;">&quot;this.OnClicked&quot;</span>&gt;
+    @ChildContent
+&lt;/div&gt;
+
+@code {
+    [Parameter] <span style="color:#569CD6;">public</span> RenderFragment? ChildContent { <span style="color:#569CD6;">get</span>; <span style="color:#569CD6;">set</span>; }
+    [Parameter] <span style="color:#569CD6;">public</span> EventCallback OnClick { <span style="color:#569CD6;">get</span>; <span style="color:#569CD6;">set</span>; }
+
+    <span style="color:#569CD6;">private</span> <span style="color:#569CD6;">async</span> Task OnClicked(MouseEventArgs e)
+        =&gt; <span style="color:#569CD6;">await</span> OnClick.InvokeAsync();
+}
+</pre></div>
+<p>We've:</p>
+<ol>
+<li>Provided a <code>Task</code> back to the UI event handler so it can handle <code>StateHasChanged</code> calls correctly on async yielding.</li>
+<li>Sunk the provided <code>MouseEventArgs</code>.</li>
+<li>Called <code>OnClick</code> asynchronously and awaited it's completion.</li>
+</ol>
+<p>The moral of this rant is: Don't write sloppy code.  Been there, done that, got the scars!</p>
+</div></div></div></body></html>
+
+
+
+
+

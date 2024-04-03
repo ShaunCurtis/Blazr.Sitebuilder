@@ -25,11 +25,11 @@
 
 	<title>Async/Await</title>
         <meta property="author" content="Shaun Curtis" />
-        <meta property="description" content="Looking under the Async/Await Veneer." />
+        <meta property="description" content="What Async/Await really does." />
     <meta property="og:site_name" content="Cold Elm Coders" />
         <meta property="og:site" content="https://shauncurtis.github.io/" />
         <meta property="og:title" content="Async/Await" />
-        <meta property="og:description" content="Looking under the Async/Await Veneer." /></head>
+        <meta property="og:description" content="What Async/Await really does." /></head>
 <body><header class="navbar bg-dark p-2 text-large text-light"><section class="navbar-section  text-light"><a href="/" class="navbar-brand mr-2 text-large text-light p-2">Cold Elm Coders</a>
 			<a href="/Posts/index.html" class="btn btn-link text-light">Posts</a>
 			<a href="/Rants/index.html" class="btn btn-link text-light">Rants</a>
@@ -37,8 +37,8 @@
 			<a href="/Stories/index.html" class="btn btn-link text-light">Stories</a>
 			<a href="/about.html" class="btn btn-link text-light">About</a></section></header>
 
-	<div class="container-fluid"><div class="row"><div class="col-12 col-sm-3 col-lg-2 bg-light pt-2"><div class="article-info p-2"><div class="mb-2">Published: 29-Jan-2024</div>
-                <div class="mb-2">Updated: 29-Jan-2024</div>
+	<div class="container-fluid"><div class="row"><div class="col-12 col-sm-3 col-lg-2 bg-light pt-2"><div class="article-info p-2"><div class="mb-2">Published: 29-Jan-2023</div>
+                <div class="mb-2">Updated: 29-Jan-2023</div>
                 <div class="mb-2">Author: Shaun Curtis</div></div>
     <h4 class="p-2">Table of Contents</h4>
 <ul class="TOC" >
@@ -70,14 +70,12 @@
 </div>
 			
 			<div class="col-12 col-sm-9 col-lg-10 p-2"><div class="pt-2 pb-2 border-bottom mb-4 text-primary"><h1>Async/Await</h1>
-            <div><small>Looking under the Async/Await Veneer.</small></div></div>
-    <div class="mb-2"><h3>Document List</h3>
-        <ul><li><a href="/Stories/Asynchronous-Programming/Async-Await.html">Async/Await</a></li></ul></div>
+            <div><small>What Async/Await really does.</small></div></div>
     <p>Async/Await is the fundamental building material of asynchronous operations in modern C#.</p>
 <p>On the plus side, it abstracts the programmer from the nitty gritty of the <em>Task Processing Library</em>.  On the downside is deception, what you see is not what you get below the surface.</p>
 <p>To quote Stephen Tomb, one of the authors of Async/Await:</p>
 <blockquote>
-<p>[It's] both viable and extremely common to utilize the functionality without understanding exactly what's going on under the covers. You start with a synchronous method ...  sprinkle a few keywords, change a few method names, and you end up with [an] asynchronous method instead.</p>
+<p>[It's] both viable and extremely common to utilize the functionality without understanding exactly what�s going on under the covers. You start with a synchronous method ...  sprinkle a few keywords, change a few method names, and you end up with [an] asynchronous method instead.</p>
 </blockquote>
 <p>There are several very good articles available on the subject, I've included references to those that were the source material for this article.  Unfortunately most assume a level of knowledge mortal programmers don't have.  In this short article I'll attempt to bring that required knowledge down to the level that most will understand.</p>
 <p><strong>Async</strong></p>

@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<base href="/">
+
+	
+
+	
+
+	
+	<link href="/resources/vendor/fontawesome-free/css/all.min.css" rel="stylesheet" type="text/css">
+	<link href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i" rel="stylesheet">
+
+	
+	<link href="/resources/css/sb-admin-2.css" rel="stylesheet" type="text/css">
+	<link href="/resources/css/site.css" rel="stylesheet" type="text/css">
+
+	
+	<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/Microsoft/vscode/extensions/markdown-language-features/media/highlight.css">
+	<link rel="stylesheet" href="/resources/css/article.css" type="text/css">
+
+	
+	<link rel="icon" href="/assets/favicon.png">
+
+	<title>Task.CompletedTask</title>
+        <meta property="author" content="Shaun Curtis" />
+        <meta property="description" content="Is Task.CompletedTask Expensive?" />
+    <meta property="og:site_name" content="Cold Elm Coders" />
+        <meta property="og:site" content="https://shauncurtis.github.io/" />
+        <meta property="og:title" content="Task.CompletedTask" />
+        <meta property="og:description" content="Is Task.CompletedTask Expensive?" /></head>
+<body><header class="navbar bg-dark p-2 text-large text-light"><section class="navbar-section  text-light"><a href="/" class="navbar-brand mr-2 text-large text-light p-2">Cold Elm Coders</a>
+			<a href="/Posts/index.html" class="btn btn-link text-light">Posts</a>
+			<a href="/Rants/index.html" class="btn btn-link text-light">Rants</a>
+			<a href="/Articles/index.html" class="btn btn-link text-light">Articles</a>
+			<a href="/Stories/index.html" class="btn btn-link text-light">Stories</a>
+			<a href="/about.html" class="btn btn-link text-light">About</a></section></header>
+
+	<div class="container-fluid"><div class="row"><div class="col-12 col-sm-3 col-lg-2 bg-light pt-2"><div class="article-info p-2"><div class="mb-2">Published: 27-Mar-2024</div>
+                <div class="mb-2">Updated: 27-Mar-2024</div>
+                <div class="mb-2">Author: Shaun Curtis</div></div>
+    <h4 class="p-2">Table of Contents</h4>
+<ul class="TOC" >
+<li class="TOC-item TOC-item-0" >
+<a class="TOC-link" href="#">Top</a>
+</li>
+</ul>
+</div>
+			
+			<div class="col-12 col-sm-9 col-lg-10 p-2"><div class="pt-2 pb-2 border-bottom mb-4 text-primary"><h1>Task.CompletedTask</h1>
+            <div><small>Is Task.CompletedTask Expensive?</small></div></div>
+    <p>Consider the following code:</p>
+<div style="color:#DADADA;background-color:#1E1E1E;"><pre>
+<span style="color:#569CD6;">private</span> Task OnButtonClick()
+{
+   <span style="color:#57A64A;">//do some sync work</span>
+   <span style="color:#569CD6;">return</span> Task.CompletedTask;
+}
+</pre></div>
+<p>Many will tell you this is expensive for one of two reasons:</p>
+<ol>
+<li>The compiler has to build out an async state machine to handle the Task.</li>
+<li>The compiler needs to build a Task to return.</li>
+</ol>
+<p>Neither are true.</p>
+<ol>
+<li><p>The method is not async - it has no <code>Async/Await</code> signature - and the low level code looks exactly the same as the high level code.  There's no need for async state machines because there's no awaiters.  You can check out the code at <a href="https://sharplab.io/">SharpLab</a>.</p>
+</li>
+<li><p><code>Task.Completed</code> is cached as a singleton.  Everyone gets the same object returned.  The Task code looks like this:</p>
+</li>
+</ol>
+<div style="color:#DADADA;background-color:#1E1E1E;"><pre>
+<span style="color:#569CD6;">private</span> <span style="color:#569CD6;">static</span> Task s_completedTask;
+ 
+<span style="color:#569CD6;">public</span> <span style="color:#569CD6;">static</span> Task CompletedTask
+{
+    <span style="color:#569CD6;">get</span>
+    {
+        <span style="color:#569CD6;">var</span> completedTask = s_completedTask;
+        <span style="color:#569CD6;">if</span> (completedTask == <span style="color:#569CD6;">null</span>)
+            s_completedTask = completedTask = <span style="color:#569CD6;">new</span> Task(<span style="color:#569CD6;">false</span>, (TaskCreationOptions)InternalTaskOptions.DoNotDispose, <span style="color:#569CD6;">default</span>(CancellationToken)); <span style="color:#57A64A;">// benign initialization ----</span>
+        <span style="color:#569CD6;">return</span> completedTask;
+    }
+}
+</pre></div>
+<p><a href="https://referencesource.microsoft.com/#mscorlib/system/threading/Tasks/Task.cs,66f1c3e3e272f591">You can view this code here</a></p>
+</div></div></div></body></html>
+
+
+
+
+

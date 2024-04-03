@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<base href="/">
+
+	
+
+	
+
+	
+	<link href="/resources/vendor/fontawesome-free/css/all.min.css" rel="stylesheet" type="text/css">
+	<link href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i" rel="stylesheet">
+
+	
+	<link href="/resources/css/sb-admin-2.css" rel="stylesheet" type="text/css">
+	<link href="/resources/css/site.css" rel="stylesheet" type="text/css">
+
+	
+	<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/Microsoft/vscode/extensions/markdown-language-features/media/highlight.css">
+	<link rel="stylesheet" href="/resources/css/article.css" type="text/css">
+
+	
+	<link rel="icon" href="/assets/favicon.png">
+
+	<title>The DotNetCore Timers</title>
+        <meta property="author" content="Shaun Curtis" />
+        <meta property="description" content="What is a Timer?" />
+    <meta property="og:site_name" content="Cold Elm Coders" />
+        <meta property="og:site" content="https://shauncurtis.github.io/" />
+        <meta property="og:title" content="The DotNetCore Timers" />
+        <meta property="og:description" content="What is a Timer?" /></head>
+<body><header class="navbar bg-dark p-2 text-large text-light"><section class="navbar-section  text-light"><a href="/" class="navbar-brand mr-2 text-large text-light p-2">Cold Elm Coders</a>
+			<a href="/Posts/index.html" class="btn btn-link text-light">Posts</a>
+			<a href="/Rants/index.html" class="btn btn-link text-light">Rants</a>
+			<a href="/Articles/index.html" class="btn btn-link text-light">Articles</a>
+			<a href="/Stories/index.html" class="btn btn-link text-light">Stories</a>
+			<a href="/about.html" class="btn btn-link text-light">About</a></section></header>
+
+	<div class="container-fluid"><div class="row"><div class="col-12 col-sm-3 col-lg-2 bg-light pt-2"><div class="article-info p-2"><div class="mb-2">Published: 16-Feb-2024</div>
+                <div class="mb-2">Updated: 16-Feb-2024</div>
+                <div class="mb-2">Author: Shaun Curtis</div></div>
+    <h4 class="p-2">Table of Contents</h4>
+<ul class="TOC" >
+<li class="TOC-item TOC-item-0" >
+<a class="TOC-link" href="#">Top</a>
+<ul class="TOC TOC-0" >
+<li class="TOC-item TOC-item-1" >
+<ul class="TOC TOC-1" >
+<li class="TOC-item TOC-item-2" >
+<a class="TOC-link" href="#one-timer-to-rule-them-all">One Timer to Rule them All</a>
+</li>
+<li class="TOC-item TOC-item-2" >
+<a class="TOC-link" href="#takeaways">Takeaways</a>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+			
+			<div class="col-12 col-sm-9 col-lg-10 p-2"><div class="pt-2 pb-2 border-bottom mb-4 text-primary"><h1>The DotNetCore Timers</h1>
+            <div><small>What is a Timer?</small></div></div>
+    <p>Timers are one of those <em>fuzzy</em> topics.  Most programmers know how to use them and the various implementations.  But, how do they actually work?</p>
+<h2 id="one-timer-to-rule-them-all">One Timer to Rule them All</h2>
+<p>Behind the scenes there's only one running timer.</p>
+<p><code>TimerQueue</code> implements the <em>Singleton</em> pattern : one instance per AppDomain.  It manages all the application timers and schedules the callbacks when timers expire.</p>
+<p>When you create a timer, you queue a timer object to <code>TimerQueue</code>.</p>
+<p>Timers are created for two purposes:</p>
+<ol>
+<li><p>Operational Timeouts.  These are system timers created and destroyed frequently. They only fire if something goes wrong.</p>
+</li>
+<li><p>Scheduled Background Tasks.  These are designed to fire.  They include all the timers we create and consume in our code.</p>
+</li>
+</ol>
+<p><code>TimerQueue</code> runs on it's own thread.  The singleton creator method does this:</p>
+<div style="color:#DADADA;background-color:#1E1E1E;"><pre>
+<span style="color:#569CD6;">new</span> Thread(TimerQueue.Create().Run());
+</pre></div><h3 id="the-timer-loop">The Timer Loop</h3>
+<p><code>TimerQueue</code> uses a single native timer provided by the underlying operating system, normally provided by the Virtual Machine.</p>
+<p>The basic operation can be summarised as:</p>
+<div style="color:#DADADA;background-color:#1E1E1E;"><pre>
+<span style="color:#569CD6;">void</span> Resume()
+{
+    FireAllExpiredTimers();
+    nextTimeSpan = UnexpiredTimers.GetShortestTimeSpanToExpiration();
+    NativeTimer.ScheduleCallback(Resume, nextTimeSpan);
+}
+</pre></div>
+<p><code>Resume</code>:</p>
+<ol>
+<li>Enumerates the currently registered timers and fires the callbacks on any that have expired.  It fires the first on the current thread and any subsequent ones on a threadpool thread.</li>
+<li>Gets the shortest timespan for all the unexpired timers.</li>
+</ol>
+<p>When complete it schedules a callback to itself from the Native timer for the minumim period.  Note that the resolution of <code>nextTimeSpan</code> will be based on the resolution of the system clock: approx 15 ms on a Windows Server.</p>
+<p>Adding a new timer looks like this:</p>
+<div style="color:#DADADA;background-color:#1E1E1E;"><pre>
+<span style="color:#569CD6;">void</span> AddTimer(Timer timer)
+{
+   AddTimerToList(timer);
+   ResheduleNativeTimerIfRequired(Resume, nextTimeSpan);
+}
+</pre></div>
+<p>This adds <code>timer</code> to the queue and reschedules the native timer callback if the new timer's timespan is shorter than the current scheduled callback.</p>
+<h2 id="takeaways">Takeaways</h2>
+<ol>
+<li><p>When you &quot;run&quot; a timer there's no black magic.  You add a new timer to the queue and carry on to the next task: fire and forget.  There's nothing happening &quot;in the background&quot; on your current execution thread.  The tracking, management and callbacks are managed by <code>TimerQueue</code> running on its own thread.</p>
+</li>
+<li><p>You should <code>Dispose</code> a timer to remove it from the queue.</p>
+</li>
+<li><p>The callback (or event in a System.Timers.Timer object) runs on a threadpool context, not the context of the owning object.  There's no automatic detection and switching to the synchronisation context.</p>
+</li>
+</ol>
+</div></div></div></body></html>
+
+
+
+
+

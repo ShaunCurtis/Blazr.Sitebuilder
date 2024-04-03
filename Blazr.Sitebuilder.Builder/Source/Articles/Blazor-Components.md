@@ -22,7 +22,7 @@ The UI - defined by html code in the DOM [Document Object Model] - is represente
 
 The diagram below is a visual representation of the render tree for the out-of-the-box Blazor template.
 
-![Root Render Tree](https://shauncurtis.github.io/articles/assets/Blazor-Components/Root-Render-Tree.png)
+![Root Render Tree](./assets/Blazor-Components/Root-Render-Tree.png)
 
 ## The Client Application
 
@@ -47,7 +47,7 @@ Once *blazor.server.js* loads, the client application runs in the browser page a
 
 The diagram below shows how a render request is passed to the displayed page.
 
-![Server Rendering](https://shauncurtis.github.io/articles/assets/Blazor-Components/Server-Render.png)
+![Server Rendering](./assets/Blazor-Components/Server-Render.png)
 
 ### Blazor Web Assembly
 
@@ -73,7 +73,7 @@ builder.RootComponents.Add<App>("#app");
 
 The code tells the Renderer that the `App` class component is the root component for the `RenderTree` and to load it's DOM into the `app` element in the browser DOM.
 
-![Server Rendering](https://shauncurtis.github.io/articles/assets/Blazor-Components/Web-Assembly-Render.png)
+![Server Rendering](./assets/Blazor-Components/Web-Assembly-Render.png)
 
 The key point to take from this is that although the process by which the root component is defined and loaded is different, there's no difference between in a WebAssembly and Server root component or any sub-component.  You can use the same component. 
 
@@ -437,17 +437,17 @@ else
 
 The follow diagram shows a simplified `RenderTree` representing a simple "/" route.
 
-![Root Render Tree](https://shauncurtis.github.io/articles/assets/Blazor-Components/Root-Render-Tree.png)
+![Root Render Tree](./assets/Blazor-Components/Root-Render-Tree.png)
 
 Note the three nodes in `NavMenu` for the three `NavLink` controls. 
 
 On our page, the render tree looks like the diagram below on first render - we have a yielding `OnInitializedAsync` method, so `StateHasChanged` gets run in the initialization process.
 
-![Simple Page Loading](https://shauncurtis.github.io/articles/assets/Blazor-Components/Simple-Page-Loading.png)
+![Simple Page Loading](./assets/Blazor-Components/Simple-Page-Loading.png)
 
 Once initialization completes, `StateHasChanged` is run a second time.  `Loaded` is now `true` and `SimpleComponent` is added to the component `RenderFragment`.  When the `Renderer` runs the `RenderFragment`, `SimpleComponent` is added to the render tree, instantiated and initialized.
 
-![Simple Page Loaded](https://shauncurtis.github.io/articles/assets/Blazor-Components/Simple-Page-Loaded.png)
+![Simple Page Loaded](./assets/Blazor-Components/Simple-Page-Loaded.png)
 
 ### Component Content
 
