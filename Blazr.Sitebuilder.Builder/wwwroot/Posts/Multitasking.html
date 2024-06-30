@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<base href="/">
+
+	
+
+	
+
+	
+	<link href="/resources/vendor/fontawesome-free/css/all.min.css" rel="stylesheet" type="text/css">
+	<link href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i" rel="stylesheet">
+
+	
+	<link href="/resources/css/sb-admin-2.css" rel="stylesheet" type="text/css">
+	<link href="/resources/css/site.css" rel="stylesheet" type="text/css">
+
+	
+	<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/Microsoft/vscode/extensions/markdown-language-features/media/highlight.css">
+	<link rel="stylesheet" href="/resources/css/article.css" type="text/css">
+
+	
+	<link rel="icon" href="/assets/favicon.png">
+
+	<title>Multitasking</title>
+        <meta property="author" content="Shaun Curtis" />
+        <meta property="description" content="The multitasking Misconception." />
+    <meta property="og:site_name" content="Cold Elm Coders" />
+        <meta property="og:site" content="https://shauncurtis.github.io/" />
+        <meta property="og:title" content="Multitasking" />
+        <meta property="og:description" content="The multitasking Misconception." /></head>
+<body><header class="navbar bg-dark p-2 text-large text-light"><section class="navbar-section  text-light"><a href="/" class="navbar-brand mr-2 text-large text-light p-2">Cold Elm Coders</a>
+			<a href="/Posts/index.html" class="btn btn-link text-light">Posts</a>
+			<a href="/Rants/index.html" class="btn btn-link text-light">Rants</a>
+			<a href="/Articles/index.html" class="btn btn-link text-light">Articles</a>
+			<a href="/Stories/index.html" class="btn btn-link text-light">Stories</a>
+			<a href="/about.html" class="btn btn-link text-light">About</a></section></header>
+
+	<div class="container-fluid"><div class="row"><div class="col-12 col-sm-3 col-lg-2 bg-light pt-2"><div class="article-info p-2"><div class="mb-2">Published: 02-Apr-2024</div>
+                <div class="mb-2">Updated: 02-Apr-2024</div>
+                <div class="mb-2">Author: Shaun Curtis</div></div>
+    <h4 class="p-2">Table of Contents</h4>
+<ul class="TOC" >
+<li class="TOC-item TOC-item-0" >
+<a class="TOC-link" href="#">Top</a>
+<ul class="TOC TOC-0" >
+<li class="TOC-item TOC-item-1" >
+<ul class="TOC TOC-1" >
+<li class="TOC-item TOC-item-2" >
+<a class="TOC-link" href="#the-solution">The solution</a>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+			
+			<div class="col-12 col-sm-9 col-lg-10 p-2"><div class="pt-2 pb-2 border-bottom mb-4 text-primary"><h1>Multitasking</h1>
+            <div><small>The multitasking Misconception.</small></div></div>
+    <p>There's a common misconception in async programming that a thread can muti-task: do more that one thing at once.  It monitors something for an event [and execute when it does] while running other tasks.  Wrapping code in an async/await block makes it non-blocking.</p>
+<p>Here's a recent example in a question I answered on StackOverflow.  I've refactored the code a little to make it easier to see thr changes.</p>
+<p>It opens a new shell process, runs a <em>ping</em> and passes back the output.</p>
+<pre><code class="language-sharp">@page &quot;/&quot;
+@using System.Diagnostics
+@using System.Text
+
+&lt;div class=&quot;mb-2&quot;&gt;
+    &lt;button class=&quot;btn btn-primary&quot; disabled=&quot;@_processing&quot; @onclick=&quot;ProcessSomething&quot;&gt;execute...&lt;/button&gt;
+&lt;/div&gt;
+
+&lt;div class=&quot;bg-dark text-white m-2 p-2&quot;&gt;
+    &lt;pre&gt;@_output&lt;/pre&gt;
+&lt;/div&gt;
+
+@code {
+    private StringBuilder _output = new();
+    private bool _processing;
+
+    private async Task ProcessSomething()
+    {
+        _output.Clear();
+        await this.RunPingAsync();
+    }
+
+    private async Task RunPingAsync()
+    {
+        _processing = true;
+        Process p = new Process();
+        p.StartInfo.UseShellExecute = false;
+        p.StartInfo.RedirectStandardOutput = true;
+        p.StartInfo.FileName = &quot;cmd.exe&quot;;
+        p.StartInfo.Arguments = &quot;/c ping 8.8.8.8&quot;;
+        p.OutputDataReceived += OnDataReceived;
+        p.Start();
+        p.BeginOutputReadLine();
+        p.WaitForExit();
+        _processing = false;
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async void OnDataReceived(object? sender, DataReceivedEventArgs args)
+    {
+        Console.WriteLine(args.Data);
+        _output.AppendLine(args.Data);
+        await InvokeAsync(StateHasChanged);
+    }
+}
+</code></pre>
+<p>When you run this code, the console updates at each ping, but the Blazor application will only update at the end.  If the console updates properly, why doesn't the App.</p>
+<blockquote>
+<p>Surely, the console updates prove the code is non blocking?</p>
+</blockquote>
+<p>Consider this:</p>
+<p>If your code is waiting for something to happen, that's all it's doing.  It's blocked.  In our code block the thread running the shell process is waiting for output.  When it gets it it raises the <code>OutputDataReceived</code> event and then goes back to waiting for the next output [or the exit].</p>
+<p>This code is running on the UI thread [the synchronisation context].  When the shell process raises <code>OutputDataReceived</code> it runs <code>OnDataReceived</code> which writes to the console, updates the component state and then queues a Render.  The problem is here.  The Renderer queues the render on the <em>synchronisation context</em>.  Unfortunately, that's busy running <code>RunPingAsync</code>, which doesn't complete until the shell process completes.</p>
+<p>The <em>synchronisation context</em> is blocked until <code>RunPingAsync</code> completes.  The render is then executed and updates the UI.</p>
+<h2 id="the-solution">The solution</h2>
+<p>The solution is to run the shell process elsewhere: on the Threadpool.</p>
+<p>We can change <code>ProcessSomething</code> like this to run the shell process on the Threadpool.</p>
+<div style="color:#DADADA;background-color:#1E1E1E;"><pre>
+    <span style="color:#569CD6;">private</span> Task ProcessSomething()
+    {
+        _output.Clear();
+         Task.Run(RunPingAsync);
+        <span style="color:#569CD6;">return</span> Task.CompletedTask;
+    }
+</pre></div></div></div></div></body></html>
+
+
+
+
+
