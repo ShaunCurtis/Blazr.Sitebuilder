@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<base href="/">
+
+	
+
+	
+
+	
+	<link href="/resources/vendor/fontawesome-free/css/all.min.css" rel="stylesheet" type="text/css">
+	<link href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i" rel="stylesheet">
+
+	
+	<link href="/resources/css/sb-admin-2.css" rel="stylesheet" type="text/css">
+	<link href="/resources/css/site.css" rel="stylesheet" type="text/css">
+
+	
+	<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/Microsoft/vscode/extensions/markdown-language-features/media/highlight.css">
+	<link rel="stylesheet" href="/resources/css/article.css" type="text/css">
+
+	
+	<link rel="icon" href="/assets/favicon.png">
+
+	<title>Two Way Binding</title>
+        <meta property="author" content="Shaun Curtis" />
+        <meta property="description" content="Exploring Two Way Binding in Components." />
+    <meta property="og:site_name" content="Cold Elm Coders" />
+        <meta property="og:site" content="https://shauncurtis.github.io/" />
+        <meta property="og:title" content="Two Way Binding" />
+        <meta property="og:description" content="Exploring Two Way Binding in Components." /></head>
+<body><header class="navbar bg-dark p-2 text-large text-light"><section class="navbar-section  text-light"><a href="/" class="navbar-brand mr-2 text-large text-light p-2">Cold Elm Coders</a>
+			<a href="/Posts/index.html" class="btn btn-link text-light">Posts</a>
+			<a href="/Rants/index.html" class="btn btn-link text-light">Rants</a>
+			<a href="/Articles/index.html" class="btn btn-link text-light">Articles</a>
+			<a href="/Stories/index.html" class="btn btn-link text-light">Stories</a>
+			<a href="/about.html" class="btn btn-link text-light">About</a></section></header>
+
+	<div class="container-fluid"><div class="row"><div class="col-12 col-sm-3 col-lg-2 bg-light pt-2"><div class="article-info p-2"><div class="mb-2">Published: 02-Jul-2024</div>
+                <div class="mb-2">Updated: 02-Jul-2024</div>
+                <div class="mb-2">Author: Shaun Curtis</div></div>
+    <h4 class="p-2">Table of Contents</h4>
+<ul class="TOC" >
+<li class="TOC-item TOC-item-0" >
+<a class="TOC-link" href="#">Top</a>
+<ul class="TOC TOC-0" >
+<li class="TOC-item TOC-item-1" >
+<a class="TOC-link" href="#two-way-binding">Two Way Binding</a>
+<ul class="TOC TOC-1" >
+<li class="TOC-item TOC-item-2" >
+<a class="TOC-link" href="#the-first-attempt">The First Attempt</a>
+</li>
+<li class="TOC-item TOC-item-2" >
+<a class="TOC-link" href="#the-second-attempt">The Second Attempt</a>
+</li>
+<li class="TOC-item TOC-item-2" >
+<a class="TOC-link" href="#the-working-version">The Working Version</a>
+</li>
+<li class="TOC-item TOC-item-2" >
+<a class="TOC-link" href="#wrap-up">Wrap Up</a>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+			
+			<div class="col-12 col-sm-9 col-lg-10 p-2"><div class="pt-2 pb-2 border-bottom mb-4 text-primary"><h1>Two Way Binding</h1>
+            <div><small>Exploring Two Way Binding in Components.</small></div></div>
+    <div class="mb-2"><h3>Document List</h3>
+        <ul><li><a href="/Building-Blazor-Applications/The-Component-Coalface/Two-Way-Binding.html">Two Way Binding</a></li></ul></div>
+    <h1 id="two-way-binding">Two Way Binding</h1>
+<p>This note is part of <strong>The Component Coalface Series</strong> and demonstrates how to use two way binding outside the <code>input</code> control setting.</p>
+<p>The web is awash with articles and explanations on the basics.  I'll not regurgitate what you can read elsewhere here.  <a href="https://learn.microsoft.com/en-us/aspnet/core/blazor/components/data-binding">The official Microsoft documentation article is here</a>.</p>
+<p>Almost everything you read will be about the <code>input</code> context.  We'll broading that scope by showing how to build a dismissible alert with two way binding.</p>
+<p>In a nutshell, two way binding is the simplest way to implement a two way communication channel between a parent and child component.  The parent provides [and changes] a parameter defined by the child component.  The child calls an <code>EventCallback</code> parameter to invoke a method in the parent passing back the new value.</p>
+<h2 id="the-first-attempt">The First Attempt</h2>
+<p>The first attempt: you'll see this pattern in many community site questions.</p>
+<p>I've added some logging to show state.</p>
+<div style="color:#DADADA;background-color:#1E1E1E;"><pre>
+@<span style="color:#569CD6;">if</span> (<span style="color:#569CD6;">this</span>.Show)
+{
+    &lt;div <span style="color:#569CD6;">class</span>=<span style="color:#D69D85;">&quot;alert @this.AlertType alert-dismissible fade show&quot;</span> role=<span style="color:#D69D85;">&quot;alert&quot;</span>&gt;
+        @<span style="color:#569CD6;">this</span>.Message
+        &lt;button type=<span style="color:#D69D85;">&quot;button&quot;</span> <span style="color:#569CD6;">class</span>=<span style="color:#D69D85;">&quot;btn-close&quot;</span> @onclick=<span style="color:#D69D85;">&quot;this.OnHide&quot;</span>&gt;&lt;/button&gt;
+    &lt;/div&gt;
+}
+
+@code {
+    [Parameter] <span style="color:#569CD6;">public</span> <span style="color:#569CD6;">bool</span> Show { <span style="color:#569CD6;">get</span>; <span style="color:#569CD6;">set</span>; }
+    [Parameter] <span style="color:#569CD6;">public</span> MarkupString Message { <span style="color:#569CD6;">get</span>; <span style="color:#569CD6;">set</span>; } = <span style="color:#569CD6;">new</span>(<span style="color:#D69D85;">&quot;&lt;strong&gt;Holy guacamole!&lt;/strong&gt; You should check in on some of those fields below.&quot;</span>);
+    [Parameter] <span style="color:#569CD6;">public</span> <span style="color:#569CD6;">string</span> AlertType { <span style="color:#569CD6;">get</span>; <span style="color:#569CD6;">set</span>; } = <span style="color:#D69D85;">&quot;alert-danger&quot;</span>;
+
+    <span style="color:#569CD6;">private</span> <span style="color:#569CD6;">void</span> OnHide()
+    {
+        Console.WriteLine($<span style="color:#D69D85;">&quot;First Alert - Show: {this.Show}&quot;</span>);
+        <span style="color:#569CD6;">this</span>.Show = <span style="color:#569CD6;">false</span>;
+        Console.WriteLine($<span style="color:#D69D85;">&quot;First Alert - Show Set To: {this.Show}&quot;</span>);
+    }
+}
+</pre></div>
+<p>And the demo page</p>
+<div style="color:#DADADA;background-color:#1E1E1E;"><pre>
+@page <span style="color:#D69D85;">&quot;/&quot;</span>
+
+&lt;PageTitle&gt;Home&lt;/PageTitle&gt;
+
+&lt;h1&gt;Alert Demo&lt;/h1&gt;
+
+&lt;FirstAlert Show=<span style="color:#D69D85;">&quot;_showFirstAlert&quot;</span> /&gt;
+
+&lt;div <span style="color:#569CD6;">class</span>=<span style="color:#D69D85;">&quot;m-2&quot;</span>&gt;
+    &lt;button <span style="color:#569CD6;">class</span>=<span style="color:#D69D85;">&quot;btn btn-primary&quot;</span> @onclick=<span style="color:#D69D85;">&quot;ShowAlert&quot;</span> &gt;Show Alerts&lt;/button&gt; 
+&lt;/div&gt;
+
+@code {
+    <span style="color:#569CD6;">private</span> <span style="color:#569CD6;">bool</span> _showFirstAlert;
+
+    <span style="color:#569CD6;">private</span> <span style="color:#569CD6;">void</span> ShowAlert()
+    {
+        Console.WriteLine($<span style="color:#D69D85;">&quot;Home - First Alert Show: {this._showFirstAlert}&quot;</span>);
+        _showFirstAlert = <span style="color:#569CD6;">true</span>;
+        Console.WriteLine($<span style="color:#D69D85;">&quot;Home - First Alert Show Set To: {this._showFirstAlert}&quot;</span>);
+
+    }
+}
+</pre></div>
+<p>The log when the application is run.</p>
+<pre><code class="language-text">==&gt; Click the Home Show Button
+Home - First Alert Show: False
+Home - First Alert Show Set To: True
+==&gt; Click the Dismiss Button
+First Alert - Show: True
+First Alert - Show Set To: False
+==&gt; Subsequent clicks on the Home Show Button
+Home - First Alert Show: True
+Home - First Alert Show Set To: True
+</code></pre>
+<p>The crucial line is <code>Home - First Alert Show: True</code>.  On the first set, it's <code>false</code>, but on all sets it's <code>true</code>.  The dismiss button in the component set it to false, so why isn't it <code>false</code>?</p>
+<p>The field/property in the parent and the property in the child are not instrinsically linked.  <code>SetParametersAsync</code>, sets the component property to the value provided in the <code>ParameterView</code> provided by the renderer.  For primitives this means setting the value and for objects the provided object reference. Within our component <code>Show</code> is set the value of the provided parameter at the time of setting.</p>
+<p><code>this.Show = false;</code> in <code>OnHide</code> has no effect on the value of <code>_showFirstAlert</code>.</p>
+<p>The first click of <em>Show Alerts</em> changes the state of <code>_showFirstAlert</code>.  On subsequent renders at the completion of the button click UI event, the renderer detects the parameter change on <code>Alert1</code> and calls <code>SetParametersAsync</code> [which triggers a render of the component].</p>
+<p>On any subsequent clicks there's no state change on <code>_showFirstAlert</code>.  The render sees no need to update <code>Alert1</code>'s state, so no call to <code>SetParametersAsync</code> and no render.</p>
+<blockquote>
+<p>This code breaks a fundimental component rule: Properties labelled as <code>Parameter</code>  should have a simple {set; get;} implementation.  You must not mutate them within the component: treat them as <strong>ReadOnly</strong>.</p>
+</blockquote>
+<p>We need a mechanism to tell Home to update <code>_showFirstAlert</code>.</p>
+<h2 id="the-second-attempt">The Second Attempt</h2>
+<div style="color:#DADADA;background-color:#1E1E1E;"><pre>
+@<span style="color:#569CD6;">if</span> (<span style="color:#569CD6;">this</span>.Show)
+{
+    &lt;div <span style="color:#569CD6;">class</span>=<span style="color:#D69D85;">&quot;alert @this.AlertType show&quot;</span> role=<span style="color:#D69D85;">&quot;alert&quot;</span>&gt;
+        @<span style="color:#569CD6;">this</span>.Message
+        &lt;button type=<span style="color:#D69D85;">&quot;button&quot;</span> <span style="color:#569CD6;">class</span>=<span style="color:#D69D85;">&quot;btn-close&quot;</span> @onclick=<span style="color:#D69D85;">&quot;this.OnHide&quot;</span>&gt;&lt;/button&gt;
+    &lt;/div&gt;
+}
+
+@code {
+    [Parameter] <span style="color:#569CD6;">public</span> <span style="color:#569CD6;">bool</span> Show { <span style="color:#569CD6;">get</span>; <span style="color:#569CD6;">set</span>; }
+    [Parameter] <span style="color:#569CD6;">public</span> EventCallback&lt;<span style="color:#569CD6;">bool</span>&gt; ShowChanged { <span style="color:#569CD6;">get</span>; <span style="color:#569CD6;">set</span>; }
+    [Parameter] <span style="color:#569CD6;">public</span> MarkupString Message { <span style="color:#569CD6;">get</span>; <span style="color:#569CD6;">set</span>; } = <span style="color:#569CD6;">new</span>(<span style="color:#D69D85;">&quot;&lt;strong&gt;Holy guacamole!&lt;/strong&gt; You should check in on some of those fields below.&quot;</span>);
+    [Parameter] <span style="color:#569CD6;">public</span> <span style="color:#569CD6;">string</span> AlertType { <span style="color:#569CD6;">get</span>; <span style="color:#569CD6;">set</span>; } = <span style="color:#D69D85;">&quot;alert-danger&quot;</span>;
+
+    <span style="color:#569CD6;">private</span> <span style="color:#569CD6;">void</span> OnHide()
+    {
+        <span style="color:#569CD6;">this</span>.ShowChanged.InvokeAsync(<span style="color:#569CD6;">false</span>);
+    }
+}
+</pre></div>
+<p>This:</p>
+<ol>
+<li>Adds an <code>EventCallback&lt;bool&gt;</code> using a specific naming convention, so we now have a two way bind on <code>Show</code>.</li>
+<li>Invokes the <code>EventCallback</code> in <code>OnHide</code> instead of setting <code>Value</code>.</li>
+</ol>
+<p>The Demo page.</p>
+<div style="color:#DADADA;background-color:#1E1E1E;"><pre>
+@page <span style="color:#D69D85;">&quot;/&quot;</span>
+
+&lt;PageTitle&gt;Home&lt;/PageTitle&gt;
+
+&lt;h1&gt;Alert Demo&lt;/h1&gt;
+
+&lt;FirstAlert Show=<span style="color:#D69D85;">&quot;_showFirstAlert&quot;</span> /&gt;
+
+&lt;SecondAlert Show=<span style="color:#D69D85;">&quot;_showSecondtAlert&quot;</span> ShowChanged=<span style="color:#D69D85;">&quot;this.OnSecondShowChanged&quot;</span> AlertType=<span style="color:#D69D85;">&quot;alert-primary&quot;</span> /&gt;
+
+&lt;div <span style="color:#569CD6;">class</span>=<span style="color:#D69D85;">&quot;m-2&quot;</span>&gt;
+    &lt;button <span style="color:#569CD6;">class</span>=<span style="color:#D69D85;">&quot;btn btn-primary&quot;</span> @onclick=<span style="color:#D69D85;">&quot;ShowAlerts&quot;</span> &gt;Show Alerts&lt;/button&gt; 
+&lt;/div&gt;
+
+@code {
+    <span style="color:#569CD6;">private</span> <span style="color:#569CD6;">bool</span> _showFirstAlert;
+    <span style="color:#569CD6;">private</span> <span style="color:#569CD6;">bool</span> _showSecondtAlert;
+
+    <span style="color:#569CD6;">private</span> Task OnSecondShowChanged(<span style="color:#569CD6;">bool</span> value)
+    {
+        _showSecondtAlert = <span style="color:#569CD6;">false</span>;
+        <span style="color:#569CD6;">return</span> Task.CompletedTask;
+    }
+
+    <span style="color:#569CD6;">private</span> <span style="color:#569CD6;">void</span> ShowAlerts()
+    {
+        Console.WriteLine($<span style="color:#D69D85;">&quot;Home - First Alert Show: {this._showFirstAlert}&quot;</span>);
+        Console.WriteLine($<span style="color:#D69D85;">&quot;Home - Second Alert Show: {this._showSecondtAlert}&quot;</span>);
+        _showFirstAlert = <span style="color:#569CD6;">true</span>;
+        _showSecondtAlert = <span style="color:#569CD6;">true</span>;
+        Console.WriteLine($<span style="color:#D69D85;">&quot;Home - First Alert Show Set To: {this._showFirstAlert}&quot;</span>);
+        Console.WriteLine($<span style="color:#D69D85;">&quot;Home - Second Alert Show Set To: {this._showSecondtAlert}&quot;</span>);
+    }
+ }
+</pre></div>
+<p>This wires up the two way binding manually so it's more obvious what's happening.</p>
+<p>The log shows the state of <code>_showSecondtAlert</code>:</p>
+<pre><code class="language-text">...
+Home - Second Alert Show: False
+....
+Home - Second Alert Show Set To: True
+</code></pre>
+<p>The state change is detected by the Renderer, so <code>SetParametersAsync</code> is called on the component.</p>
+<h2 id="the-working-version">The Working Version</h2>
+<p>The show/hide mechanism now uses the <code>hidden</code> attribute.</p>
+<div style="color:#DADADA;background-color:#1E1E1E;"><pre>
+
+&lt;div hidden=<span style="color:#D69D85;">&quot;@(!this.Show)&quot;</span> <span style="color:#569CD6;">class</span>=<span style="color:#D69D85;">&quot;alert @this.AlertType show&quot;</span>&gt;
+    @<span style="color:#569CD6;">this</span>.Message
+    &lt;button type=<span style="color:#D69D85;">&quot;button&quot;</span> <span style="color:#569CD6;">class</span>=<span style="color:#D69D85;">&quot;btn-close&quot;</span> @onclick=<span style="color:#D69D85;">&quot;this.OnHide&quot;</span>&gt;&lt;/button&gt;
+&lt;/div&gt;
+
+@code {
+    [Parameter] <span style="color:#569CD6;">public</span> <span style="color:#569CD6;">bool</span> Show { <span style="color:#569CD6;">get</span>; <span style="color:#569CD6;">set</span>; }
+    [Parameter] <span style="color:#569CD6;">public</span> EventCallback&lt;<span style="color:#569CD6;">bool</span>&gt; ShowChanged { <span style="color:#569CD6;">get</span>; <span style="color:#569CD6;">set</span>; }
+    [Parameter] <span style="color:#569CD6;">public</span> MarkupString Message { <span style="color:#569CD6;">get</span>; <span style="color:#569CD6;">set</span>; } = <span style="color:#569CD6;">new</span>(<span style="color:#D69D85;">&quot;&lt;strong&gt;Holy guacamole!&lt;/strong&gt; You should check in on some of those fields below.&quot;</span>);
+    [Parameter] <span style="color:#569CD6;">public</span> <span style="color:#569CD6;">string</span> AlertType { <span style="color:#569CD6;">get</span>; <span style="color:#569CD6;">set</span>; } = <span style="color:#D69D85;">&quot;alert-danger&quot;</span>;
+
+    <span style="color:#569CD6;">private</span> <span style="color:#569CD6;">void</span> OnHide()
+        =&gt; <span style="color:#569CD6;">this</span>.ShowChanged.InvokeAsync(<span style="color:#569CD6;">false</span>);
+}
+</pre></div>
+<p>Binding is wired up more concisely like this:</p>
+<div style="color:#DADADA;background-color:#1E1E1E;"><pre>
+&lt;SecondAlert @bind-Show=<span style="color:#D69D85;">&quot;_showAlert&quot;</span> AlertType=<span style="color:#D69D85;">&quot;alert-success&quot;</span> /&gt;
+</pre></div>
+<p>The full demo page.</p>
+<div style="color:#DADADA;background-color:#1E1E1E;"><pre>
+@page <span style="color:#D69D85;">&quot;/&quot;</span>
+
+&lt;PageTitle&gt;Home&lt;/PageTitle&gt;
+
+&lt;h1&gt;Alert Demo&lt;/h1&gt;
+
+&lt;FinalAlert @bind-Show=<span style="color:#D69D85;">&quot;_showAlert&quot;</span> AlertType=<span style="color:#D69D85;">&quot;alert-success&quot;</span> /&gt;
+
+&lt;div <span style="color:#569CD6;">class</span>=<span style="color:#D69D85;">&quot;m-2&quot;</span>&gt;
+    &lt;button <span style="color:#569CD6;">class</span>=<span style="color:#D69D85;">&quot;btn btn-success&quot;</span> @onclick=<span style="color:#D69D85;">&quot;ShowAlert&quot;</span>&gt;Show Alert&lt;/button&gt;
+&lt;/div&gt;
+
+@code {
+    <span style="color:#569CD6;">private</span> <span style="color:#569CD6;">bool</span> _showAlert;
+
+    <span style="color:#569CD6;">private</span> <span style="color:#569CD6;">void</span> ShowAlert()
+      =&gt; _showAlert = <span style="color:#569CD6;">true</span>;
+}
+</pre></div><h2 id="wrap-up">Wrap Up</h2>
+<p>Important points:</p>
+<ol>
+<li><p>The is a <em>loose</em> linkage between a <code>Parameter</code> defined in a component definition and the property to which it is mapped in a component.  Setting a property to a new value will not set the parent's field to the same value.  This is a little more complicated with reference types.  Any mutation in the state of the object within the component will be reflected in the parent: they both hold the references to the same object.  However, if you create an assign a new object to a property in a component, the parent reference will still point to the old object.</p>
+</li>
+<li><p>You should not mutate <code>Parameter</code> properties in a component.</p>
+</li>
+<li><p>Binding can be used outside the <code>input</code> form context.  Once you've mastered this pattern there are many UI contexts where it's applicable.</p>
+</li>
+</ol>
+</div></div></div></body></html>
+
+
+
+
+
